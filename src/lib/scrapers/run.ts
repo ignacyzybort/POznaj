@@ -3,13 +3,10 @@ import { PoznanPlScraper } from "./poznanpl";
 import { FacebookScraper } from "./facebook";
 import { saveEvents, Scraper } from "./base";
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaNeon } from "@prisma/adapter-neon";
 
-const prisma = new PrismaClient({
-  adapter: new PrismaLibSql({
-    url: process.env.DATABASE_URL ?? "file:./dev.db",
-  }),
-});
+const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 const scrapers: Scraper[] = [
   new PikPoznanScraper(),
