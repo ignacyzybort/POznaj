@@ -20,7 +20,7 @@ export async function GET() {
     },
   });
 
-  const friendIds = friendships.map((f) =>
+  const friendIds = friendships.map((f: { senderId: string; receiverId: string }) =>
     f.senderId === userId ? f.receiverId : f.senderId
   );
 
