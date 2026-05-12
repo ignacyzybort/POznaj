@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthProvider from "@/components/auth-provider";
 import ThemeProvider from "@/components/theme-provider";
 import TabBar from "@/components/tab-bar";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
               <TabBar />
               <Analytics />
+              <SpeedInsights />
             </AuthProvider>
           </ThemeProvider>
         </div>
