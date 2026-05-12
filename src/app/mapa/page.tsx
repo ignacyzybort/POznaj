@@ -40,7 +40,7 @@ export default function MapPage() {
     }), [events]);
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: "var(--bg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ position: "absolute", inset: 0, background: "var(--bg)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
       {/* Top bar */}
       <div style={{ padding: "54px 16px 10px", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 16, backdropFilter: "blur(12px)", background: "rgba(255,255,255,0.8)" }}>
@@ -60,8 +60,8 @@ export default function MapPage() {
       </div>
 
       {/* Map area */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        <svg viewBox="0 0 360 640" style={{ width: "100%", height: "100%", background: "var(--bg-soft)" }}>
+      <div style={{ flex: "1 1 auto", position: "relative", minHeight: 400 }}>
+        <svg viewBox="0 0 360 640" style={{ width: "100%", height: "100%", background: "var(--bg-soft)", position: "absolute", inset: 0 }}>
           <path d="M120 640 Q140 500 160 400 Q180 300 150 200 Q130 100 160 0" fill="none" stroke="#7CB8D4" strokeWidth="8" opacity="0.4" />
           <ellipse cx="200" cy="150" rx="50" ry="30" fill="#8FB28E" opacity="0.2" />
           <ellipse cx="80" cy="300" rx="40" ry="25" fill="#8FB28E" opacity="0.2" />
