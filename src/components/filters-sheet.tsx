@@ -1,0 +1,82 @@
+"use client";
+
+import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
+import { CloseIcon } from "@/components/icons";
+
+export type ActiveFilters = {
+  category: string[];
+  district: string[];
+  vibe: string[];
+};
+
+export default function FiltersSheet({
+  open, onClose, active, onToggle, onClear,
+}: {
+  open: boolean;
+  onClose: () => void;
+  active: ActiveFilters;
+  onToggle: (kind: keyof ActiveFilters, value: string) => void;
+  onClear: () => void;
+}) {
+  const count = active.category.length + active.district.length + active.vibe.length;
+
+  const sections: { key: keyof ActiveFilters; title: string; opts: { v: string; label: string; emoji?: string }[] }[] = [
+    { key: "category", title: "Kategorie", opts: categories.map((c) => ({ v: c.value, label: c.label })) },
+    { key: "district", title: "Dzielnice", opts: districts.map((d) => ({ v: d.value, label: d.label })) },
+    { key: "vibe", title: "Nastrój", opts: vibes.map((v) => ({ v: v.value, label: v.label, emoji: vibeEmoji[v.value] })) },
+  ];
+
+  return (
+    <>
+      <div className="pz-sheet-backdrop" data-open={open} onClick={onClose} />
+      <div className="pz-sheet" data-open={open} style={{ maxHeight: "86%" }}>
+        <div className="pz-sheet-grabber" />
+        <div style={{
+          padding: "14px 18px 8px", display: "flex",
+          alignItems: "center", justifyContent: "space-between",
+        }}>
+          <h2 className="pz-h" style={{
+            margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em",
+          }}>Filtry</h2>
+          <button onClick={onClose} aria-label="Zamknij" style={{
+            width: 32, height: 32, borderRadius: 99, border: 0,
+            background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <CloseIcon size={16} />
+          </button>
+        </div>
+
+        <div className="pz-scroll" style={{ padding: "0 18px 16px", flex: 1, minHeight: 0 }}>
+          {sections.map((s) => (
+            <div key={s.key} style={{ marginBottom: 22 }}>
+              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{s.title}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {s.opts.map((o) => {
+                  const isActive = active[s.key].includes(o.v);
+                  return (
+                    <button key={o.v} className="pz-chip"
+                            data-active={isActive ? "true" : undefined}
+                            onClick={() => onToggle(s.key, o.v)}>
+                      {o.emoji && <span>{o.emoji}</span>}{o.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{
+          padding: "10px 18px 24px", display: "flex", gap: 10,
+          borderTop: "0.5px solid var(--line)",
+        }}>
+          <button className="pz-btn ghost" onClick={onClear}>Wyczyść</button>
+          <button className="pz-btn primary" style={{ flex: 1 }} onClick={onClose}>
+            Pokaż {count > 0 ? `(${count})` : "wyniki"}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
