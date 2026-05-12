@@ -1,62 +1,34 @@
-"use client";
-
-import { startOfWeek, subWeeks, format } from "date-fns";
-import { pl } from "date-fns/locale";
-
-export default function StreakCard({
-  weeks,
-  currentStreak,
-  longestStreak,
-}: {
-  weeks: number[];
-  currentStreak: number;
-  longestStreak: number;
-}) {
-  const maxVal = Math.max(...weeks, 1);
-  const weekLabels = Array.from({ length: 8 }, (_, i) => {
-    const d = subWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 7 - i);
-    return format(d, "dd.MM", { locale: pl });
-  });
-
+export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number; longest?: number }) {
+  const totalBars = 8;
   return (
-    <div className="p-4 rounded-2xl" style={{ background: "linear-gradient(135deg, var(--sage), var(--sage-2))", color: "white" }}>
-      <div className="flex items-center justify-between mb-3">
+    <div className="pz-card" style={{
+      padding: 16,
+      background: "linear-gradient(135deg, #FF6B2C 0%, #FF3D7F 100%)",
+      color: "white", border: "none",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 14,
+          background: "rgba(255,255,255,0.22)",
+          backdropFilter: "blur(10px)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z"/></svg>
+        </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Seria</p>
-          <p className="text-sm font-bold">Twój tydzień</p>
-        </div>
-        <span className="text-2xl">🔥</span>
-      </div>
-
-      <div className="flex items-end gap-1.5 h-16 mb-3">
-        {weeks.map((val, i) => {
-          const h = Math.max(4, (val / maxVal) * 48);
-          const active = i === weeks.length - 1;
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div
-                className="w-full rounded-sm transition-all"
-                style={{
-                  height: h,
-                  background: active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
-                  borderRadius: "2px 2px 0 0",
-                }}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex justify-between gap-3">
-        <div className="text-center flex-1 p-2 rounded-xl" style={{ background: "rgba(255,255,255,0.15)" }}>
-          <p className="text-lg font-bold">{currentStreak}</p>
-          <p className="text-[9px] font-semibold opacity-70">bieżąca</p>
-        </div>
-        <div className="text-center flex-1 p-2 rounded-xl" style={{ background: "rgba(255,255,255,0.15)" }}>
-          <p className="text-lg font-bold">{longestStreak}</p>
-          <p className="text-[9px] font-semibold opacity-70">najlepsza</p>
+          <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Streak</div>
+          <div className="pz-h pz-num" style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{weeks} tygodnie</div>
         </div>
       </div>
+      <div style={{ display: "flex", gap: 4 }}>
+        {Array.from({ length: totalBars }, (_, i) => (
+          <div key={i} style={{
+            flex: 1, height: 26, borderRadius: 6,
+            background: i < weeks ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)",
+          }} />
+        ))}
+      </div>
+      <div style={{ fontSize: 11.5, opacity: 0.9, marginTop: 8 }}>Rekord {longest} · Tydzień kończy się w niedzielę</div>
     </div>
   );
 }

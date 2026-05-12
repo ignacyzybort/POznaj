@@ -1,6 +1,40 @@
-import { PZ_NEARBY_NOW } from "@/lib/mock-extras";
+"use client";
+
+import { useState, useEffect } from "react";
+
+interface NearbyFriend {
+  name: string;
+  color: string;
+  where: string;
+  mins: number;
+}
+
+const COLORS = ["#FF6B2C", "#6E3DFF", "#FF3D7F", "#2860FF", "#C8FF2E", "#E89A6B", "#FFB627"];
 
 export default function NearbyNow() {
+  const [friends, setFriends] = useState<NearbyFriend[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/friends").then((r) => r.json()),
+      fetch("/api/events?limit=10").then((r) => r.json()),
+    ]).then(([friendsData, eventsData]) => {
+      const fList = friendsData.friends ?? [];
+      const eList = eventsData.events ?? [];
+      const nearby: NearbyFriend[] = fList.slice(0, 5).map((f: any, i: number) => ({
+        name: f.name ?? "Znajomy",
+        color: COLORS[i % COLORS.length],
+        where: eList[i % eList.length]?.placeName ?? "Poznań",
+        mins: 5 + i * 7,
+      }));
+      setFriends(nearby);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
+  if (loading || friends.length === 0) return null;
+
   return (
     <div style={{ padding: "0 16px 22px" }}>
       <div style={{
@@ -19,11 +53,11 @@ export default function NearbyNow() {
           Live
         </span>
       </div>
-      <div className="pz-scroll" style={{
+      <div style={{
         display: "flex", gap: 10, overflowX: "auto",
         paddingBottom: 4, marginRight: -16,
       }}>
-        {PZ_NEARBY_NOW.map((n, i) => (
+        {friends.map((n, i) => (
           <div key={i} className="pz-card" style={{
             flexShrink: 0, padding: 14, minWidth: 200,
             display: "flex", alignItems: "center", gap: 10,

@@ -121,10 +121,21 @@ export default function HomePage() {
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
   const openEvent = (ev: EventData) => { window.location.href = `/event/${ev.id}`; };
-  const toggleSave = (id: string) => {
-    setSavedIds((prev) => prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]);
-    setToast(savedIds.includes(id) ? null : "Zapisano");
+  const toggleSave = async (id: string) => {
+    const isSaved = savedIds.includes(id);
+    setSavedIds((prev) =>
+      isSaved ? prev.filter((v) => v !== id) : [...prev, id]
+    );
+    if (!isSaved) {
+      await fetch("/api/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: id, status: "SAVED" }),
+      });
+      setToast("Zapisano");
+    }
   };
+
 
   const toggleFilter = (kind: keyof ActiveFilters, value: string) => {
     setActiveFilters((prev) => {
@@ -294,7 +305,7 @@ export default function HomePage() {
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{filtered.length}</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {filtered.map((ev) => (
             <EventCard key={ev.id} event={ev}
                        onOpen={() => openEvent(ev)}

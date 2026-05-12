@@ -4,7 +4,7 @@ import type { EventData } from "@/lib/data";
 import { districts } from "@/lib/data";
 import { deriveTransit, deriveWeather, deriveCarpool } from "@/lib/mock-extras";
 import {
-  TramIcon, BusIcon, CarIcon, CalPlusIcon, PinIcon, ChevronIcon,
+  TramIcon, BusIcon, CarIcon, ChevronIcon,
   SunIcon, CloudIcon, RainIcon, MoonIcon,
 } from "@/components/icons";
 
@@ -106,36 +106,40 @@ export default function DetailExtras({
       )}
 
       <div style={{ display: "flex", gap: 8 }}>
-        <button
+        <a
+          href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(event.placeName + ", " + (event.address ?? "Poznań"))}`}
+          target="_blank" rel="noopener noreferrer"
           className="pz-chip"
-          onClick={() => onToast("Dodano do kalendarza 📅")}
-          style={{ flex: 1, justifyContent: "center" }}
+          style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
         >
-          <span style={{ marginRight: 6 }}><CalPlusIcon size={14} /></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M12 14l1.5 1.5L16 13"/></svg>
           Kalendarz
-        </button>
-        <button
+        </a>
+        <a
+          href={`https://maps.apple.com/?q=${encodeURIComponent(event.placeName + " Poznań")}`}
+          target="_blank" rel="noopener noreferrer"
           className="pz-chip"
-          onClick={() => onToast("Otwieram Maps…")}
-          style={{ flex: 1, justifyContent: "center" }}
+          style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
         >
-          <span style={{ marginRight: 6 }}><PinIcon size={14} /></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
           Maps
-        </button>
-        <button
+        </a>
+        <a
+          href={`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(event.placeName + ", " + (event.address ?? "Poznań"))}`}
+          target="_blank" rel="noopener noreferrer"
           className="pz-chip"
-          onClick={() => onToast("Uber zamówiony 🚗")}
-          style={{ flex: 1, justifyContent: "center" }}
+          style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
         >
           Uber
-        </button>
-        <button
+        </a>
+        <a
+          href={`https://bolt.eu/redirect/?type=ride&pickup=my_location&dropoff=${encodeURIComponent(event.placeName + ", Poznań")}`}
+          target="_blank" rel="noopener noreferrer"
           className="pz-chip"
-          onClick={() => onToast("Bolt zamówiony 🛴")}
-          style={{ flex: 1, justifyContent: "center" }}
+          style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
         >
           Bolt
-        </button>
+        </a>
       </div>
     </div>
   );

@@ -17,20 +17,24 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="relative h-full" style={{ background: "var(--bg)" }}>
+    <div style={{ position: "absolute", inset: 0, background: "var(--bg)", overflow: "hidden" }}>
       {/* Top bar */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 pt-12">
-        <div className="flex items-center gap-2 p-2 rounded-2xl backdrop-blur-md" style={{ background: "rgba(255,255,255,0.8)" }}>
-          <div className="flex-1 flex items-center gap-2 px-3">
-            <span className="text-sm">📍</span>
-            <span className="text-sm font-semibold" style={{ color: "var(--ink)" }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10, padding: "48px 16px 10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 16, backdropFilter: "blur(12px)", background: "rgba(255,255,255,0.8)" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "0 8px" }}>
+            <span style={{ fontSize: 14 }}>📍</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
               Poznań · {events.length} wydarzeń
             </span>
           </div>
           <button
             onClick={() => setHeatOn(!heatOn)}
-            className="w-9 h-9 rounded-full flex items-center justify-center border-0 cursor-pointer text-sm"
-            style={{ background: heatOn ? "var(--hot)" : "var(--bg-soft)", color: heatOn ? "white" : "var(--ink-2)" }}
+            style={{
+              width: 36, height: 36, borderRadius: 99, border: 0,
+              background: heatOn ? "var(--hot)" : "var(--bg-soft)",
+              color: heatOn ? "white" : "var(--ink-2)", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+            }}
           >
             🔥
           </button>
@@ -38,7 +42,7 @@ export default function MapPage() {
       </div>
 
       {/* SVG Map */}
-      <svg viewBox="0 0 360 640" className="w-full h-full" style={{ background: "var(--bg-soft)" }}>
+      <svg viewBox="0 0 360 640" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "var(--bg-soft)" }}>
         {/* Warta river */}
         <path d="M120 640 Q140 500 160 400 Q180 300 150 200 Q130 100 160 0" fill="none" stroke="#7CB8D4" strokeWidth="8" opacity="0.4" />
 
@@ -87,7 +91,7 @@ export default function MapPage() {
 
       {/* Selected event mini card */}
       {selected && (
-        <div className="absolute bottom-24 left-3 right-3 z-20 pz-pop">
+        <div className="pz-pop" style={{ position: "absolute", bottom: 100, left: 12, right: 12, zIndex: 20 }}>
           <Link href={`/event/${selected.id}`} className="flex gap-3 p-3 rounded-2xl no-underline" style={{ background: "var(--bg-elev)", border: "0.5px solid var(--line)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
             <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-soft)]">
               {selected.imageUrl && <img src={selected.imageUrl} alt="" className="w-full h-full object-cover" />}
@@ -107,15 +111,19 @@ export default function MapPage() {
 
       {/* Heat toggle label */}
       {heatOn && (
-        <div className="absolute top-20 left-4 right-4 text-center z-10">
-          <span className="text-[11px] font-semibold px-3 py-1 rounded-full" style={{ background: "var(--hot)", color: "white" }}>
+        <div style={{ position: "absolute", top: 96, left: 0, right: 0, textAlign: "center", zIndex: 10 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "var(--hot)", color: "white" }}>
             🔥 Najpopularniejsze miejsca
           </span>
         </div>
       )}
 
       {/* Trending venues rail — only when nothing selected */}
-      {!selected && <TrendingRail />}
+      {!selected && (
+        <div style={{ position: "absolute", bottom: 80, left: 0, right: 0 }}>
+          <TrendingRail />
+        </div>
+      )}
     </div>
   );
 }
