@@ -4,6 +4,19 @@ import { useState, useEffect, useMemo } from "react";
 import { EventData, categoryEmoji } from "@/lib/data";
 import TrendingRail from "@/components/trending-rail";
 
+const DISTRICT_POS: Record<string, { x: number; y: number }> = {
+  StareMiasto: { x: 180, y: 220 },
+  Jezyce: { x: 90, y: 180 },
+  Lazarz: { x: 100, y: 300 },
+  Grunwald: { x: 140, y: 380 },
+  Wilda: { x: 230, y: 280 },
+  Rataje: { x: 270, y: 420 },
+  Piatkowo: { x: 200, y: 100 },
+  Winogrady: { x: 180, y: 140 },
+  NoweMiasto: { x: 290, y: 220 },
+  Inny: { x: 180, y: 280 },
+};
+
 export default function MapPage() {
   const [events, setEvents] = useState<EventData[]>([]);
   const [selected, setSelected] = useState<EventData | null>(null);
@@ -14,19 +27,6 @@ export default function MapPage() {
       if (d.events) setEvents(d.events);
     });
   }, []);
-
-  const DISTRICT_POS: Record<string, { x: number; y: number }> = {
-    StareMiasto: { x: 180, y: 220 },
-    Jezyce: { x: 90, y: 180 },
-    Lazarz: { x: 100, y: 300 },
-    Grunwald: { x: 140, y: 380 },
-    Wilda: { x: 230, y: 280 },
-    Rataje: { x: 270, y: 420 },
-    Piatkowo: { x: 200, y: 100 },
-    Winogrady: { x: 180, y: 140 },
-    NoweMiasto: { x: 290, y: 220 },
-    Inny: { x: 180, y: 280 },
-  };
 
   const pinPositions = useMemo(() =>
     events.slice(0, 30).map((ev, i) => {
@@ -40,9 +40,9 @@ export default function MapPage() {
     }), [events]);
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: "var(--bg)", display: "flex", flexDirection: "column", overflowY: "auto" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Top bar */}
-      <div style={{ padding: "54px 16px 10px", zIndex: 10 }}>
+      <div style={{ padding: "54px 16px 10px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 16, backdropFilter: "blur(12px)", background: "rgba(255,255,255,0.8)" }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
             <span>📍</span>
@@ -59,9 +59,9 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Map area */}
-      <div style={{ flex: "1 1 auto", position: "relative", minHeight: 400 }}>
-        <svg viewBox="0 0 360 640" style={{ width: "100%", height: "100%", background: "var(--bg-soft)", position: "absolute", inset: 0 }}>
+      {/* Map SVG */}
+      <div style={{ position: "relative", height: 500, margin: "0 12px", borderRadius: 18, overflow: "hidden", background: "var(--bg-soft)" }}>
+        <svg viewBox="0 0 360 640" style={{ width: "100%", height: "100%", position: "absolute", inset: 0 }}>
           <path d="M120 640 Q140 500 160 400 Q180 300 150 200 Q130 100 160 0" fill="none" stroke="#7CB8D4" strokeWidth="8" opacity="0.4" />
           <ellipse cx="200" cy="150" rx="50" ry="30" fill="#8FB28E" opacity="0.2" />
           <ellipse cx="80" cy="300" rx="40" ry="25" fill="#8FB28E" opacity="0.2" />
@@ -98,8 +98,16 @@ export default function MapPage() {
           })}
         </svg>
 
+        {heatOn && (
+          <div style={{ position: "absolute", top: 12, left: 0, right: 0, textAlign: "center", zIndex: 10 }}>
+            <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "var(--hot)", color: "white" }}>
+              🔥 Trending
+            </span>
+          </div>
+        )}
+
         {selected && (
-          <div className="pz-pop" style={{ position: "absolute", bottom: 16, left: 12, right: 12 }}>
+          <div className="pz-pop" style={{ position: "absolute", bottom: 12, left: 12, right: 12 }}>
             <a href={`/event/${selected.id}`} style={{ display: "flex", gap: 12, padding: 12, borderRadius: 16, background: "var(--bg-elev)", border: "0.5px solid var(--line)", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", textDecoration: "none" }}>
               <div style={{ width: 56, height: 56, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-soft)" }}>
                 {selected.imageUrl && <img src={selected.imageUrl} alt="" className="w-full h-full object-cover" />}
@@ -115,19 +123,8 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Heat label */}
-      {heatOn && (
-        <div style={{ position: "absolute", top: 96, left: 0, right: 0, textAlign: "center", zIndex: 10 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 99, background: "var(--hot)", color: "white" }}>
-            🔥 Trending
-          </span>
-        </div>
-      )}
-
       {/* Trending rail */}
-      {!selected && (
-        <TrendingRail />
-      )}
+      {!selected && <TrendingRail />}
     </div>
   );
 }
