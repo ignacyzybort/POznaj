@@ -123,17 +123,18 @@ export default function HomePage() {
   const openEvent = (ev: EventData) => { window.location.href = `/event/${ev.id}`; };
   const toggleSave = async (id: string) => {
     const isSaved = savedIds.includes(id);
-    setSavedIds((prev) =>
-      isSaved ? prev.filter((v) => v !== id) : [...prev, id]
-    );
     if (!isSaved) {
       await fetch("/api/attendance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
-      setToast("Zapisano");
+      setToast("Zapisano ✅");
+      setTimeout(() => { window.location.href = "/lista"; }, 800);
     }
+    setSavedIds((prev) =>
+      isSaved ? prev.filter((v) => v !== id) : [...prev, id]
+    );
   };
 
 

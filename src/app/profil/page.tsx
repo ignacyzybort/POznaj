@@ -6,27 +6,42 @@ import Link from "next/link";
 import PassportCard from "@/components/passport-card";
 import StreakCard from "@/components/streak-card";
 import VibeQuiz from "@/components/vibe-quiz";
+import YearInReview from "@/components/year-in-review";
+import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 
-const FRIENDS_LIST = [
+const DEFAULT_FRIENDS = [
   { id: "f1", name: "Alicja", color: "#FF3D7F" },
   { id: "f2", name: "Kuba", color: "#6E3DFF" },
   { id: "f3", name: "Michał", color: "#2860FF" },
   { id: "f4", name: "Zosia", color: "#C8FF2E" },
   { id: "f5", name: "Tomek", color: "#FF6B2C" },
-  { id: "f6", name: "Ewa", color: "#E89A6B" },
-  { id: "f7", name: "Bartek", color: "#FFB627" },
 ];
+
+const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 
 export default function ProfilPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState({ attendance: 0, savedEvents: 0, sentFriendships: 0 });
   const [stamps, setStamps] = useState<Record<string, number>>({});
   const [showQuiz, setShowQuiz] = useState(false);
+  const [yirOpen, setYirOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
+  const [friendsList, setFriendsList] = useState(DEFAULT_FRIENDS);
 
   useEffect(() => {
     if (!session?.user) return;
+    fetch("/api/friends").then((r) => r.json()).then((d) => {
+      const f = (d.friends ?? []).slice(0, 5);
+      if (f.length > 0) {
+        setFriendsList(f.map((x: any, i: number) => ({
+          id: x.id,
+          name: x.name ?? "Znajomy",
+          color: COLORS[i % COLORS.length],
+        })));
+      }
+    }).catch(() => {});
     fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
       if (d.user?._count) setStats(d.user._count);
     });
@@ -106,7 +121,7 @@ export default function ProfilPage() {
           {[
             { n: stats.attendance, l: "plany" },
             { n: stats.savedEvents, l: "zapisane" },
-            { n: FRIENDS_LIST.length, l: "znajomi" },
+            { n: friendsList.length, l: "znajomi" },
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
               <div className="pz-num" style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
@@ -144,7 +159,7 @@ export default function ProfilPage() {
           </span>
         </button>
 
-        <button style={{
+        <button onClick={() => setYirOpen(true)} style={{
           padding: 16, width: "100%", textAlign: "left", cursor: "pointer",
           border: "none", borderRadius: 22, color: "white",
           background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)",
@@ -157,7 +172,7 @@ export default function ProfilPage() {
               Twój 2026 — dość dobry rok.
             </div>
             <div style={{ fontSize: 12.5, opacity: 0.9, marginTop: 6 }}>
-              {attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {FRIENDS_LIST.length} osób
+              {attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób
             </div>
           </div>
           <span style={{ marginLeft: "auto", opacity: 0.85 }}>
@@ -170,13 +185,13 @@ export default function ProfilPage() {
       <div style={{ padding: "0 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
           <h2 className="pz-h" style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Znajomi</h2>
-          <button style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={() => setToast("Zaproś znajomych — udostępnij link")} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Zaproś +
           </button>
         </div>
       </div>
       <div style={{ padding: "0 18px 14px", display: "flex", gap: 14, overflowX: "auto" }}>
-        {FRIENDS_LIST.map((f) => (
+        {friendsList.map((f) => (
           <div key={f.id} style={{ textAlign: "center", flex: "0 0 56px" }}>
             <div style={{
               width: 52, height: 52, borderRadius: 99, background: f.color,
@@ -194,7 +209,7 @@ export default function ProfilPage() {
       <div style={{ padding: "8px 18px 0" }}>
         <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {FRIENDS_LIST.slice(0, 5).map((f, i) => (
+          {friendsList.slice(0, 5).map((f, i) => (
             <div key={f.id} style={{
               display: "flex", gap: 12, padding: "12px 0",
               borderBottom: "0.5px solid var(--line)",
@@ -228,6 +243,8 @@ export default function ProfilPage() {
       </div>
 
       {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}
+      <YearInReview open={yirOpen} onClose={() => setYirOpen(false)} />
+      <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );
 }

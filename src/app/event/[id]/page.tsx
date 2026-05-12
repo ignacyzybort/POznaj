@@ -110,7 +110,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: "20px 18px 200px" }}>
+      <div style={{ padding: "20px 18px 220px" }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           <CategoryTag cat={event.category} size="md" />
           {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}

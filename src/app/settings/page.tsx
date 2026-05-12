@@ -1,176 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { districts, categories, vibes } from "@/lib/filters";
 import { categoryVisual } from "@/lib/visuals";
 import { useTheme } from "@/components/theme-provider";
 
-interface Preferences {
-  preferredCategories: string[];
-  preferredDistricts: string[];
-  preferredVibes: string[];
-}
-
-type PrefKey = keyof Preferences;
-
-const sections: {
-  key: PrefKey;
-  title: string;
-  emoji: string;
-  options: { value: string; label: string; emoji?: string }[];
-}[] = [
-  {
-    key: "preferredCategories",
-    title: "Kategorie",
-    emoji: "🏷️",
-    options: categories.map((c) => ({
-      value: c.value,
-      label: c.label,
-      emoji: categoryVisual[c.value]?.emoji,
-    })),
-  },
-  {
-    key: "preferredDistricts",
-    title: "Dzielnice",
-    emoji: "📍",
-    options: districts.map((d) => ({ value: d.value, label: d.label })),
-  },
-  {
-    key: "preferredVibes",
-    title: "Nastroje",
-    emoji: "💫",
-    options: vibes.map((v) => ({ value: v.value, label: v.label })),
-  },
-];
-
 export default function SettingsPage() {
+  const router = useRouter();
   const { theme, toggle: toggleTheme } = useTheme();
-  const [prefs, setPrefs] = useState<Preferences>({
-    preferredCategories: [],
-    preferredDistricts: [],
-    preferredVibes: [],
-  });
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    const raw = localStorage.getItem("poznaj-preferences");
-    if (raw) {
-      try {
-        setPrefs(JSON.parse(raw));
-      } catch {}
-    }
-  }, []);
-
-  function toggle(key: PrefKey, value: string) {
-    setPrefs((prev) => {
-      const list = prev[key];
-      return {
-        ...prev,
-        [key]: list.includes(value)
-          ? list.filter((v) => v !== value)
-          : [...list, value],
-      };
-    });
-    setSaved(false);
-  }
-
-  function save() {
-    localStorage.setItem("poznaj-preferences", JSON.stringify(prefs));
-    setSaved(true);
-  }
-
-  const hasSelections = Object.values(prefs).some((arr) => arr.length > 0);
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-10">
-      <div className="flex items-center gap-3 mb-10">
-        <span className="text-3xl">⚙️</span>
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-zinc-900">
-            Preferencje
-          </h1>
-          <p className="text-sm text-zinc-400">
-            Wybierz co lubisz, a dostosujemy wyniki
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-8">
-        {sections.map((section) => (
-          <div key={section.key} className="p-6 rounded-2xl bg-white border border-zinc-100">
-            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">
-              {section.emoji} {section.title}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {section.options.map((opt) => {
-                const active = prefs[section.key].includes(opt.value);
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => toggle(section.key, opt.value)}
-                    className={`text-sm px-4 py-2.5 rounded-full font-bold transition-all duration-200 ${
-                      active
-                        ? "bg-zinc-900 text-white shadow-md shadow-zinc-900/20 scale-105"
-                        : "bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200"
-                    }`}
-                  >
-                    {opt.emoji && `${opt.emoji} `}{opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="p-6 rounded-2xl bg-white border border-zinc-100">
-        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">🎨 Wygląd</p>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold text-zinc-900">Tryb ciemny</p>
-            <p className="text-xs text-zinc-400">{theme === "dark" ? "Włączony" : "Wyłączony"}</p>
-          </div>
-          <button
-            onClick={toggleTheme}
-            className="relative w-12 h-7 rounded-full border-0 cursor-pointer transition-all"
-            style={{
-              background: theme === "dark" ? "var(--sage)" : "var(--line-2)",
-            }}
-          >
-            <div
-              className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-200"
-              style={{ left: theme === "dark" ? 24 : 2 }}
-            />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 mt-8 pt-6 border-t border-zinc-100">
-        <button
-          onClick={save}
-          className="inline-flex items-center justify-center gap-2 h-11 px-8 rounded-xl bg-zinc-900 text-white text-sm font-bold hover:bg-zinc-800 transition-all duration-200 shadow-lg shadow-zinc-900/20"
-        >
-          💾 Zapisz preferencje
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
+      <div style={{ padding: "54px 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
+        <button onClick={() => router.back()} style={{
+          width: 40, height: 40, borderRadius: 99, border: 0,
+          background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
         </button>
-        {saved && (
-          <span className="text-sm font-bold text-emerald-600">✅ Zapisano!</span>
-        )}
-        {hasSelections && (
-          <button
-            onClick={() => {
-              setPrefs({
-                preferredCategories: [],
-                preferredDistricts: [],
-                preferredVibes: [],
-              });
-              localStorage.removeItem("poznaj-preferences");
-              setSaved(true);
-            }}
-            className="text-sm text-zinc-400 hover:text-zinc-700 transition-colors"
-          >
-            Wyczyść wszystko
-          </button>
-        )}
+        <div>
+          <div className="pz-eyebrow">Ustawienia</div>
+          <div className="pz-h" style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.025em", color: "var(--ink)" }}>Preferencje</div>
+        </div>
+      </div>
+
+      <div style={{ padding: "6px 18px 30px" }}>
+        {/* Dark mode toggle */}
+        <div className="pz-card" style={{ padding: 16, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>🎨 Tryb ciemny</div>
+              <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>{theme === "dark" ? "Włączony" : "Wyłączony"}</div>
+            </div>
+            <button onClick={toggleTheme} style={{
+              position: "relative", width: 48, height: 28, borderRadius: 99, border: 0, cursor: "pointer",
+              background: theme === "dark" ? "var(--sage)" : "var(--line-2)", transition: "background 0.2s",
+            }}>
+              <div style={{
+                position: "absolute", top: 2, width: 24, height: 24, borderRadius: 99,
+                background: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s",
+                left: theme === "dark" ? 22 : 2,
+              }} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
