@@ -27,6 +27,7 @@ export default function DetailExtras({
   event: EventData;
   onToast: (msg: string) => void;
 }) {
+  const fullAddress = `${event.placeName}, ${event.address || "Poznań"}`;
   const transit = deriveTransit(event);
   const weather = deriveWeather(event);
   const carpool = deriveCarpool(event);
@@ -107,7 +108,7 @@ export default function DetailExtras({
 
       <div style={{ display: "flex", gap: 8 }}>
         <a
-          href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(event.placeName + ", " + (event.address ?? "Poznań"))}`}
+          href={`https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip"
           style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
@@ -116,7 +117,7 @@ export default function DetailExtras({
           Kalendarz
         </a>
         <a
-          href={`https://maps.apple.com/?q=${encodeURIComponent(event.placeName + " Poznań")}`}
+          href={`https://maps.apple.com/?q=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip"
           style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
@@ -125,7 +126,7 @@ export default function DetailExtras({
           Maps
         </a>
         <a
-          href={`https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(event.placeName + ", " + (event.address ?? "Poznań"))}`}
+          href={`https://m.uber.com/ul/?client_id=&action=setPickup&pickup=my_location&dropoff[formatted_address]=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip"
           style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}
@@ -133,7 +134,7 @@ export default function DetailExtras({
           Uber
         </a>
         <a
-          href={`https://bolt.eu/redirect/?type=ride&pickup=my_location&dropoff=${encodeURIComponent(event.placeName + ", Poznań")}`}
+          href={`https://bolt.eu/?utm_source=poznaj&pickup=my_location&dropoff=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip"
           style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}

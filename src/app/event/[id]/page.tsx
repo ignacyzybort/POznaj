@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EventData, districts } from "@/lib/data";
 import HeatMeter from "@/components/heat-meter";
-import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import VibePill from "@/components/vibe-pill";
 import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
-import { deriveFriendsGoing } from "@/lib/mock-extras";
 
 const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
 const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
@@ -58,8 +56,7 @@ export default function EventDetailPage() {
     );
   }
 
-  const friends = deriveFriendsGoing(event);
-  const goingCount = event.going ?? 100 + friends.length * 50;
+  const friends: { name: string }[] = [];
 
   const onShare = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -110,7 +107,7 @@ export default function EventDetailPage() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: "20px 18px 220px" }}>
+      <div style={{ padding: "20px 18px 280px" }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
           <CategoryTag cat={event.category} size="md" />
           {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
@@ -125,14 +122,6 @@ export default function EventDetailPage() {
           background: "var(--bg-soft)", border: "0.5px solid var(--line)",
         }}>
           <HeatMeter score={event.score} size="md" />
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
-            <AvStack people={friends} max={4} size={26} />
-            <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
-              <b>{friends.slice(0, 2).map((f) => f.name).join(", ")}</b>
-              {friends.length > 2 && ` + ${friends.length - 2}`}
-              <span style={{ color: "var(--ink-3)" }}> idą</span>
-            </div>
-          </div>
         </div>
 
         {/* Stat cards */}
@@ -149,13 +138,13 @@ export default function EventDetailPage() {
                     title={event.placeName}
                     sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
           <StatCard icon={<UsersIcon size={14} />}
-                    label="Idzie"
-                    title={goingCount.toLocaleString("pl-PL")}
-                    sub={`${friends.length} ze znajomych`} />
+                    label="Popularność"
+                    title={`🔥 ${event.score}`}
+                    sub="na podstawie dopasowania" />
           <StatCard icon={<SparkIcon size={14} />}
                     label="Bilet"
-                    title={event.price ?? "Bezpłatny"}
-                    sub="Kup u źródła" />
+                    title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"}
+                    sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
         </div>
 
         {event.description && (

@@ -10,14 +10,6 @@ import YearInReview from "@/components/year-in-review";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 
-const DEFAULT_FRIENDS = [
-  { id: "f1", name: "Alicja", color: "#FF3D7F" },
-  { id: "f2", name: "Kuba", color: "#6E3DFF" },
-  { id: "f3", name: "Michał", color: "#2860FF" },
-  { id: "f4", name: "Zosia", color: "#C8FF2E" },
-  { id: "f5", name: "Tomek", color: "#FF6B2C" },
-];
-
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 
 export default function ProfilPage() {
@@ -28,19 +20,16 @@ export default function ProfilPage() {
   const [yirOpen, setYirOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
-  const [friendsList, setFriendsList] = useState(DEFAULT_FRIENDS);
+  const [friendsList, setFriendsList] = useState<{ id: string; name: string; color: string }[]>([]);
 
   useEffect(() => {
     if (!session?.user) return;
     fetch("/api/friends").then((r) => r.json()).then((d) => {
-      const f = (d.friends ?? []).slice(0, 5);
-      if (f.length > 0) {
-        setFriendsList(f.map((x: any, i: number) => ({
-          id: x.id,
-          name: x.name ?? "Znajomy",
-          color: COLORS[i % COLORS.length],
-        })));
-      }
+      setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
+        id: x.id,
+        name: x.name ?? "Znajomy",
+        color: COLORS[i % COLORS.length],
+      })));
     }).catch(() => {});
     fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
       if (d.user?._count) setStats(d.user._count);
@@ -83,6 +72,14 @@ export default function ProfilPage() {
       </div>
     );
   }
+
+  const topDistrict = Object.entries(stamps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Poznań";
+  const catCount: Record<string, number> = {};
+  for (const a of attendanceData) {
+    const cat = a.event?.category;
+    if (cat) catCount[cat] = (catCount[cat] || 0) + 1;
+  }
+  const topCategory = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Kulturalne";
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
@@ -185,7 +182,14 @@ export default function ProfilPage() {
       <div style={{ padding: "0 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
           <h2 className="pz-h" style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Znajomi</h2>
-          <button onClick={() => setToast("Zaproś znajomych — udostępnij link")} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={async () => {
+            try {
+              await navigator.share({ title: "POznaj", text: "Dołącz do mnie na POznaj — znajdźmy wydarzenia w Poznaniu!", url: window.location.origin });
+            } catch {
+              await navigator.clipboard.writeText(window.location.origin);
+              setToast("Link skopiowany! 📋");
+            }
+          }} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Zaproś +
           </button>
         </div>
@@ -243,7 +247,17 @@ export default function ProfilPage() {
       </div>
 
       {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}
-      <YearInReview open={yirOpen} onClose={() => setYirOpen(false)} />
+      <YearInReview
+        open={yirOpen}
+        onClose={() => setYirOpen(false)}
+        stats={{
+          events: attendanceData.length,
+          newPlaces: Object.values(stamps).filter(Boolean).length,
+          friends: friendsList.length,
+          topDistrict,
+          topCategory,
+        }}
+      />
       <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );

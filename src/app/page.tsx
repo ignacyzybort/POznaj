@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
 import EventCard from "@/components/event-card";
 import EventArt from "@/components/event-art";
@@ -120,8 +121,10 @@ export default function HomePage() {
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
+  const { data: session } = useSession();
   const openEvent = (ev: EventData) => { window.location.href = `/event/${ev.id}`; };
   const toggleSave = async (id: string) => {
+    if (!session?.user) { window.location.href = "/login"; return; }
     const isSaved = savedIds.includes(id);
     if (!isSaved) {
       await fetch("/api/attendance", {

@@ -2,16 +2,22 @@
 
 import { useState } from "react";
 
-const CARDS = [
-  { bg: "linear-gradient(135deg,#FF3D7F,#6E3DFF)", big: "47", label: "wydarzeń", sub: "Średnio prawie jedno w tygodniu." },
-  { bg: "linear-gradient(135deg,#2860FF,#06B6D4)", big: "132h", label: "na mieście", sub: "To 5 i pół doby." },
-  { bg: "linear-gradient(135deg,#C8FF2E,#2EC36B)", big: "12", label: "nowych miejsc", sub: "Najbardziej polubiłeś Jeżyce." },
-  { bg: "linear-gradient(135deg,#FFB627,#FF6B2C)", big: "15", label: "osób na ekipie", sub: "Twoja kategoria to Muzyka." },
-];
-
-export default function YearInReview({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function YearInReview({
+  open, onClose, stats,
+}: {
+  open: boolean; onClose: () => void;
+  stats: { events: number; newPlaces: number; friends: number; topDistrict: string; topCategory: string };
+}) {
   const [card, setCard] = useState(0);
   if (!open) return null;
+
+  const hoursOut = Math.round(stats.events * 3.5);
+  const CARDS = [
+    { bg: "linear-gradient(135deg,#FF3D7F,#6E3DFF)", big: `${stats.events}`, label: "wydarzeń", sub: "Średnio prawie jedno w tygodniu." },
+    { bg: "linear-gradient(135deg,#2860FF,#06B6D4)", big: `${hoursOut}h`, label: "na mieście", sub: "To ponad 5 dób." },
+    { bg: "linear-gradient(135deg,#C8FF2E,#2EC36B)", big: `${stats.newPlaces}`, label: "nowych miejsc", sub: stats.topDistrict !== "Inny" ? `Najbardziej polubiłeś ${stats.topDistrict}.` : "Poznaj więcej dzielnic!" },
+    { bg: "linear-gradient(135deg,#FFB627,#FF6B2C)", big: `${stats.friends}`, label: "osób na ekipie", sub: `Twoja kategoria to ${stats.topCategory}.` },
+  ];
   const c = CARDS[card];
 
   return (

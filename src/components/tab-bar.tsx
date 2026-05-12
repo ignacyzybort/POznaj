@@ -30,7 +30,7 @@ export default function TabBar() {
       {tabs.map((t) => {
         const Icon = t.icon;
         return (
-          <a key={t.id} href={t.id === "home" ? "/" : `/${t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
+          <a key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
              className="pz-tab" data-active={activeTab === t.id}>
             <Icon size={22} />
             <span>{t.label}</span>
