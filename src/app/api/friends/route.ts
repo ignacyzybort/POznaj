@@ -69,8 +69,17 @@ export async function POST(request: NextRequest) {
     });
     if (existing) return NextResponse.json({ error: "Already exists" });
 
+    const sender = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
     await prisma.friendship.create({
       data: { senderId: userId, receiverId: friendId },
+    });
+    await prisma.notification.create({
+      data: {
+        userId: friendId,
+        type: "FRIEND_REQUEST",
+        title: `${sender?.name ?? "Ktoś"} chce być Twoim znajomym`,
+        body: "Odpowiedz na zaproszenie w profilu",
+      },
     });
     return NextResponse.json({ status: "PENDING" });
   }
