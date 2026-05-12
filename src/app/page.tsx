@@ -334,13 +334,15 @@ export default function HomePage() {
         />
       )}
 
-      <FiltersSheet
-        open={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
-        active={activeFilters}
-        onToggle={toggleFilter}
-        onClear={clearFilters}
-      />
+      {filtersOpen && (
+        <FiltersSheet
+          open={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          active={activeFilters}
+          onToggle={toggleFilter}
+          onClear={clearFilters}
+        />
+      )}
 
       {surpriseOpen && (
         <SurpriseModal
