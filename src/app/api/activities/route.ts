@@ -34,7 +34,7 @@ export async function GET() {
     take: 20,
   });
 
-  const serialized = activities.map((a) => ({
+  const serialized = activities.map((a: { id: string; userId: string; eventId: string; type: string; createdAt: Date; user: { id: string; name: string | null; image: string | null }; event: { id: string; title: string; startDate: Date; category: string } }) => ({
     ...a,
     event: {
       ...a.event,
