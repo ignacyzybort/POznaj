@@ -24,7 +24,8 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
   const coords = DISTRICT_COORDS[event.district] ?? DISTRICT_COORDS.Inny;
 
   useEffect(() => {
-    fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}`)
+    const eventTs = new Date(event.startDate).getTime();
+    fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}&time=${eventTs}`)
       .then((r) => r.json())
       .then((d) => { if (d.temp !== undefined) setWeather(d); })
       .catch(() => {});

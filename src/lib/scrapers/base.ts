@@ -15,6 +15,8 @@ export interface ScrapedEvent {
   vibes: string[];
   source: string;
   sourceId: string;
+  coordsX?: number;
+  coordsY?: number;
 }
 
 export interface Scraper {
@@ -53,6 +55,8 @@ export async function saveEvents(
           category: event.category as any,
           source: event.source,
           score: 0,
+          coordsX: event.coordsX,
+          coordsY: event.coordsY,
           vibes: {
             deleteMany: {},
             create: vibes.map((v) => ({ vibe: v as any })),
@@ -72,6 +76,8 @@ export async function saveEvents(
           category: event.category as any,
           source: event.source,
           sourceId: event.sourceId,
+          coordsX: event.coordsX,
+          coordsY: event.coordsY,
           vibes: {
             create: vibes.map((v) => ({ vibe: v as any })),
           },
