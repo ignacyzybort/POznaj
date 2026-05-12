@@ -2,26 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { EventData, categoryColors, categoryEmoji, vibeEmoji } from "@/lib/data";
-import { format, isSameDay } from "date-fns";
-import { pl } from "date-fns/locale";
+import { EventData, categoryEmoji, vibeEmoji } from "@/lib/data";
 import HeatMeter from "@/components/heat-meter";
+import AvStack from "@/components/av-stack";
+import { BackIcon, ShareIcon, CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon } from "@/components/icons";
 
-function fmtDate(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  if (isSameDay(s, e)) return format(s, "d MMMM yyyy", { locale: pl });
-  return `${format(s, "d", { locale: pl })}–${format(e, "d MMMM yyyy", { locale: pl })}`;
+const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
+const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
+
+function relDay(d: Date): string {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
+  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
+  if (days === 0) return "Dziś";
+  if (days === 1) return "Jutro";
+  if (days < 0) return "Było";
+  if (days < 7) return PL_DAY_FULL[dd.getDay()];
+  return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
 }
 
-function relativeDay(dateStr: string): string {
-  const d = new Date(dateStr);
-  const today = new Date();
-  const diff = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return "Dziś";
-  if (diff === 1) return "Jutro";
-  if (diff < 0) return `${Math.abs(diff)} dni temu`;
-  return `Za ${diff} dni`;
+function fmtFullDate(d: Date) {
+  return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
 }
 
 export default function EventDetailPage() {
@@ -47,122 +48,132 @@ export default function EventDetailPage() {
     );
   }
 
-  const catStyle = categoryColors[event.category] ?? { bg: "#E8E3D8", fg: "#1A1A1A" };
+  const friends = [
+    { name: "A" }, { name: "K" }, { name: "M" },
+  ];
 
   return (
-    <div className="absolute inset-0 z-30 bg-[var(--bg)] overflow-y-auto" style={{ paddingBottom: 100 }}>
-      <div className="relative h-72 sm:h-80 overflow-hidden bg-[var(--bg-soft)]">
+    <div className="absolute inset-0 overflow-y-auto" style={{ background: "var(--bg)", zIndex: 30, animation: "pz-fade-in 0.32s ease both" }}>
+      {/* Detail header */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "54px 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
+        <button onClick={() => router.back()} style={{ width: 40, height: 40, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.10)" }}>
+          <BackIcon size={20} />
+        </button>
+        <button onClick={() => {}} style={{ width: 40, height: 40, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.10)" }}>
+          <ShareIcon size={20} />
+        </button>
+      </div>
+
+      {/* Hero art */}
+      <div style={{ height: 340, overflow: "hidden", background: "var(--bg-soft)" }}>
         {event.imageUrl ? (
-          <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+          <img src={event.imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-6xl" style={{ background: "var(--bg-soft)" }}>
+          <div className="w-full h-full flex items-center justify-center text-7xl" style={{ background: "var(--bg-soft)" }}>
             {categoryEmoji[event.category] ?? "📌"}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-transparent to-transparent" />
-        <div className="absolute top-4 left-4 right-4 flex justify-between">
-          <button
-            onClick={() => router.back()}
-            className="w-9 h-9 rounded-full flex items-center justify-center border-0 cursor-pointer backdrop-blur-md text-sm font-bold"
-            style={{ background: "rgba(255,255,255,0.7)" }}
-          >
-            ←
-          </button>
-          <a
-            href={event.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full flex items-center justify-center border-0 cursor-pointer backdrop-blur-md text-sm font-bold no-underline"
-            style={{ background: "rgba(255,255,255,0.7)", color: "var(--ink)" }}
-          >
-            ↗
-          </a>
-        </div>
       </div>
 
-      <div className="px-5 -mt-8 relative space-y-5">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold shadow-sm"
-            style={{ background: catStyle.bg, color: catStyle.fg }}
-          >
-            {categoryEmoji[event.category]} {event.category}
-          </span>
-          {event.vibes?.map((v: string) => (
-            <span
-              key={v}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-semibold"
-              style={{ background: "var(--bg-soft)", color: "var(--ink-2)" }}
-            >
-              {vibeEmoji[v]} {v === "WyjscieZeZnajomymi" ? "Znajomi" : v}
-            </span>
-          ))}
+      {/* Content */}
+      <div style={{ padding: "20px 18px 140px" }}>
+        {/* Category + vibe pills */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+          <CategoryTag cat={event.category} />
+          {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
         </div>
 
-        <h1 className="text-[28px] font-bold leading-tight tracking-tight" style={{ color: "var(--ink)" }}>
+        {/* Title */}
+        <h1 className="font-bold m-0" style={{ fontSize: 30, letterSpacing: "-0.03em", lineHeight: 1.05, color: "var(--ink)" }}>
           {event.title}
         </h1>
 
-        <div className="flex items-center gap-4">
+        {/* Heat + friends */}
+        <div style={{ marginTop: 16, padding: 14, borderRadius: 18, background: "var(--bg-soft)", border: "0.5px solid var(--line)" }}>
           <HeatMeter score={event.score} size="md" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard icon="📅" label="Kiedy" value={relativeDay(event.startDate)} sub={fmtDate(event.startDate, event.endDate) + (event.time ? ` · ${event.time}` : "")} />
-          <StatCard icon="📍" label="Gdzie" value={event.placeName} sub={event.district === "Inny" ? "Poznań" : event.district} />
-          <StatCard icon="👤" label="Idzie" value="Sprawdź" sub="" />
-          <StatCard icon="🎫" label="Bilet" value={event.price ?? "Bezpłatny"} sub="Kup u źródła" />
-        </div>
-
-        {event.description && (
-          <div className="p-4 rounded-2xl" style={{ background: "var(--bg-soft)" }}>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--ink-2)" }}>
-              {event.description}
-            </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+            <AvStack people={friends} max={4} size={26} />
+            <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
+              <b>Alicja, Kuba</b>
+              <span style={{ color: "var(--ink-3)" }}> +1 idą</span>
+            </div>
           </div>
+        </div>
+
+        {/* Stat cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+          <StatCard icon={<CalIcon size={14} />} label="Kiedy" title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`} sub={fmtFullDate(new Date(event.startDate))} />
+          <StatCard icon={<PinIcon size={14} />} label="Gdzie" title={event.placeName} sub={`${event.district === "Inny" ? "Poznań" : event.district}${event.address ? ` · ${event.address}` : ""}`} />
+          <StatCard icon={<UsersIcon size={14} />} label="Idzie" title="412" sub="3 ze znajomych" />
+          <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ?? "Bezpłatny"} sub="Kup u źródła" />
+        </div>
+
+        {/* Description */}
+        {event.description && (
+          <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)" }}>{event.description}</p>
         )}
 
-        <div className="flex gap-2">
-          <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold border-0 cursor-pointer no-underline" style={{ background: "var(--bg-soft)", color: "var(--ink)" }}>
-            🗺️ Mapy
-          </a>
-          <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold border-0 cursor-pointer no-underline" style={{ background: "var(--bg-soft)", color: "var(--ink)" }}>
-            🚀 Źródło
-          </a>
+        {/* Notification row */}
+        <div style={{ marginTop: 18, padding: 14, borderRadius: 18, background: "var(--bg-soft)", border: "0.5px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div className="text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--ink-4)", marginBottom: 4 }}>Powiadom mnie</div>
+            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
+          </div>
+          <button style={{ border: 0, background: "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            Włącz
+          </button>
         </div>
       </div>
 
-      <div className="fixed bottom-4 left-3 right-3 z-40 flex gap-3">
-        <button
-          onClick={() => setSaved(!saved)}
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl border-0 cursor-pointer transition-all active:scale-90"
-          style={{ background: saved ? "var(--ink)" : "var(--bg-elev)", color: saved ? "var(--bg)" : "var(--ink-2)", border: "0.5px solid var(--line)" }}
-        >
-          {saved ? "🔖" : "🏷️"}
+      {/* Pinned action bar */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "14px 16px 28px", display: "flex", gap: 10, background: "linear-gradient(180deg, transparent, var(--bg) 30%)", pointerEvents: "none" }}>
+        <button onClick={() => setSaved(!saved)} style={{ pointerEvents: "auto", width: 50, height: 50, borderRadius: 99, border: 0, background: saved ? "var(--ink)" : "var(--bg-soft)", color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <BookmarkIcon size={20} fill={saved} />
         </button>
-        <button
-          onClick={() => setGoing(!going)}
-          className="flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 text-base font-bold border-0 cursor-pointer transition-all active:scale-[0.97]"
-          style={{ background: going ? "var(--sage)" : "var(--ink)", color: "var(--bg)" }}
-        >
-          {going ? "✅ Idziesz!" : "🤘 Idę!"}
+        <button onClick={() => setGoing(!going)} style={{ pointerEvents: "auto", flex: 1, height: 50, borderRadius: 99, border: 0, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: going ? "var(--sage)" : "var(--ink)", color: "var(--bg)" }}>
+          {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
       </div>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, sub }: { icon: string; label: string; value: string; sub: string }) {
+function StatCard({ icon, label, title, sub }: { icon: React.ReactNode; label: string; title: string; sub: string }) {
   return (
-    <div className="p-3.5 rounded-2xl" style={{ background: "var(--bg-soft)" }}>
-      <span className="text-base">{icon}</span>
-      <p className="text-[10px] font-bold mt-1.5 uppercase tracking-wider" style={{ color: "var(--ink-4)" }}>
-        {label}
-      </p>
-      <p className="text-sm font-bold mt-0.5" style={{ color: "var(--ink)" }}>
-        {value}
-      </p>
-      {sub && <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>{sub}</p>}
+    <div style={{ padding: 12, borderRadius: 16, background: "var(--bg-elev)", border: "0.5px solid var(--line)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ink-3)", marginBottom: 4 }}>
+        <span style={{ width: 14, height: 14 }}>{icon}</span>
+        <span className="text-[9.5px] font-bold uppercase tracking-[0.14em]">{label}</span>
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--ink)" }}>{title}</div>
+      <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2 }}>{sub}</div>
     </div>
+  );
+}
+
+function CategoryTag({ cat }: { cat: string }) {
+  const colors: Record<string, { bg: string; fg: string }> = {
+    Muzyka: { bg: "#FF3D7F", fg: "#4A0B23" }, Kino: { bg: "#6E3DFF", fg: "#1F0A55" },
+    Sztuka: { bg: "#2860FF", fg: "#07194C" }, Sport: { bg: "#C8FF2E", fg: "#1F2A04" },
+    Teatr: { bg: "#FF6B2C", fg: "#4A1A02" }, Warsztaty: { bg: "#E89A6B", fg: "#3A1C0A" },
+    Konferencje: { bg: "#1F2D5A", fg: "#F4F4FB" }, Jedzenie: { bg: "#FFB627", fg: "#3A2200" },
+    Inne: { bg: "#E8E3D8", fg: "#1A1A1A" },
+  };
+  const c = colors[cat] ?? colors.Inne;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: c.bg, color: c.fg, padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700, letterSpacing: "-0.005em" }}>
+      {cat}
+    </span>
+  );
+}
+
+function VibePill({ vibe }: { vibe: string }) {
+  const emoji: Record<string, string> = { Randka: "💕", Impreza: "🥳", WyjscieZeZnajomymi: "👥", Rodzinne: "🧸", Spokojne: "🌙", Kulturalne: "🎭", Aktywne: "⚡" };
+  const labels: Record<string, string> = { Randka: "Randka", Impreza: "Impreza", WyjscieZeZnajomymi: "Znajomi", Rodzinne: "Rodzinne", Spokojne: "Spokojne", Kulturalne: "Kulturalne", Aktywne: "Aktywne" };
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-2)", border: "0.5px solid transparent" }}>
+      <span>{emoji[vibe] ?? ""}</span>
+      {labels[vibe] ?? vibe}
+    </span>
   );
 }
