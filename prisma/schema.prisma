@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum District {
+  StareMiasto
+  Jezyce
+  Lazarz
+  Grunwald
+  Wilda
+  Rataje
+  Piatkowo
+  Winogrady
+  NoweMiasto
+  Inny
+}
+
+enum Category {
+  Kino
+  Sztuka
+  Muzyka
+  Sport
+  Teatr
+  Warsztaty
+  Konferencje
+  Jedzenie
+  Inne
+}
+
+enum Vibe {
+  Randka
+  Impreza
+  WyjscieZeZnajomymi
+  Rodzinne
+  Spokojne
+  Kulturalne
+  Aktywne
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  sourceUrl   String
+  startDate   DateTime
+  endDate     DateTime
+  time        String?
+  placeName   String
+  address     String?
+  district    District @default(Inny)
+  category    Category @default(Inne)
+  source      String   @default("manual")
+  sourceId    String?
+  score       Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vibes EventVibe[]
+
+  @@unique([title, startDate, placeName])
+  @@index([district])
+  @@index([category])
+  @@index([score])
+  @@index([startDate])
+}
+
+model EventVibe {
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vibe    Vibe
+
+  @@id([eventId, vibe])
+  @@index([vibe])
+}
