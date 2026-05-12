@@ -24,6 +24,8 @@ export async function GET(
       createdAt: event.createdAt.toISOString(),
       updatedAt: event.updatedAt.toISOString(),
       vibes: event.vibes.map((v) => v.vibe),
+      coordsX: event.coordsX,
+      coordsY: event.coordsY,
     };
 
     return NextResponse.json({ event: serialized });

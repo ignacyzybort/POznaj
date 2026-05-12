@@ -65,6 +65,8 @@ export async function GET(request: NextRequest) {
     score: e.score,
     price: e.price,
     outdoor: e.outdoor,
+    coordsX: e.coordsX,
+    coordsY: e.coordsY,
   }));
 
   serialized.sort((a, b) => b.score - a.score);
