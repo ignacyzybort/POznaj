@@ -3,7 +3,7 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
   let color: string, label: string;
   if (pct >= 85)      { color = "var(--hot)";     label = "Gorące"; }
   else if (pct >= 70) { color = "var(--hot-2)";   label = "Rozkręca się"; }
-  else if (pct >= 50) { color = "#FFB627";        label = "Trending"; }
+  else if (pct >= 50) { color = "var(--c-jedzenie)"; label = "Trending"; }
   else if (pct >= 30) { color = "var(--sage-2)";  label = "Świeże"; }
   else                { color = "var(--ink-4)";    label = "Nowość"; }
 
@@ -15,44 +15,30 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
 
   if (size === "sm") {
     return (
-      <span className="inline-flex items-center gap-1.5" style={{ color }}>
-        <span className="inline-flex items-center gap-[2px]" style={{ height: 14 }}>
+      <span className="pz-heat" style={{ color }}>
+        <span className="pz-heat-wave" aria-hidden>
           {heights.map((h, i) => (
-            <span
-              key={i}
-              className="w-[2.5px] rounded-full animate-pulse"
-              style={{
-                height: `${h * 100}%`,
-                background: "currentColor",
-                animation: `pz-pulse 1.4s ease-in-out infinite`,
-                animationDelay: `${i * 0.12}s`,
-              }}
-            />
+            <span key={i} className="pz-heat-bar"
+                  style={{ height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}/>
           ))}
         </span>
-        <span className="text-[11px] font-bold tabular-nums">{pct}</span>
+        <span className="pz-num" style={{ fontSize: 11, fontWeight: 700 }}>{pct}</span>
       </span>
     );
   }
 
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="inline-flex items-center gap-[2px]" style={{ height: 22, color }}>
-        {heights.map((h, i) => (
-          <span
-            key={i}
-            className="w-[3px] rounded-full"
-            style={{
-              height: `${h * 100}%`,
-              background: "currentColor",
-              animation: `pz-pulse 1.4s ease-in-out infinite`,
-              animationDelay: `${i * 0.12}s`,
-            }}
-          />
-        ))}
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <span className="pz-heat" style={{ color }}>
+        <span className="pz-heat-wave" style={{ height: 22 }} aria-hidden>
+          {heights.map((h, i) => (
+            <span key={i} className="pz-heat-bar"
+                  style={{ width: 3, height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}/>
+          ))}
+        </span>
       </span>
-      <span className="text-xs font-semibold" style={{ color }}>{label}</span>
-      <span className="ml-auto text-xs font-bold tabular-nums" style={{ color: "var(--ink-3)" }}>{pct}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color }}>{label}</span>
+      <span className="pz-num" style={{ marginLeft: "auto", fontSize: 13, fontWeight: 700, color: "var(--ink-3)" }}>{pct}</span>
     </div>
   );
 }

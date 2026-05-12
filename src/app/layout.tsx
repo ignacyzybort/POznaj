@@ -6,33 +6,27 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "POznaj — Co dziś w Poznaniu",
-  description: "Najciekawsze wydarzenia w Poznaniu — filtry po dzielnicy, kategorii i nastroju",
+  description: "Najciekawsze wydarzenia w Poznaniu",
   manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "POznaj",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "POznaj" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pl" className="h-full antialiased">
+    <html lang="pl" className="h-full">
       <head>
         <meta name="theme-color" content="#FDFCF8" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="min-h-full flex flex-col pb-20">
-        <ThemeProvider>
-          <AuthProvider>
-            <main className="flex-1">{children}</main>
-            <TabBar />
-          </AuthProvider>
-        </ThemeProvider>
+      <body className="h-full overflow-hidden">
+        <div className="pz-stage">
+          <ThemeProvider>
+            <AuthProvider>
+              {children}
+              <TabBar />
+            </AuthProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );

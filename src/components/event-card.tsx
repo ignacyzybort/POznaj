@@ -2,27 +2,29 @@
 
 import { useState } from "react";
 import { EventData } from "@/lib/data";
-import { differenceInDays, format } from "date-fns";
-import { pl } from "date-fns/locale";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
 
-function relDay(start: string): string {
-  const d = new Date(start);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const dd = new Date(d);
-  dd.setHours(0, 0, 0, 0);
+const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
+const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
+
+function relDay(d: Date): string {
+  const now = new Date(); now.setHours(0, 0, 0, 0);
+  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
   const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
   if (days === 0) return "Dziś";
   if (days === 1) return "Jutro";
   if (days < 0) return "Było";
-  if (days < 7) return format(d, "EEEE", { locale: pl });
-  return format(d, "d MMM", { locale: pl });
+  if (days < 7) return PL_DAY_FULL[dd.getDay()];
+  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
 }
 
-const FRIENDS: { name: string }[][] = [
+function fmtShortDate(d: Date) {
+  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
+}
+
+const FRIENDS_LIST: { name: string }[][] = [
   [{ name: "A" }, { name: "K" }, { name: "M" }],
   [{ name: "T" }],
   [{ name: "Z" }, { name: "Y" }],
@@ -38,51 +40,49 @@ const FRIENDS: { name: string }[][] = [
 ];
 
 export default function EventCard({
-  event,
-  onSave,
-  saved,
+  event, onOpen, onSave, saved, going, onGoing, dense = false,
 }: {
   event: EventData;
+  onOpen?: () => void;
   onSave?: (e: React.MouseEvent) => void;
   saved?: boolean;
+  going?: boolean;
+  onGoing?: (e: React.MouseEvent) => void;
+  dense?: boolean;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const idx = parseInt(event.id.replace(/\D/g, "")) || 0;
-  const friends = FRIENDS[idx % FRIENDS.length];
+  const friends = FRIENDS_LIST[idx % FRIENDS_LIST.length];
 
   return (
-    <div className="bg-[var(--bg-elev)] rounded-[22px] border-[0.5px] border-solid border-[var(--line)] overflow-hidden transition-transform duration-150 active:scale-[0.985] cursor-pointer">
-      {/* Art / Image */}
-      <a href={`/event/${event.id}`} className="block no-underline" style={{ color: "inherit" }}>
-        <div className="relative" style={{ height: 170 }}>
+    <div className="pz-card pz-fade-in" onClick={onOpen} style={{ cursor: "pointer" }}>
+      {/* Art */}
+      <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
+        <div className="pz-art" style={{ height: dense ? 132 : 170, background: "var(--bg-soft)" }}>
           {event.imageUrl && !imgFailed ? (
             <img src={event.imageUrl} alt="" className="w-full h-full object-cover" onError={() => setImgFailed(true)} />
           ) : (
-            <div className="w-full h-full flex items-end p-3" style={{ background: "var(--bg-soft)" }}>
-              <span className="text-4xl">{event.category === "Muzyka" ? "🎵" : "📌"}</span>
+            <div className="w-full h-full flex items-end p-3">
+              <span className="text-4xl">🎵</span>
             </div>
           )}
         </div>
       </a>
 
       {/* Content */}
-      <div style={{ padding: "14px 16px 16px" }}>
-        {/* Top row: date + HeatMeter */}
+      <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>
+        {/* Top row: eyebrow date + HeatMeter */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--ink-4)" }}>
-            {relDay(event.startDate)} · {event.time ?? "cały dzień"}
-          </span>
+          <span className="pz-eyebrow">{relDay(new Date(event.startDate))} · {event.time ?? "cały dzień"}</span>
           <HeatMeter score={event.score} />
         </div>
 
         {/* Title */}
-        <a href={`/event/${event.id}`} className="no-underline" style={{ color: "inherit" }}>
-          <h3
-            className="text-lg font-bold leading-tight tracking-tight m-0"
-            style={{ letterSpacing: "-0.025em", color: "var(--ink)" }}
-          >
-            {event.title}
-          </h3>
+        <a href={`/event/${event.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+          <h3 className={dense ? "pz-h" : "pz-h"} style={{
+            fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
+            margin: 0, lineHeight: 1.18,
+          }}>{event.title}</h3>
         </a>
 
         {/* Location */}
@@ -93,23 +93,18 @@ export default function EventCard({
           <span>{event.district === "Inny" ? "Poznań" : event.district}</span>
         </div>
 
-        {/* Bottom row: Avatars + going count + save */}
+        {/* Bottom row: avatars + going count + save */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <AvStack people={friends} max={3} />
             <span style={{ fontSize: 11.5, color: "var(--ink-3)", fontWeight: 500 }}>
-              {100 + idx * 50} idzie
+              {(100 + idx * 50).toLocaleString("pl-PL")} idzie
             </span>
           </div>
-          <button
-            onClick={(e) => { e.preventDefault(); onSave?.(e); }}
-            style={{
-              border: 0, background: "transparent",
-              color: saved ? "var(--ink)" : "var(--ink-4)",
-              cursor: "pointer", padding: 4, display: "inline-flex",
-            }}
-            aria-label="Zapisz"
-          >
+          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{
+            border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",
+            cursor: "pointer", padding: 4, display: "inline-flex",
+          }} aria-label="Save">
             <BookmarkIcon size={18} fill={saved} />
           </button>
         </div>

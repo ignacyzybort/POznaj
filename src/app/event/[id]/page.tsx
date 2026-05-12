@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { EventData, categoryEmoji, vibeEmoji } from "@/lib/data";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
-import { BackIcon, ShareIcon, CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon } from "@/components/icons";
+import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
 const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
 const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
@@ -20,7 +20,6 @@ function relDay(d: Date): string {
   if (days < 7) return PL_DAY_FULL[dd.getDay()];
   return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
 }
-
 function fmtFullDate(d: Date) {
   return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
 }
@@ -40,28 +39,34 @@ export default function EventDetailPage() {
 
   if (!event) {
     return (
-      <div className="p-10 text-center" style={{ color: "var(--ink-4)" }}>
-        <div className="text-4xl mb-3">😕</div>
-        <p className="font-bold">Nie znaleziono</p>
-        <button onClick={() => router.back()} className="text-sm mt-2 underline cursor-pointer">Wróć</button>
+      <div style={{ padding: 40, textAlign: "center", color: "var(--ink-4)" }}>
+        <div style={{ fontSize: 38, marginBottom: 12 }}>😕</div>
+        <p style={{ fontWeight: 700 }}>Nie znaleziono</p>
+        <button onClick={() => router.back()} style={{ fontSize: 13, marginTop: 8, cursor: "pointer", background: "none", border: "none", color: "var(--ink-3)", textDecoration: "underline" }}>Wróć</button>
       </div>
     );
   }
 
-  const friends = [
-    { name: "A" }, { name: "K" }, { name: "M" },
-  ];
+  const friends = [{ name: "A" }, { name: "K" }, { name: "M" }];
 
   return (
-    <div className="absolute inset-0 overflow-y-auto" style={{ background: "var(--bg)", zIndex: 30, animation: "pz-fade-in 0.32s ease both" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)", zIndex: 30, animation: "pz-fade-in 0.32s ease both" }}>
       {/* Detail header */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "54px 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
-        <button onClick={() => router.back()} style={{ width: 40, height: 40, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.10)" }}>
-          <BackIcon size={20} />
-        </button>
-        <button onClick={() => {}} style={{ width: 40, height: 40, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.10)" }}>
-          <ShareIcon size={20} />
-        </button>
+        <button onClick={() => router.back()} style={{
+          width: 40, height: 40, borderRadius: 99, border: 0,
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
+          color: "var(--ink)", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+        }}><BackIcon size={20} /></button>
+        <button onClick={() => {}} style={{
+          width: 40, height: 40, borderRadius: 99, border: 0,
+          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
+          color: "var(--ink)", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+        }}><ShareIcon size={20} /></button>
       </div>
 
       {/* Hero art */}
@@ -84,7 +89,7 @@ export default function EventDetailPage() {
         </div>
 
         {/* Title */}
-        <h1 className="font-bold m-0" style={{ fontSize: 30, letterSpacing: "-0.03em", lineHeight: 1.05, color: "var(--ink)" }}>
+        <h1 className="pz-h" style={{ margin: 0, fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
           {event.title}
         </h1>
 
@@ -113,24 +118,38 @@ export default function EventDetailPage() {
           <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)" }}>{event.description}</p>
         )}
 
+        {/* DetailExtras placeholder */}
+        <div style={{ marginTop: 18 }}>
+          <div className="flex gap-2">
+            <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 h-12 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold no-underline" style={{ background: "var(--bg-soft)", color: "var(--ink)" }}>
+              🚀 Źródło
+            </a>
+          </div>
+        </div>
+
         {/* Notification row */}
         <div style={{ marginTop: 18, padding: 14, borderRadius: 18, background: "var(--bg-soft)", border: "0.5px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div className="text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: "var(--ink-4)", marginBottom: 4 }}>Powiadom mnie</div>
+            <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Powiadom mnie</div>
             <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
           </div>
-          <button style={{ border: 0, background: "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-            Włącz
-          </button>
+          <button style={{ border: 0, background: "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Włącz</button>
         </div>
       </div>
 
       {/* Pinned action bar */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "14px 16px 28px", display: "flex", gap: 10, background: "linear-gradient(180deg, transparent, var(--bg) 30%)", pointerEvents: "none" }}>
-        <button onClick={() => setSaved(!saved)} style={{ pointerEvents: "auto", width: 50, height: 50, borderRadius: 99, border: 0, background: saved ? "var(--ink)" : "var(--bg-soft)", color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <button onClick={() => setSaved(!saved)} style={{
+          pointerEvents: "auto", width: 50, height: 50, borderRadius: 99, border: 0,
+          background: saved ? "var(--ink)" : "var(--bg-soft)",
+          color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}>
           <BookmarkIcon size={20} fill={saved} />
         </button>
-        <button onClick={() => setGoing(!going)} style={{ pointerEvents: "auto", flex: 1, height: 50, borderRadius: 99, border: 0, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: going ? "var(--sage)" : "var(--ink)", color: "var(--bg)" }}>
+        <button onClick={() => setGoing(!going)} className="pz-btn primary" style={{
+          pointerEvents: "auto", flex: 1, background: going ? "var(--sage)" : "var(--ink)",
+        }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
       </div>
@@ -143,7 +162,7 @@ function StatCard({ icon, label, title, sub }: { icon: React.ReactNode; label: s
     <div style={{ padding: 12, borderRadius: 16, background: "var(--bg-elev)", border: "0.5px solid var(--line)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--ink-3)", marginBottom: 4 }}>
         <span style={{ width: 14, height: 14 }}>{icon}</span>
-        <span className="text-[9.5px] font-bold uppercase tracking-[0.14em]">{label}</span>
+        <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>{label}</span>
       </div>
       <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--ink)" }}>{title}</div>
       <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2 }}>{sub}</div>
@@ -151,29 +170,28 @@ function StatCard({ icon, label, title, sub }: { icon: React.ReactNode; label: s
   );
 }
 
+const CAT_COLORS: Record<string, { bg: string; ink: string }> = {
+  Muzyka: { bg: "#FF3D7F", ink: "#4A0B23" }, Kino: { bg: "#6E3DFF", ink: "#1F0A55" },
+  Sztuka: { bg: "#2860FF", ink: "#07194C" }, Sport: { bg: "#C8FF2E", ink: "#1F2A04" },
+  Teatr: { bg: "#FF6B2C", ink: "#4A1A02" }, Warsztaty: { bg: "#E89A6B", ink: "#3A1C0A" },
+  Konferencje: { bg: "#1F2D5A", ink: "#F4F4FB" }, Jedzenie: { bg: "#FFB627", ink: "#3A2200" },
+  Inne: { bg: "#E8E3D8", ink: "#1A1A1A" },
+};
+
 function CategoryTag({ cat }: { cat: string }) {
-  const colors: Record<string, { bg: string; fg: string }> = {
-    Muzyka: { bg: "#FF3D7F", fg: "#4A0B23" }, Kino: { bg: "#6E3DFF", fg: "#1F0A55" },
-    Sztuka: { bg: "#2860FF", fg: "#07194C" }, Sport: { bg: "#C8FF2E", fg: "#1F2A04" },
-    Teatr: { bg: "#FF6B2C", fg: "#4A1A02" }, Warsztaty: { bg: "#E89A6B", fg: "#3A1C0A" },
-    Konferencje: { bg: "#1F2D5A", fg: "#F4F4FB" }, Jedzenie: { bg: "#FFB627", fg: "#3A2200" },
-    Inne: { bg: "#E8E3D8", fg: "#1A1A1A" },
-  };
-  const c = colors[cat] ?? colors.Inne;
+  const tone = CAT_COLORS[cat] ?? CAT_COLORS.Inne;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: c.bg, color: c.fg, padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700, letterSpacing: "-0.005em" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: tone.bg, color: tone.ink, padding: "5px 11px", borderRadius: 999, fontSize: 12, fontWeight: 700, letterSpacing: "-0.005em" }}>
       {cat}
     </span>
   );
 }
 
 function VibePill({ vibe }: { vibe: string }) {
-  const emoji: Record<string, string> = { Randka: "💕", Impreza: "🥳", WyjscieZeZnajomymi: "👥", Rodzinne: "🧸", Spokojne: "🌙", Kulturalne: "🎭", Aktywne: "⚡" };
-  const labels: Record<string, string> = { Randka: "Randka", Impreza: "Impreza", WyjscieZeZnajomymi: "Znajomi", Rodzinne: "Rodzinne", Spokojne: "Spokojne", Kulturalne: "Kulturalne", Aktywne: "Aktywne" };
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-2)", border: "0.5px solid transparent" }}>
-      <span>{emoji[vibe] ?? ""}</span>
-      {labels[vibe] ?? vibe}
+    <span className="pz-pill" style={{ background: "var(--bg-soft)", borderColor: "transparent", fontSize: 11 }}>
+      <span>{vibeEmoji[vibe] ?? ""}</span>
+      {(vibe === "WyjscieZeZnajomymi" ? "Ze znajomymi" : vibe === "Aktywne" ? "Aktywne" : vibe) ?? vibe}
     </span>
   );
 }
