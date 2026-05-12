@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { EventData, categoryEmoji } from "@/lib/data";
 import Link from "next/link";
+import TrendingRail from "@/components/trending-rail";
 
 export default function MapPage() {
   const [events, setEvents] = useState<EventData[]>([]);
@@ -112,6 +113,9 @@ export default function MapPage() {
           </span>
         </div>
       )}
+
+      {/* Trending venues rail — only when nothing selected */}
+      {!selected && <TrendingRail />}
     </div>
   );
 }
