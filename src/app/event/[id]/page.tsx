@@ -36,12 +36,31 @@ export default function EventDetailPage() {
   const [saved, setSaved] = useState(false);
   const [going, setGoing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [reminded, setReminded] = useState(false);
 
   useEffect(() => {
     fetch(`/api/events/${params.id}`).then((r) => r.json()).then((d) => {
       if (d.event) setEvent(d.event);
     });
   }, [params.id]);
+
+  const onRemind = async () => {
+    if (reminded) return;
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        new Notification("POznaj", {
+          body: `${event?.title ?? "Wydarzenie"} zaczyna się ${event?.time ?? "wkrótce"}`,
+          icon: "/icons/icon-192.png",
+        });
+      }
+      setReminded(true);
+      setToast("🔔 Przypomnimy Ci 30 min przed startem");
+    } catch {
+      setToast("🔔 Zapiszemy w przeglądarce");
+      setReminded(true);
+    }
+  };
 
   if (!event) {
     return (
@@ -58,149 +77,151 @@ export default function EventDetailPage() {
 
   const friends: { name: string }[] = [];
 
-  const onShare = () => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`).catch(() => {});
+  const onShare = async () => {
+    try {
+      await navigator.share({ title: event?.title ?? "POznaj", url: window.location.href });
+    } catch {
+      await navigator.clipboard.writeText(window.location.href);
+      setToast("Skopiowano link 🔗");
     }
-    setToast("Skopiowano link 🔗");
   };
 
-  const toggleSave = () => {
+  const toggleSave = async () => {
+    if (!saved) {
+      try {
+        const res = await fetch("/api/attendance", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: params.id, status: "SAVED" }),
+        });
+        if (!res.ok) { setToast("Błąd zapisu"); return; }
+        setToast("Zapisano ✅");
+      } catch { setToast("Błąd zapisu"); }
+    }
     setSaved((s) => !s);
-    setToast(saved ? null : "Zapisano");
   };
-  const toggleGoing = () => {
+  const toggleGoing = async () => {
+    if (!going) {
+      try {
+        await fetch("/api/attendance", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: params.id, status: "GOING" }),
+        });
+        setToast("Idziesz 🎉");
+      } catch { setToast("Błąd"); }
+    }
     setGoing((g) => !g);
-    setToast(going ? null : "Idziesz 🎉");
   };
 
   return (
-    <div className="pz-scroll" style={{
+    <div style={{
       position: "absolute", inset: 0, background: "var(--bg)",
       zIndex: 30, animation: "pz-fade-in 0.32s ease both",
     }}>
-      {/* Detail header */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, zIndex: 5,
-        padding: "54px 16px 10px", display: "flex",
-        justifyContent: "space-between", gap: 8,
-      }}>
-        <button onClick={() => router.back()} aria-label="Wróć" style={{
-          width: 40, height: 40, borderRadius: 99, border: 0,
-          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-          color: "var(--ink)", cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
-        }}><BackIcon size={20} /></button>
-        <button onClick={onShare} aria-label="Udostępnij" style={{
-          width: 40, height: 40, borderRadius: 99, border: 0,
-          background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-          color: "var(--ink)", cursor: "pointer",
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
-        }}><ShareIcon size={20} /></button>
-      </div>
-
-      {/* Hero art */}
-      <div style={{ height: 340, overflow: "hidden" }}>
-        <EventArt event={event} height={340} style="collage" />
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: "20px 18px 280px" }}>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
-          <CategoryTag cat={event.category} size="md" />
-          {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
-        </div>
-
-        <h1 className="pz-h" style={{
-          margin: 0, fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05,
-        }}>{event.title}</h1>
-
+      {/* Scrollable content — ends above the action bar */}
+      <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>
+        {/* Detail header */}
         <div style={{
-          marginTop: 16, padding: 14, borderRadius: 18,
-          background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+          position: "absolute", top: 0, left: 0, right: 0, zIndex: 5,
+          padding: "54px 16px 10px", display: "flex",
+          justifyContent: "space-between", gap: 8,
         }}>
-          <HeatMeter score={event.score} size="md" />
-        </div>
-
-        {/* Stat cards */}
-        <div style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: 10, marginTop: 14,
-        }}>
-          <StatCard icon={<CalIcon size={14} />}
-                    label="Kiedy"
-                    title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`}
-                    sub={fmtFullDate(new Date(event.startDate))} />
-          <StatCard icon={<PinIcon size={14} />}
-                    label="Gdzie"
-                    title={event.placeName}
-                    sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
-          <StatCard icon={<UsersIcon size={14} />}
-                    label="Popularność"
-                    title={`🔥 ${event.score}`}
-                    sub="na podstawie dopasowania" />
-          <StatCard icon={<SparkIcon size={14} />}
-                    label="Bilet"
-                    title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"}
-                    sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
-        </div>
-
-        {event.description && (
-          <p style={{
-            marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)",
-          }}>{event.description}</p>
-        )}
-
-        <div style={{ marginTop: 18 }}>
-          <DetailExtras event={event} onToast={setToast} />
-        </div>
-
-        {event.sourceUrl && (
-          <a href={event.sourceUrl} target="_blank" rel="noopener noreferrer" style={{
+          <button onClick={() => router.back()} aria-label="Wróć" style={{
+            width: 40, height: 40, borderRadius: 99, border: 0,
+            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
+            color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            marginTop: 12, padding: "10px 14px", borderRadius: 14,
-            background: "var(--bg-soft)", color: "var(--ink)",
-            fontSize: 13, fontWeight: 600, textDecoration: "none",
-          }}>Otwórz źródło ↗</a>
-        )}
+            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+          }}><BackIcon size={20} /></button>
+          <button onClick={onShare} aria-label="Udostępnij" style={{
+            width: 40, height: 40, borderRadius: 99, border: 0,
+            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
+            color: "var(--ink)", cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+          }}><ShareIcon size={20} /></button>
+        </div>
 
-        <div style={{
-          marginTop: 18, padding: 14, borderRadius: 18,
-          background: "var(--bg-soft)", border: "0.5px solid var(--line)",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-        }}>
-          <div>
-            <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Powiadom mnie</div>
-            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
+        {/* Hero art */}
+        <div style={{ height: 340, overflow: "hidden" }}>
+          <EventArt event={event} height={340} style="collage" />
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "20px 18px 30px" }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+            <CategoryTag cat={event.category} size="md" />
+            {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
           </div>
-          <button onClick={() => setToast("🔔 Przypomnimy Ci")} style={{
-            border: 0, background: "var(--ink)", color: "var(--bg)",
-            padding: "8px 14px", borderRadius: 99,
-            fontSize: 13, fontWeight: 600, cursor: "pointer",
-          }}>Włącz</button>
+          <h1 className="pz-h" style={{
+            margin: 0, fontSize: 30, fontWeight: 700,
+            letterSpacing: "-0.03em", lineHeight: 1.05,
+          }}>{event.title}</h1>
+
+          <div style={{
+            marginTop: 16, padding: 14, borderRadius: 18,
+            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+          }}>
+            <HeatMeter score={event.score} size="md" />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+            <StatCard icon={<CalIcon size={14} />} label="Kiedy"
+              title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`}
+              sub={fmtFullDate(new Date(event.startDate))} />
+            <StatCard icon={<PinIcon size={14} />} label="Gdzie"
+              title={event.placeName}
+              sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
+            <StatCard icon={<UsersIcon size={14} />} label="Popularność"
+              title={`🔥 ${event.score}`} sub="na podstawie dopasowania" />
+            <StatCard icon={<SparkIcon size={14} />} label="Bilet"
+              title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"}
+              sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
+          </div>
+
+          {event.description && (
+            <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)" }}>
+              {event.description}</p>
+          )}
+
+          <div style={{ marginTop: 18 }}>
+            <DetailExtras event={event} onToast={setToast} />
+          </div>
+
+          {/* Notification row */}
+          <div style={{
+            marginTop: 18, padding: 14, borderRadius: 18,
+            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+          }}>
+            <div>
+              <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Powiadom mnie</div>
+              <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
+            </div>
+            <button onClick={onRemind} style={{
+              border: 0, background: reminded ? "var(--sage)" : "var(--ink)",
+              color: "var(--bg)", padding: "8px 14px", borderRadius: 99,
+              fontSize: 13, fontWeight: 600, cursor: "pointer",
+            }}>{reminded ? "🔔 Ustawiono" : "Włącz"}</button>
+          </div>
         </div>
       </div>
 
-      {/* Pinned action bar */}
+      {/* Pinned action bar — outside scroll, at the very bottom */}
       <div style={{
-        position: "fixed", bottom: 0, left: 0, right: 0,
+        position: "absolute", bottom: 0, left: 0, right: 0,
         padding: "14px 16px 28px", display: "flex", gap: 10,
         background: "linear-gradient(180deg, transparent, var(--bg) 30%)",
-        pointerEvents: "none",
       }}>
         <button onClick={toggleSave} style={{
-          pointerEvents: "auto",
           width: 50, height: 50, borderRadius: 99, border: 0,
           background: saved ? "var(--ink)" : "var(--bg-soft)",
           color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }} aria-label={saved ? "Usuń z zapisanych" : "Zapisz"}>
-          <BookmarkIcon size={20} fill={saved} />
+        }}>
+          {saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}
         </button>
-        <button onClick={toggleGoing} className="pz-btn primary" style={{
-          pointerEvents: "auto", flex: 1, background: going ? "var(--sage)" : "var(--ink)",
+        <button onClick={() => setGoing(!going)} className="pz-btn primary" style={{
+          flex: 1, background: going ? "var(--sage)" : "var(--ink)",
         }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>

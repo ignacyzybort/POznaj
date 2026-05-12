@@ -32,7 +32,7 @@ export default function EventCard({
   cardStyle?: "collage" | "gradient" | "typographic";
 }) {
   const friends = deriveFriendsGoing(event);
-  const going_count = event.going ?? 100 + friends.length * 50;
+  const going_count = event.going ?? 0;
 
   return (
     <div className="pz-card pz-fade-in" onClick={onOpen} style={{ cursor: "pointer" }}>
@@ -64,7 +64,7 @@ export default function EventCard({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <AvStack people={friends} max={3} />
             <span style={{ fontSize: 11.5, color: "var(--ink-3)", fontWeight: 500 }}>
-              {going_count.toLocaleString("pl-PL")} idzie
+              🔥 {event.score}
             </span>
           </div>
           <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{

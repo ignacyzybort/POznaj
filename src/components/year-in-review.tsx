@@ -12,10 +12,13 @@ export default function YearInReview({
   if (!open) return null;
 
   const hoursOut = Math.round(stats.events * 3.5);
+  const eventMsg = stats.events < 5 ? "Dopiero zaczynasz przygodę!" : stats.events < 15 ? "Niezły poziom, coraz lepiej!" : stats.events < 30 ? "Prawdziwy bywalec!" : "Mistrz Poznania!";
+  const hoursMsg = hoursOut < 20 ? "Jeszcze będzie intensywnie." : hoursOut < 80 ? "Całkiem spędzony czas!" : "To już poważne zaangażowanie.";
+  const placeMsg = stats.newPlaces === 0 ? "Czas odkryć nowe dzielnice!" : stats.newPlaces < 3 ? "Zaczynasz poznawać miasto." : stats.newPlaces < 6 ? "Niezła różnorodność!" : "Znasz Poznań jak własną kieszeń!";
   const CARDS = [
-    { bg: "linear-gradient(135deg,#FF3D7F,#6E3DFF)", big: `${stats.events}`, label: "wydarzeń", sub: "Średnio prawie jedno w tygodniu." },
-    { bg: "linear-gradient(135deg,#2860FF,#06B6D4)", big: `${hoursOut}h`, label: "na mieście", sub: "To ponad 5 dób." },
-    { bg: "linear-gradient(135deg,#C8FF2E,#2EC36B)", big: `${stats.newPlaces}`, label: "nowych miejsc", sub: stats.topDistrict !== "Inny" ? `Najbardziej polubiłeś ${stats.topDistrict}.` : "Poznaj więcej dzielnic!" },
+    { bg: "linear-gradient(135deg,#FF3D7F,#6E3DFF)", big: `${stats.events}`, label: "wydarzeń", sub: eventMsg },
+    { bg: "linear-gradient(135deg,#2860FF,#06B6D4)", big: `${hoursOut}h`, label: "na mieście", sub: hoursMsg },
+    { bg: "linear-gradient(135deg,#C8FF2E,#2EC36B)", big: `${stats.newPlaces}`, label: "nowych miejsc", sub: stats.newPlaces > 0 && stats.topDistrict !== "Inny" ? `Najbardziej polubiłeś ${stats.topDistrict}.` : placeMsg },
     { bg: "linear-gradient(135deg,#FFB627,#FF6B2C)", big: `${stats.friends}`, label: "osób na ekipie", sub: `Twoja kategoria to ${stats.topCategory}.` },
   ];
   const c = CARDS[card];

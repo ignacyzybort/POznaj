@@ -10,17 +10,30 @@ export default function MapPage() {
   const [heatOn, setHeatOn] = useState(false);
 
   useEffect(() => {
-    fetch("/api/events?limit=50").then((r) => r.json()).then((d) => {
+    fetch("/api/events?limit=100").then((r) => r.json()).then((d) => {
       if (d.events) setEvents(d.events);
     });
   }, []);
 
+  const DISTRICT_POS: Record<string, { x: number; y: number }> = {
+    StareMiasto: { x: 180, y: 220 },
+    Jezyce: { x: 90, y: 180 },
+    Lazarz: { x: 100, y: 300 },
+    Grunwald: { x: 140, y: 380 },
+    Wilda: { x: 230, y: 280 },
+    Rataje: { x: 270, y: 420 },
+    Piatkowo: { x: 200, y: 100 },
+    Winogrady: { x: 180, y: 140 },
+    NoweMiasto: { x: 290, y: 220 },
+    Inny: { x: 180, y: 280 },
+  };
+
   const pinPositions = useMemo(() =>
-    events.slice(0, 20).map((ev, i) => {
-      const angle = (i / 20) * Math.PI * 2;
+    events.slice(0, 30).map((ev) => {
+      const base = DISTRICT_POS[ev.district] ?? DISTRICT_POS.Inny;
       return {
-        x: 180 + Math.cos(angle) * 80 + (Math.random() - 0.5) * 20,
-        y: 280 + Math.sin(angle) * 80 + (Math.random() - 0.5) * 20,
+        x: base.x + (Math.random() - 0.5) * 28,
+        y: base.y + (Math.random() - 0.5) * 28,
       };
     }), [events]);
 

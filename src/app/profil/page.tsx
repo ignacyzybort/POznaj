@@ -7,6 +7,7 @@ import PassportCard from "@/components/passport-card";
 import StreakCard from "@/components/streak-card";
 import VibeQuiz from "@/components/vibe-quiz";
 import YearInReview from "@/components/year-in-review";
+import InviteModal from "@/components/invite-modal";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 
@@ -18,6 +19,7 @@ export default function ProfilPage() {
   const [stamps, setStamps] = useState<Record<string, number>>({});
   const [showQuiz, setShowQuiz] = useState(false);
   const [yirOpen, setYirOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
   const [friendsList, setFriendsList] = useState<{ id: string; name: string; color: string }[]>([]);
@@ -182,14 +184,7 @@ export default function ProfilPage() {
       <div style={{ padding: "0 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
           <h2 className="pz-h" style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Znajomi</h2>
-          <button onClick={async () => {
-            try {
-              await navigator.share({ title: "POznaj", text: "Dołącz do mnie na POznaj — znajdźmy wydarzenia w Poznaniu!", url: window.location.origin });
-            } catch {
-              await navigator.clipboard.writeText(window.location.origin);
-              setToast("Link skopiowany! 📋");
-            }
-          }} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={() => setInviteOpen(true)} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             Zaproś +
           </button>
         </div>
@@ -258,6 +253,7 @@ export default function ProfilPage() {
           topCategory,
         }}
       />
+      {inviteOpen && <InviteModal onClose={() => setInviteOpen(false)} />}
       <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );
