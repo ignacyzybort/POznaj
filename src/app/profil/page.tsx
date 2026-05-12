@@ -3,17 +3,34 @@
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import PassportCard from "@/components/passport-card";
+import StreakCard from "@/components/streak-card";
+import VibeQuiz from "@/components/vibe-quiz";
+import { districts } from "@/lib/data";
 
 export default function ProfilPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState({ attendance: 0, savedEvents: 0, sentFriendships: 0 });
+  const [stamps, setStamps] = useState<Record<string, number>>({});
+  const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
-    if (session?.user) {
-      fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
-        if (d.user?._count) setStats(d.user._count);
-      });
-    }
+    if (!session?.user) return;
+    fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
+      if (d.user?._count) setStats(d.user._count);
+    });
+    // compute passport stamps from attendance
+    fetch("/api/attendance").then((r) => r.json()).then((d) => {
+      const s: Record<string, number> = {};
+      for (const a of d.attendance ?? []) {
+        const dist = a.event?.district;
+        if (dist) s[dist] = (s[dist] || 0) + 1;
+      }
+      for (const d of districts) {
+        if (!s[d.value]) s[d.value] = 0;
+      }
+      setStamps(s);
+    });
   }, [session]);
 
   if (!session?.user) {
@@ -63,6 +80,20 @@ export default function ProfilPage() {
         <StatBox value={stats.sentFriendships} label="znajomi" />
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        <StreakCard weeks={[1, 0, 2, 3, 1, 4, 2, 1]} currentStreak={1} longestStreak={4} />
+        <PassportCard stamps={stamps} />
+      </div>
+
+      <button
+        onClick={() => setShowQuiz(true)}
+        className="w-full flex items-center justify-between p-4 rounded-2xl text-sm font-bold border-0 cursor-pointer mb-3"
+        style={{ background: "linear-gradient(135deg, #1a4a1a, #2a6a2a)", color: "white" }}
+      >
+        <span>🎯 Dopasuj nastrój</span>
+        <span>→</span>
+      </button>
+
       <div className="space-y-3">
         <Link href="/settings" className="flex items-center gap-3 p-4 rounded-2xl no-underline" style={{ background: "var(--bg-soft)", color: "var(--ink-2)" }}>
           <span className="text-lg">⚙️</span>
@@ -77,6 +108,8 @@ export default function ProfilPage() {
           Wyloguj się
         </button>
       </div>
+
+      {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}
     </div>
   );
 }
