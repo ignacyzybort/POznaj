@@ -1,76 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
-import { deriveTransit, deriveWeather } from "@/lib/mock-extras";
-import { TramIcon, BusIcon, CarIcon, ChevronIcon, SunIcon, CloudIcon, RainIcon, MoonIcon } from "@/components/icons";
 
-function weatherIcon(kind: "sun" | "cloud" | "rain" | "moon") {
-  switch (kind) {
-    case "sun":   return <SunIcon size={16} />;
-    case "cloud": return <CloudIcon size={16} />;
-    case "rain":  return <RainIcon size={16} />;
-    case "moon":  return <MoonIcon size={16} />;
-  }
-}
+const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
+  StareMiasto: { lat: 52.408, lon: 16.934 },
+  Jezyce: { lat: 52.418, lon: 16.895 },
+  Lazarz: { lat: 52.393, lon: 16.882 },
+  Grunwald: { lat: 52.396, lon: 16.898 },
+  Wilda: { lat: 52.381, lon: 16.923 },
+  Rataje: { lat: 52.380, lon: 16.970 },
+  Piatkowo: { lat: 52.458, lon: 16.920 },
+  Winogrady: { lat: 52.430, lon: 16.935 },
+  NoweMiasto: { lat: 52.395, lon: 16.965 },
+  Inny: { lat: 52.408, lon: 16.934 },
+};
 
-export default function DetailExtras({
-  event, onToast,
-}: {
-  event: EventData;
-  onToast: (msg: string) => void;
-}) {
+export default function DetailExtras({ event, onToast }: { event: EventData; onToast: (msg: string) => void }) {
   const [showCal, setShowCal] = useState(false);
+  const [weather, setWeather] = useState<{ temp: number; condition: string; icon: string; rain: boolean } | null>(null);
+
   const fullAddress = `${event.placeName}, ${event.address || "Poznań"}`;
-  const transit = deriveTransit(event);
-  const weather = deriveWeather(event);
+  const coords = DISTRICT_COORDS[event.district] ?? DISTRICT_COORDS.Inny;
+
+  useEffect(() => {
+    fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.temp !== undefined) setWeather(d); })
+      .catch(() => {});
+  }, [coords.lat, coords.lon]);
 
   const calGoogle = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(fullAddress)}`;
   const calApple = `https://calendar.apple.com/?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&location=${encodeURIComponent(fullAddress)}`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {weather.warn && (
+      {/* Weather + Transit */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div className="pz-card" style={{ padding: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 18 }}>🌤️</span>
+            <span className="pz-eyebrow">Pogoda</span>
+          </div>
+          {weather ? (
+            <>
+              <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
+                {weather.temp}°C · {weather.condition}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>
+                {weather.rain ? "Możliwy deszcz ☔" : "Bez opadów"}
+              </div>
+            </>
+          ) : (
+            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Ładowanie...</div>
+          )}
+        </div>
+        <a href={`https://maps.google.com/?daddr=${encodeURIComponent(fullAddress)}&dir_action=transit`}
+          target="_blank" rel="noopener noreferrer" className="pz-card" style={{ padding: 12, display: "block", textDecoration: "none", color: "inherit" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 18 }}>🚋</span>
+            <span className="pz-eyebrow">Dojazd</span>
+          </div>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
+            Sprawdź w Maps
+          </div>
+          <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>Tramwaj, autobus lub pieszo</div>
+        </a>
+      </div>
+
+      {/* Weather warning */}
+      {weather?.rain && event.outdoor && (
         <div style={{
           padding: "12px 14px", borderRadius: 14,
           background: "linear-gradient(135deg, rgba(255,107,44,0.14), rgba(255,61,127,0.10))",
           border: "0.5px solid rgba(255,107,44,0.25)",
           display: "flex", alignItems: "center", gap: 10,
         }}>
-          <span style={{ color: "#FF6B2C", display: "inline-flex" }}><RainIcon size={20} /></span>
+          <span style={{ fontSize: 20 }}>🌧️</span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>Deszcz w prognozie</div>
             <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Wydarzenie na zewnątrz — kurtkę bierz.</div>
           </div>
         </div>
       )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <div className="pz-card" style={{ padding: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--ink-3)" }}>
-              {transit.kind === "tram" ? <TramIcon size={16} /> : <BusIcon size={16} />}
-            </span>
-            <span className="pz-eyebrow">Dojazd</span>
-          </div>
-          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
-            <span className="pz-num">{transit.line}</span> · {transit.mins} min
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>ostatni {transit.last}</div>
-        </div>
-        <div className="pz-card" style={{ padding: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ color: "var(--ink-3)" }}>{weatherIcon(weather.icon)}</span>
-            <span className="pz-eyebrow">Pogoda</span>
-          </div>
-          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
-            <span className="pz-num">{weather.label}</span> · {weather.sub}
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>
-            {event.outdoor ? "Na zewnątrz" : "Pod dachem"}
-          </div>
-        </div>
-      </div>
 
       {/* Action buttons */}
       <div style={{ display: "flex", gap: 8 }}>

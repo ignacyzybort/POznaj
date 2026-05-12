@@ -29,11 +29,13 @@ export default function MapPage() {
   };
 
   const pinPositions = useMemo(() =>
-    events.slice(0, 30).map((ev) => {
+    events.slice(0, 30).map((ev, i) => {
       const base = DISTRICT_POS[ev.district] ?? DISTRICT_POS.Inny;
+      const spread = ev.district === "Inny" ? 120 : 28;
+      const angle = (i * 137.5) % 360;
       return {
-        x: base.x + (Math.random() - 0.5) * 28,
-        y: base.y + (Math.random() - 0.5) * 28,
+        x: base.x + Math.cos(angle) * (Math.random() * spread),
+        y: base.y + Math.sin(angle) * (Math.random() * spread),
       };
     }), [events]);
 
