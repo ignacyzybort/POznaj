@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { districts, categories, vibes } from "@/lib/filters";
 import { categoryVisual } from "@/lib/visuals";
+import { useTheme } from "@/components/theme-provider";
 
 interface Preferences {
   preferredCategories: string[];
@@ -43,6 +44,7 @@ const sections: {
 ];
 
 export default function SettingsPage() {
+  const { theme, toggle: toggleTheme } = useTheme();
   const [prefs, setPrefs] = useState<Preferences>({
     preferredCategories: [],
     preferredDistricts: [],
@@ -119,6 +121,28 @@ export default function SettingsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="p-6 rounded-2xl bg-white border border-zinc-100">
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">🎨 Wygląd</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-zinc-900">Tryb ciemny</p>
+            <p className="text-xs text-zinc-400">{theme === "dark" ? "Włączony" : "Wyłączony"}</p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="relative w-12 h-7 rounded-full border-0 cursor-pointer transition-all"
+            style={{
+              background: theme === "dark" ? "var(--sage)" : "var(--line-2)",
+            }}
+          >
+            <div
+              className="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-sm transition-all duration-200"
+              style={{ left: theme === "dark" ? 24 : 2 }}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 mt-8 pt-6 border-t border-zinc-100">

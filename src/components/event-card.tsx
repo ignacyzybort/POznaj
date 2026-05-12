@@ -35,11 +35,17 @@ export default function EventCard({ event }: { event: EventData }) {
         className="bg-[var(--bg-elev)] rounded-[22px] border-[0.5px] border-solid border-[var(--line)] overflow-hidden transition-transform duration-150 active:scale-[0.985]"
       >
         <div className="relative h-40 overflow-hidden bg-[var(--bg-soft)]">
-          <img
-            src={event.imageUrl ?? ""}
-            alt={event.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {event.imageUrl ? (
+            <img
+              src={event.imageUrl}
+              alt={event.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--bg-soft)" }}>
+              <span className="text-2xl">{event.category === "Muzyka" ? "🎵" : "📌"}</span>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
           <div className="absolute top-3 left-3">
             <span className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-semibold bg-white/85 backdrop-blur-sm shadow-sm" style={{ color: "var(--ink-2)" }}>

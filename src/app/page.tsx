@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import EventCard from "@/components/event-card";
 import HeatMeter from "@/components/heat-meter";
+import SurpriseModal from "@/components/surprise-modal";
 
 type QuickFilter = "" | "today" | "tonight" | "tomorrow" | "weekend" | "week";
 
@@ -16,6 +17,7 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [quick, setQuick] = useState<QuickFilter>("");
   const [heroIdx, setHeroIdx] = useState(0);
+  const [showSurprise, setShowSurprise] = useState(false);
 
   useEffect(() => {
     fetch("/api/events?limit=100").then((r) => r.json()).then((d) => {
@@ -79,6 +81,7 @@ export default function HomePage() {
   ];
 
   return (
+    <>
     <div className="pz-scroll" style={{ height: "100%", overflowY: "auto" }}>
       <div style={{ padding: "54px 18px 120px" }}>
         {/* Date header */}
@@ -190,7 +193,7 @@ export default function HomePage() {
         {!search && !quick && !showFilters && (
           <div className="mb-6">
             <button
-              onClick={() => {}}
+              onClick={() => setShowSurprise(true)}
               className="w-full py-4 rounded-2xl text-sm font-bold border-2 border-dashed cursor-pointer transition-all active:scale-[0.98]"
               style={{
                 borderColor: "var(--line-2)",
@@ -261,5 +264,14 @@ export default function HomePage() {
         </div>
       </div>
     </div>
+
+    {showSurprise && (
+      <SurpriseModal
+        events={events}
+        onPick={(ev) => { window.location.href = `/event/${ev.id}`; }}
+        onClose={() => setShowSurprise(false)}
+      />
+    )}
+    </>
   );
 }

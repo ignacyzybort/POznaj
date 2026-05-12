@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AuthProvider from "@/components/auth-provider";
+import ThemeProvider from "@/components/theme-provider";
 import TabBar from "@/components/tab-bar";
 import "./globals.css";
 
@@ -26,10 +27,12 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="min-h-full flex flex-col pb-20">
-        <AuthProvider>
-          <main className="flex-1">{children}</main>
-          <TabBar />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <main className="flex-1">{children}</main>
+            <TabBar />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
