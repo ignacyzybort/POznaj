@@ -19,8 +19,7 @@ export interface EventData {
   coordsX?: number;
   coordsY?: number;
   going?: number;
-  friendsGoing?: number;
-  friendsAvatars?: string[];
+  friendsGoing?: { name: string; image?: string }[];
 }
 
 export const districts = [
@@ -115,8 +114,11 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.4083, coordsY: 16.9192,
     going: 412,
-    friendsGoing: 3,
-    friendsAvatars: ["A", "K", "M"],
+    friendsGoing: [
+      { name: "Aga", image: undefined },
+      { name: "Kuba", image: undefined },
+      { name: "Marek", image: undefined },
+    ],
   },
   {
     id: "e2",
@@ -138,7 +140,7 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.4063, coordsY: 16.9205,
     going: 156,
-    friendsAvatars: ["T"],
+
   },
   {
     id: "e3",
@@ -181,8 +183,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.3935, coordsY: 16.8940,
     going: 45,
-    friendsGoing: 2,
-    friendsAvatars: ["P", "J"],
   },
   {
     id: "e5",
@@ -204,8 +204,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: true,
     coordsX: 52.4015, coordsY: 16.9560,
     going: 234,
-    friendsGoing: 1,
-    friendsAvatars: ["E"],
   },
   {
     id: "e6",
@@ -227,8 +225,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: true,
     coordsX: 52.4085, coordsY: 16.9340,
     going: 167,
-    friendsGoing: 5,
-    friendsAvatars: ["M", "K", "A"],
   },
   {
     id: "e7",
@@ -250,7 +246,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.3960, coordsY: 16.9000,
     going: 298,
-    friendsAvatars: ["W"],
   },
   {
     id: "e8",
@@ -314,8 +309,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.3965, coordsY: 16.8990,
     going: 523,
-    friendsGoing: 4,
-    friendsAvatars: ["R", "T", "X"],
   },
   {
     id: "e11",
@@ -337,7 +330,6 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.4030, coordsY: 16.9260,
     going: 189,
-    friendsAvatars: ["A", "K"],
   },
   {
     id: "e12",
@@ -359,7 +351,5 @@ export const MOCK_EVENTS: EventData[] = [
     outdoor: false,
     coordsX: 52.4050, coordsY: 16.9350,
     going: 876,
-    friendsGoing: 8,
-    friendsAvatars: ["Z", "Y", "X", "W"],
   },
 ];

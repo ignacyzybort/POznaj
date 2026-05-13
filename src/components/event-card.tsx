@@ -5,7 +5,6 @@ import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
-import { deriveFriendsGoing } from "@/lib/mock-extras";
 
 const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
 const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
@@ -32,7 +31,7 @@ export default function EventCard({
   cardStyle?: "collage" | "gradient" | "typographic";
   className?: string;
 }) {
-  const friends = deriveFriendsGoing(event);
+  const friends = event.friendsGoing ?? [];
   const going_count = event.going ?? 0;
 
   return (
@@ -63,10 +62,7 @@ export default function EventCard({
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <AvStack people={friends} max={3} />
-            <span style={{ fontSize: 11.5, color: "var(--ink-3)", fontWeight: 500 }}>
-              🔥 {event.score}
-            </span>
+            {friends.length > 0 && <AvStack people={friends} max={3} />}
           </div>
           <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",

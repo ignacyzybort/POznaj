@@ -284,8 +284,9 @@
   animation: pz-heat-enter 0.5s var(--ease-out-quart) both, pz-pulse 1.4s var(--ease-out-quart) infinite 0.5s;
 }
 @keyframes pz-pulse {
-  0%, 100% { transform: scaleY(0.35); opacity: 0.6; }
-  50% { transform: scaleY(1); opacity: 1; }
+  0% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(0.35); opacity: 0.6; }
+  100% { transform: scaleY(1); opacity: 1; }
 }
 @keyframes pz-heat-enter {
   from { transform: scaleY(0); opacity: 0; }
