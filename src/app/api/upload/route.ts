@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
         const { put } = await import("@vercel/blob");
-        const result = await put(`profiles/${filename}`, file, { access: "private" });
+        const result = await put(`profiles/${filename}`, file, { access: "public" });
         url = result.url;
       } catch (blobError: any) {
         console.error("Vercel Blob failed:", blobError);
