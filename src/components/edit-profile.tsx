@@ -42,9 +42,9 @@ export default function EditProfile({
           return;
         }
       }
-      const errText = await res.text().catch(() => "unknown");
-      console.error("Upload failed:", res.status, errText);
-      alert(`Błąd przesyłania (${res.status}) — spróbuj ponownie`);
+      const errData = await res.json().catch(() => ({ error: "Unknown error" }));
+      console.error("Upload failed:", res.status, errData);
+      alert(errData.error || `Błąd przesyłania (${res.status})`);
     } catch (e) {
       console.error("Upload error:", e);
       alert(`Błąd: ${e instanceof Error ? e.message : "nieznany błąd"}`);
