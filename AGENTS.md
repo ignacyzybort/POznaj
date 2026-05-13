@@ -1,5 +1,11 @@
 # POznaj — agent guidelines
 
+## Agent memory (Supermemory)
+- **At session start**: `curl -s -X POST https://api.supermemory.ai/v4/search -H "Authorization: Bearer $SUPERMEMORY_API_KEY" -H "Content-Type: application/json" -d '{"q":"<relevant query>","containerTags":["poznaj"],"searchMode":"hybrid"}'` to load project context.
+- **During session**: Save key decisions, gotchas, and state via `POST /v4/memories`.
+- **At session end**: Save a session summary with type "session_summary".
+- Key in `.env`: `SUPERMEMORY_API_KEY`
+
 ## Build & dev
 ```bash
 npm run dev        # dev server with Turbopack
