@@ -82,6 +82,28 @@ const KEYWORD_VENUES: [string, string][] = [
   ["browar", "Stary Browar"],
   ["kino muza", "Kino Muza"],
   ["teatr animacji", "Teatr Animacji"],
+  // JSON-LD name variants from pikpoznan.pl
+  ["klub blue note", "Blue Note"],
+  ["blue note poznań", "Blue Note"],
+  ["klub b17", "Klub B17"],
+  ["ck zamek poznań", "CK Zamek"],
+  ["centrum kultury zamek", "CK Zamek"],
+  ["zamek poznań", "CK Zamek"],
+  ["kino muza poznań", "Kino Muza"],
+  ["teatr polski poznań", "Teatr Polski"],
+  ["teatr nowy poznań", "Teatr Nowy"],
+  ["teatr wielki poznań", "Teatr Wielki"],
+  ["aula uam poznań", "Aula UAM"],
+  ["uniwersytet im. adama mickiewicza", "Aula UAM"],
+  ["mtp poznań", "MTP"],
+  ["międzynarodowe targi poznańskie", "MTP"],
+  ["sala ziemi poznań", "Sala Ziemi"],
+  ["stary browar poznań", "Stary Browar"],
+  ["galeria malta", "Malta"],
+  ["termy maltańskie", "Termy Maltańskie"],
+  ["stadion poznań", "Enea Stadion"],
+  ["klub pod minogą", "Klub Pod Minogą"],
+  ["blue note poznań", "Blue Note"],
 ];
 
 export function matchVenue(text: string): { address: string; district: string; lat: number; lon: number } | null {
