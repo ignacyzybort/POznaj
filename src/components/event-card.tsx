@@ -22,7 +22,7 @@ function relDay(d: Date): string {
 }
 
 export default function EventCard({
-  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient",
+  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "pz-fade-in",
 }: {
   event: EventData;
   onOpen?: () => void;
@@ -30,12 +30,13 @@ export default function EventCard({
   saved?: boolean;
   dense?: boolean;
   cardStyle?: "collage" | "gradient" | "typographic";
+  className?: string;
 }) {
   const friends = deriveFriendsGoing(event);
   const going_count = event.going ?? 0;
 
   return (
-    <div className="pz-card pz-fade-in" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} style={{ cursor: "pointer" }}>
+    <div className={`pz-card ${className}`} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }}>
       <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
       </a>

@@ -52,6 +52,7 @@ export default function HomePage() {
   const [budget, setBudget] = useState<Budget>(null);
   const [surpriseOpen, setSurpriseOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     category: [], district: [], vibe: [],
   });
@@ -59,7 +60,8 @@ export default function HomePage() {
   useEffect(() => {
     fetch("/api/events?limit=100").then((r) => r.json()).then((d) => {
       if (d.events) setEvents(d.events);
-    });
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const today = new Date();
@@ -156,8 +158,13 @@ export default function HomePage() {
       <div style={{ padding: "54px 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div className="pz-eyebrow" style={{ marginBottom: 6 }}>
-              {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+              <span className="pz-display" style={{ fontSize: 15, color: "var(--ink-3)", letterSpacing: "-0.01em" }}>
+                poznaj<span style={{ color: "var(--sage)" }}>.</span>
+              </span>
+              <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>
+                {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+              </span>
             </div>
             <h1 className="pz-h" style={{
               margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em",
@@ -309,14 +316,24 @@ export default function HomePage() {
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{filtered.length}</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          {filtered.map((ev) => (
-            <EventCard key={ev.id} event={ev}
-                       onOpen={() => openEvent(ev)}
-                       onSave={() => toggleSave(ev.id)}
-                       saved={savedIds.includes(ev.id)} />
+        <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
+          {loading ? Array.from({ length: 6 }).map((_, i) => (
+            <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
+              <div className="pz-skeleton" style={{ height: 132 }} />
+              <div className="pz-skeleton" style={{ height: 14, width: "60%" }} />
+              <div className="pz-skeleton" style={{ height: 18, width: "90%" }} />
+              <div className="pz-skeleton" style={{ height: 14, width: "70%" }} />
+            </div>
+          )) : filtered.map((ev, i) => (
+            <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+              <EventCard event={ev}
+                         onOpen={() => openEvent(ev)}
+                         onSave={() => toggleSave(ev.id)}
+                         saved={savedIds.includes(ev.id)}
+                         className="pz-card-stagger" />
+            </div>
           ))}
-          {filtered.length === 0 && (
+          {!loading && filtered.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
               <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
               <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
