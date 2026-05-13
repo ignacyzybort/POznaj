@@ -240,54 +240,51 @@ export class PikPoznanScraper implements Scraper {
       });
     });
 
-    // Second pass: enrich each event with venue data from its article page
-    await Promise.allSettled(
-      events.map(async (ev) => {
-        if (!ev.sourceUrl || !ev.sourceUrl.includes("pik.poznan.pl")) return;
+    // Second pass: enrich each event with venue data (5 at a time to avoid rate limiting)
+    for (let i = 0; i < events.length; i += 5) {
+      const batch = events.slice(i, i + 5);
+      await Promise.all(
+        batch.map(async (ev) => {
+          if (!ev.sourceUrl?.includes("pik.poznan.pl")) return;
+          try {
+            const article = await axios.get(ev.sourceUrl, {
+              headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+              timeout: 10000,
+            });
+            const $$ = cheerio.load(article.data);
 
-        try {
-          const article = await axios.get(ev.sourceUrl, {
-            headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
-            timeout: 10000,
-          });
-          const $$ = cheerio.load(article.data);
+            // Extract venue from JSON-LD (do this BEFORE removing scripts!)
+            let venueFromLd: string | null = null;
+            let addrFromLd: string | null = null;
+            $$('script[type="application/ld+json"]').each((_, el) => {
+              try {
+                const data = JSON.parse($$(el).html() || "{}");
+                if (data.location?.name) {
+                  venueFromLd = data.location.name;
+                  addrFromLd = data.location.address?.streetAddress || null;
+                }
+              } catch {}
+            });
 
-          // Extract full description from article body
-          const descEl = $$(".entry-content, .post-content, article").first();
-          const fullDesc = descEl.text().trim();
-          if (fullDesc.length > 50) {
-            ev.description = fullDesc.slice(0, 2000);
-          }
-
-          // Extract location from JSON-LD structured data
-          $$('script[type="application/ld+json"]').each((_, el) => {
-            try {
-              const data = JSON.parse($$(el).html() || "{}");
-              const loc = data.location;
-              if (!loc?.name) return;
-
-              // Override with real venue name from JSON-LD
-              ev.placeName = loc.name;
-
-              // Set address if we have it
-              if (loc.address?.streetAddress) {
-                ev.address = loc.address.streetAddress;
-              }
-
-              // Match against venue database for coordinates + district
-              const matched = matchVenue(loc.name);
+            // Clean description (strip script/style tags from the content area)
+            const contentEl = $$(".entry-content, .post-content, article").first();
+            contentEl.find("script, style, noscript, iframe").remove();
+            const desc = contentEl.text().trim();
+            if (desc.length > 50) ev.description = desc.slice(0, 2000);
+            if (venueFromLd) {
+              ev.placeName = venueFromLd;
+              if (addrFromLd) ev.address = addrFromLd;
+              const matched = matchVenue(venueFromLd);
               if (matched) {
                 ev.district = matched.district;
                 ev.coordsX = matched.lat;
                 ev.coordsY = matched.lon;
               }
-            } catch {}
-          });
-        } catch {
-          // Keep existing data (from listing page / category fallback)
-        }
-      })
-    );
+            }
+          } catch {}
+        })
+      );
+    }
 
     return events;
   }
