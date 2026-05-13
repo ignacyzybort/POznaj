@@ -210,7 +210,7 @@ export default function ProfilPage() {
               const h = Math.max(3, (val / maxMonth) * 40);
               return (
                 <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                  <div style={{ width: "100%", borderRadius: "3px 3px 0 0", height, background: i === new Date().getMonth() ? "var(--sage)" : "var(--line-2)", transition: "height 0.3s" }} />
+                  <div style={{ width: "100%", borderRadius: "3px 3px 0 0", height: h, background: i === new Date().getMonth() ? "var(--sage)" : "var(--line-2)", transition: "height 0.3s" }} />
                   <span style={{ fontSize: 7, fontWeight: 600, color: "var(--ink-4)" }}>{MONTHS[i]}</span>
                 </div>
               );
