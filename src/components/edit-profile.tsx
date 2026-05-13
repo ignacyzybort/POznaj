@@ -33,15 +33,24 @@ export default function EditProfile({
       form.append("file", blob, `${type}.jpg`);
       form.append("type", type);
       const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.url) {
-        if (type === "avatar") setAvatarPreview(data.url);
-        else setCoverPreview(data.url);
-        onSaved();
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          if (type === "avatar") setAvatarPreview(data.url);
+          else setCoverPreview(data.url);
+          onSaved();
+          return;
+        }
       }
-    } catch {}
-    setUploading(null);
+      const errText = await res.text().catch(() => "unknown");
+      console.error("Upload failed:", res.status, errText);
+      alert(`Błąd przesyłania (${res.status}) — spróbuj ponownie`);
+    } catch (e) {
+      console.error("Upload error:", e);
+      alert(`Błąd: ${e instanceof Error ? e.message : "nieznany błąd"}`);
+    } finally {
+      setUploading(null);
+    }
   };
 
   const selectFile = (file: File, type: "avatar" | "cover") => {
