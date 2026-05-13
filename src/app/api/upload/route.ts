@@ -19,8 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!file.type.startsWith("image/")) {
       return NextResponse.json({ error: `Invalid file type: ${file.type}` }, { status: 400 });
     }
 
@@ -28,26 +27,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
     }
 
-    const ext = (file.name?.split(".").pop()) || "jpg";
+    const ext = file.name?.split(".").pop() || "jpg";
     const filename = `${type}-${session.user.id}-${Date.now()}.${ext}`;
-
     let url: string;
 
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       try {
         const { put } = await import("@vercel/blob");
-        const blob = await put(`profiles/${filename}`, file, { access: "public" });
-        url = blob.url;
+        const result = await put(`profiles/${filename}`, file, { access: "public" });
+        url = result.url;
       } catch (blobError: any) {
-        console.error("Vercel Blob put failed:", blobError);
-        // Fallback to local file
-        const bytes = Buffer.from(await file.arrayBuffer());
-        const dir = join(process.cwd(), "public", "uploads");
-        await mkdir(dir, { recursive: true });
-        await writeFile(join(dir, filename), bytes);
-        url = `/uploads/${filename}`;
+        console.error("Vercel Blob failed:", blobError);
+        return NextResponse.json({
+          error: `Przesyłanie do Blob nie działa: ${blobError.message || "nieznany błąd"}. Skontaktuj się z administratorem.`,
+        }, { status: 500 });
       }
     } else {
+      // Local dev fallback
       const bytes = Buffer.from(await file.arrayBuffer());
       const dir = join(process.cwd(), "public", "uploads");
       await mkdir(dir, { recursive: true });
@@ -60,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url });
   } catch (error: any) {
-    console.error("Upload API error:", error);
+    console.error("Upload error:", error);
     return NextResponse.json({ error: error.message || "Internal error" }, { status: 500 });
   }
 }
