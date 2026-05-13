@@ -38,7 +38,7 @@ export default function EventCard({
   return (
     <div className={`pz-card ${className}`} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }}>
       <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
-        <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
+        <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} className="pz-art-morph" />
       </a>
 
       <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>

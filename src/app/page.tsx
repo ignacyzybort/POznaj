@@ -124,7 +124,13 @@ export default function HomePage() {
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
   const { data: session } = useSession();
-  const openEvent = (ev: EventData) => { window.location.href = `/event/${ev.id}`; };
+  const openEvent = (ev: EventData) => {
+    if (document.startViewTransition) {
+      document.startViewTransition(() => { window.location.href = `/event/${ev.id}`; });
+    } else {
+      window.location.href = `/event/${ev.id}`;
+    }
+  };
   const toggleSave = async (id: string) => {
     if (!session?.user) { window.location.href = "/login"; return; }
     const isSaved = savedIds.includes(id);

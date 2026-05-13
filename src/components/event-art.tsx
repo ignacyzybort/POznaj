@@ -22,18 +22,19 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export default function EventArt({
-  event, height = 180, style = "collage", forceArt = false,
+  event, height = 180, style = "collage", forceArt = false, className = "",
 }: {
   event: Pick<EventData, "id" | "category" | "title" | "time" | "imageUrl">;
   height?: number;
   style?: Style;
   forceArt?: boolean;
+  className?: string;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
 
   if (!forceArt && event.imageUrl && !imgFailed) {
     return (
-      <div className="pz-art" style={{ height, background: "var(--bg-soft)" }}>
+      <div className={`pz-art ${className}`} style={{ height, background: "var(--bg-soft)" }}>
         <img
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
@@ -69,7 +70,7 @@ export default function EventArt({
 
   if (style === "gradient") {
     return (
-      <div className="pz-art" style={{
+      <div className={`pz-art ${className}`} style={{
         height,
         background: `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`,
         color: tone.fg,
@@ -101,7 +102,7 @@ export default function EventArt({
   }));
 
   return (
-    <div className="pz-art pz-art-noise" style={{
+    <div className={`pz-art pz-art-noise ${className}`} style={{
       height, background: tone.bg, color: tone.fg, position: "relative",
     }}>
       <svg

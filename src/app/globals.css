@@ -280,11 +280,16 @@
 }
 .pz-heat-bar {
   width: 2.5px; border-radius: 99px; background: currentColor;
-  animation: pz-pulse 1.4s ease-in-out infinite;
+  transform-origin: bottom;
+  animation: pz-heat-enter 0.5s var(--ease-out-quart) both, pz-pulse 1.4s var(--ease-out-quart) infinite 0.5s;
 }
 @keyframes pz-pulse {
   0%, 100% { transform: scaleY(0.35); opacity: 0.6; }
   50% { transform: scaleY(1); opacity: 1; }
+}
+@keyframes pz-heat-enter {
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
 }
 
 @keyframes pz-fade-in {
@@ -349,6 +354,7 @@
 @view-transition { navigation: auto; }
 ::view-transition-old(root) { animation: pz-fade-out var(--dur-base) var(--ease-out-quart) both; }
 ::view-transition-new(root) { animation: pz-fade-in var(--dur-slow) var(--ease-out-quart) both; }
+.pz-art-morph { view-transition-name: event-art; }
 
 /* Scroll-driven reveals */
 @supports (animation-timeline: scroll()) {
@@ -362,6 +368,22 @@
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Category-adaptive theming */
+[data-category="Muzyka"] { --accent: var(--c-muzyka); --accent-ink: var(--c-muzyka-ink); }
+[data-category="Kino"] { --accent: var(--c-kino); --accent-ink: var(--c-kino-ink); }
+[data-category="Sztuka"] { --accent: var(--c-sztuka); --accent-ink: var(--c-sztuka-ink); }
+[data-category="Sport"] { --accent: var(--c-sport); --accent-ink: var(--c-sport-ink); }
+[data-category="Teatr"] { --accent: var(--c-teatr); --accent-ink: var(--c-teatr-ink); }
+[data-category="Warsztaty"] { --accent: var(--c-warsztaty); --accent-ink: var(--c-warsztaty-ink); }
+[data-category="Konferencje"] { --accent: var(--c-konferencje); --accent-ink: var(--c-konferencje-ink); }
+[data-category="Jedzenie"] { --accent: var(--c-jedzenie); --accent-ink: var(--c-jedzenie-ink); }
+[data-category="Inne"] { --accent: var(--c-inne); --accent-ink: var(--c-inne-ink); }
+
+[data-category] {
+  --accent-glow: radial-gradient(ellipse at 50% 0%, color-mix(in oklch, var(--accent) 12%, transparent), transparent 70%);
+}
+[data-category] .pz-detail-glow { background: var(--accent-glow); }
 
 /* Event art base */
 .pz-art {

@@ -113,7 +113,7 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div style={{
+    <div data-category={event.category} style={{
       position: "absolute", inset: 0, background: "var(--bg)",
       zIndex: 30, animation: "pz-fade-in 0.32s ease both",
     }}>
@@ -141,11 +141,14 @@ export default function EventDetailPage() {
 
         {/* Hero art */}
         <div style={{ height: 340, overflow: "hidden" }}>
-          <EventArt event={event} height={340} style="collage" />
+          <EventArt event={event} height={340} style="collage" className="pz-art-morph" />
         </div>
 
+        {/* Category glow */}
+        <div className="pz-detail-glow" style={{ position: "absolute", top: 300, left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1 }} />
+
         {/* Content */}
-        <div style={{ padding: "20px 18px 30px" }}>
+        <div style={{ padding: "20px 18px 30px", position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
             <CategoryTag cat={event.category} size="md" />
             {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
@@ -218,7 +221,7 @@ export default function EventDetailPage() {
         }}>
           {saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}
         </button>
-        <button onClick={() => setGoing(!going)} className="pz-btn primary" style={{
+        <button onClick={() => setGoing(!going)} className="pz-btn primary pz-btn-ripple" style={{
           flex: 1, background: going ? "var(--sage)" : "var(--ink)",
         }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
