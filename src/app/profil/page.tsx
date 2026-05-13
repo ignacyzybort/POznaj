@@ -254,10 +254,10 @@ export default function ProfilPage() {
       {friendsList.length > 0 ? (
         <div style={{ padding: "0 18px 14px", display: "flex", gap: 14, overflowX: "auto" }}>
           {friendsList.map((f) => (
-            <div key={f.id} style={{ textAlign: "center", flex: "0 0 56px" }}>
+            <a key={f.id} href={`/user/${f.id}`} style={{ textAlign: "center", flex: "0 0 56px", textDecoration: "none" }}>
               <div style={{ width: 52, height: 52, borderRadius: 99, background: f.color, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, border: "2px solid var(--bg)", boxShadow: "0 4px 12px rgba(0,0,0,0.10)" }}>{f.name[0]}</div>
               <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: "var(--ink-2)" }}>{f.name}</div>
-            </div>
+            </a>
           ))}
         </div>
       ) : (
