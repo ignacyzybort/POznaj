@@ -2,8 +2,8 @@
 
 ## Agent memory (Supermemory)
 - **At session start**: `curl -s -X POST https://api.supermemory.ai/v4/search -H "Authorization: Bearer $SUPERMEMORY_API_KEY" -H "Content-Type: application/json" -d '{"q":"<relevant query>","containerTags":["poznaj"],"searchMode":"hybrid"}'` to load project context.
-- **During session**: Save key decisions, gotchas, and state via `POST /v4/memories`.
-- **At session end**: Save a session summary with type "session_summary".
+- **During session**: Save key decisions, gotchas, and state via `POST /v4/memories`. **Do this automatically** — batch memories every ~5 significant actions and always at session end. Do not wait for the user to ask.
+- **At session end**: Always save a session summary with type "session_summary" covering what was done, what was decided, and any new gotchas discovered.
 - Key in `.env`: `SUPERMEMORY_API_KEY`
 
 ## Build & dev

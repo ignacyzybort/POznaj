@@ -11,7 +11,7 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
-import { SettingsIcon, EditIcon } from "@/components/icons";
+import { SettingsIcon, EditIcon, ChevronIcon } from "@/components/icons";
 
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
@@ -39,6 +39,7 @@ export default function ProfilPage() {
   const [notifs, setNotifs] = useState<any[]>([]);
   const [pendingReqs, setPendingReqs] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const fetchNotifs = () => {
     if (!session?.user) return;
@@ -50,23 +51,26 @@ export default function ProfilPage() {
 
   useEffect(() => {
     if (!session?.user) return;
+    setProfileLoading(true);
     fetchNotifs();
-    fetch("/api/friends").then((r) => r.json()).then((d) => {
-      setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
-        id: x.id, name: x.name ?? "Znajomy", color: COLORS[i % COLORS.length],
-      })));
-    }).catch(() => {});
-    fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
-      if (d.user) { setUserData(d.user); if (d.user._count) setStats(d.user._count); }
-    });
-    fetch("/api/attendance").then((r) => r.json()).then((d) => {
-      const items = d.attendance ?? [];
-      setAttendanceData(items);
-      const s: Record<string, number> = {};
-      for (const a of items) { const dist = a.event?.district; if (dist) s[dist] = (s[dist] || 0) + 1; }
-      for (const d of districts) { if (!s[d.value]) s[d.value] = 0; }
-      setStamps(s);
-    });
+    Promise.all([
+      fetch("/api/friends").then((r) => r.json()).then((d) => {
+        setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
+          id: x.id, name: x.name ?? "Znajomy", color: COLORS[i % COLORS.length],
+        })));
+      }).catch(() => {}),
+      fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
+        if (d.user) { setUserData(d.user); if (d.user._count) setStats(d.user._count); }
+      }).catch(() => {}),
+      fetch("/api/attendance").then((r) => r.json()).then((d) => {
+        const items = d.attendance ?? [];
+        setAttendanceData(items);
+        const s: Record<string, number> = {};
+        for (const a of items) { const dist = a.event?.district; if (dist) s[dist] = (s[dist] || 0) + 1; }
+        for (const d of districts) { if (!s[d.value]) s[d.value] = 0; }
+        setStamps(s);
+      }).catch(() => {}),
+    ]).finally(() => setProfileLoading(false));
   }, [session, refreshKey]);
 
   const weeksActive = Math.min(attendanceData.length, 8);
@@ -118,13 +122,13 @@ export default function ProfilPage() {
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Cover banner — 120px */}
       <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
-        {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" className="w-full h-full object-cover" />}
+        {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         {/* Gear + Edit at top-right */}
-        <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
-          <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
+        <div style={{ position: "absolute", top: "calc(12px + var(--safe-t))", right: 12, display: "flex", gap: 6 }}>
+          <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
             <SettingsIcon size={18} />
           </Link>
-          <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
             <EditIcon size={18} />
           </button>
         </div>
@@ -149,10 +153,26 @@ export default function ProfilPage() {
         </div>
       </div>
 
+      {/* Loading state */}
+      {profileLoading && (
+        <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="pz-skeleton" style={{ height: 16, width: "80%" }} />
+          <div className="pz-skeleton" style={{ height: 16, width: "60%" }} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            <div className="pz-skeleton" style={{ height: 60 }} />
+            <div className="pz-skeleton" style={{ height: 60 }} />
+            <div className="pz-skeleton" style={{ height: 60 }} />
+          </div>
+          <div className="pz-skeleton" style={{ height: 100 }} />
+          <div className="pz-skeleton" style={{ height: 100 }} />
+        </div>
+      )}
+
       {/* Bio */}
-      {bio && <div style={{ padding: "14px 18px 0" }}><p style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{bio}</p></div>}
+      {!profileLoading && bio && <div style={{ padding: "14px 18px 0" }}><p style={{ fontSize: "var(--text-sm)", lineHeight: 1.5, color: "var(--ink-2)" }}>{bio}</p></div>}
 
       {/* Stats grid */}
+      {!profileLoading && (
       <div style={{ padding: "14px 18px 14px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {[
@@ -160,11 +180,12 @@ export default function ProfilPage() {
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
               <div className="pz-num" style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
             </div>
           ))}
         </div>
       </div>
+      )}
 
       {/* Badge + Monthly chart */}
       <div style={{ padding: "0 18px 14px" }}>
@@ -179,7 +200,7 @@ export default function ProfilPage() {
               return (
                 <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                   <div style={{ width: "100%", borderRadius: "3px 3px 0 0", height: h, background: i === new Date().getMonth() ? "var(--sage)" : "var(--line-2)" }} />
-                  <span style={{ fontSize: 7, fontWeight: 600, color: "var(--ink-4)" }}>{MONTHS[i]}</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--ink-4)" }}>{MONTHS[i]}</span>
                 </div>
               );
             })}
@@ -190,7 +211,7 @@ export default function ProfilPage() {
       {/* Activity stats */}
       <div style={{ padding: "0 18px 14px" }}>
         <div className="pz-card" style={{ padding: 14 }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 10 }}>📊 Aktywność</div>
+          <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Najczęstsza kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]} · {topCategory[1]}x</span></div>}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Odwiedzone dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 10</span></div>
@@ -210,7 +231,7 @@ export default function ProfilPage() {
       {(pendingReqs.length > 0 || notifs.length > 0) && (
         <div style={{ padding: "0 18px 14px" }}>
           <div className="pz-card" style={{ padding: 16 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><span>📬</span><span>Powiadomienia ({pendingReqs.length + notifs.length})</span></div>
+            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Powiadomienia ({pendingReqs.length + notifs.length})</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
                 <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
@@ -238,11 +259,11 @@ export default function ProfilPage() {
         <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: 22, fontWeight: 800 }}>?</div>
           <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
-          <span style={{ color: "var(--ink-3)" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
         </button>
         <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: 12.5, opacity: 0.9, marginTop: 6 }}>{attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
-          <span style={{ marginLeft: "auto", opacity: 0.85 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6"/></svg></span>
+          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
+          <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
         </button>
       </div>
 
@@ -274,7 +295,7 @@ export default function ProfilPage() {
 
       {/* Logout */}
       <div style={{ padding: "18px 18px 0" }}>
-        <button onClick={() => signOut()} style={{ width: "100%", padding: "14px 18px", borderRadius: 18, border: "0.5px dashed var(--ink-5)", background: "transparent", color: "var(--ink-3)", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Wyloguj się</button>
+        <button onClick={() => signOut()} className="pz-btn ghost" style={{ width: "100%", height: 50, fontSize: 14 }}>Wyloguj się</button>
       </div>
 
       {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}
