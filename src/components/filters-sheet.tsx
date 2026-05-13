@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
+import { DUR } from "@/lib/duration";
 
 export type ActiveFilters = {
   category: string[];
@@ -27,13 +28,13 @@ export default function FiltersSheet({
     if (open) setShow(true);
     else {
       setExiting(true);
-      setTimeout(() => { setExiting(false); setShow(false); }, 300);
+      setTimeout(() => { setExiting(false); setShow(false); }, DUR.slow);
     }
   }, [open]);
 
   const close = () => {
     setExiting(true);
-    setTimeout(() => { setExiting(false); onClose(); }, 300);
+    setTimeout(() => { setExiting(false); onClose(); }, DUR.slow);
   };
 
   const startY = useRef(0);

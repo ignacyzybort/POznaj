@@ -90,6 +90,22 @@
   --dur-slow: 400ms;
   --dur-reveal: 600ms;
 
+  /* Spacing tokens */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* Typography scale */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 30px;
+  --text-3xl: 36px;
+
   /* Multi-layer shadow tokens */
   --shadow-sm: 0 0 0 1px rgba(20,19,15,0.04), 0 1px 2px -1px rgba(20,19,15,0.08), 0 1px 3px rgba(20,19,15,0.04);
   --shadow-md: 0 0 0 1px rgba(20,19,15,0.04), 0 2px 4px -1px rgba(20,19,15,0.08), 0 4px 8px rgba(20,19,15,0.04);

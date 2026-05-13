@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
+import { PL_DAY_FULL, PL_MONTH_FULL, fmtFullDate, fmtShortDate, relDay } from "@/lib/date";
 import EventCard from "@/components/event-card";
 import EventArt from "@/components/event-art";
 import SurpriseModal from "@/components/surprise-modal";
@@ -13,23 +14,7 @@ import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
-
-function fmtFullDate(d: Date) { return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`; }
-function fmtShortDate(d: Date) { return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`; }
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return fmtShortDate(d);
-}
+import { DUR } from "@/lib/duration";
 
 function priceNum(p?: string): number {
   if (!p) return 0;
@@ -141,7 +126,7 @@ export default function HomePage() {
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
       setToast("Zapisano ✅");
-      setTimeout(() => { window.location.href = "/lista"; }, 800);
+      setTimeout(() => { window.location.href = "/lista"; }, DUR.reveal);
     }
     setSavedIds((prev) =>
       isSaved ? prev.filter((v) => v !== id) : [...prev, id]

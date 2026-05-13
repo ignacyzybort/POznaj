@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EventData, districts } from "@/lib/data";
+import { PL_DAY_FULL, PL_MONTH_FULL, relDay, fmtFullDate } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
@@ -10,22 +11,9 @@ import VibePill from "@/components/vibe-pill";
 import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
 import Confetti from "@/components/confetti";
+import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
-const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
-}
-function fmtFullDate(d: Date) { return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`; }
 function districtLabel(value: string) {
   return districts.find((d) => d.value === value)?.label ?? "Poznań";
 }
@@ -118,7 +106,7 @@ export default function EventDetailPage() {
   return (
     <div data-category={event.category} style={{
       position: "absolute", inset: 0, background: "var(--bg)",
-      zIndex: 30, animation: "pz-fade-in 0.32s ease both",
+      zIndex: 30, animation: "pz-fade-in var(--dur-slow) var(--ease-out-quart) both",
     }}>
       {/* Scrollable content — ends above the action bar */}
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>

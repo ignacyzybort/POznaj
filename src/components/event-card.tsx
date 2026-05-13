@@ -1,24 +1,11 @@
 "use client";
 
 import { EventData } from "@/lib/data";
+import { relDay } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
-}
 
 export default function EventCard({
   event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "pz-fade-in",
