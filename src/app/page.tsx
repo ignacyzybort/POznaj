@@ -38,16 +38,27 @@ export default function HomePage() {
   const [surpriseOpen, setSurpriseOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     category: [], district: [], vibe: [],
   });
 
-  useEffect(() => {
-    fetch("/api/events?limit=100").then((r) => r.json()).then((d) => {
+  const fetchEvents = () => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/events?limit=100").then((r) => {
+      if (!r.ok) throw new Error("Błąd ładowania");
+      return r.json();
+    }).then((d) => {
       if (d.events) setEvents(d.events);
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    }).catch(() => {
+      setError("Nie udało się załadować wydarzeń");
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => { fetchEvents(); }, []);
 
   const today = new Date();
   const forYou = useMemo(
@@ -340,7 +351,13 @@ export default function HomePage() {
               </div>
             );
           })}
-          {!loading && filtered.length === 0 && (
+          {error && (
+            <div style={{ gridColumn: "1 / -1", padding: "40px 16px", textAlign: "center" }}>
+              <p style={{ color: "var(--ink-3)", fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>
+              <button onClick={fetchEvents} className="pz-btn primary" style={{ height: 44, fontSize: 13 }}>Spróbuj ponownie</button>
+            </div>
+          )}
+          {!loading && !error && filtered.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
               <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
               <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>

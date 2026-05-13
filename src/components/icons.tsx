@@ -25,9 +25,7 @@ export function ShareIcon({ size }: { size?: number }) {
 }
 
 export function BookmarkIcon({ size, fill }: { size?: number; fill?: boolean }) {
-  return fill
-    ? <svg width={size ?? 20} height={size ?? 20} viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4z"/></svg>
-    : <Icon size={size}><path d="M6 4h12v17l-6-4-6 4z"/></Icon>;
+  return <Icon size={size}><path d="M6 4h12v17l-6-4-6 4z" fill={fill ? "currentColor" : "none"} /></Icon>;
 }
 
 export function PinIcon({ size }: { size?: number }) {
@@ -51,9 +49,7 @@ export function CheckIcon({ size }: { size?: number }) {
 }
 
 export function FireIcon({ size, fill }: { size?: number; fill?: boolean }) {
-  return fill
-    ? <svg width={size ?? 20} height={size ?? 20} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z"/></svg>
-    : <Icon size={size}><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z"/></Icon>;
+  return <Icon size={size}><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z" fill={fill ? "currentColor" : "none"} /></Icon>;
 }
 
 export function HomeIcon({ size }: { size?: number }) {

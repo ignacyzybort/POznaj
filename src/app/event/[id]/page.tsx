@@ -28,12 +28,19 @@ export default function EventDetailPage() {
   const [reminded, setReminded] = useState(false);
   const [animatingSave, setAnimatingSave] = useState(false);
   const [confetti, setConfetti] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/events/${params.id}`).then((r) => r.json()).then((d) => {
+  const fetchEvent = () => {
+    setError(null);
+    fetch(`/api/events/${params.id}`).then((r) => {
+      if (!r.ok) throw new Error("Nie znaleziono");
+      return r.json();
+    }).then((d) => {
       if (d.event) setEvent(d.event);
-    });
-  }, [params.id]);
+    }).catch(() => setError("Nie udało się załadować wydarzenia"));
+  };
+
+  useEffect(() => { fetchEvent(); }, [params.id]);
 
   const onRemind = async () => {
     if (reminded) return;
@@ -53,15 +60,21 @@ export default function EventDetailPage() {
     }
   };
 
+  if (error) {
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: "var(--ink-4)" }}>
+        <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>nic</div>
+        <p style={{ fontWeight: 700 }}>{error}</p>
+        <button onClick={() => { setError(null); fetchEvent(); }} className="pz-btn primary" style={{ height: 44, fontSize: 13, marginTop: 16 }}>Spróbuj ponownie</button>
+      </div>
+    );
+  }
+
   if (!event) {
     return (
       <div style={{ padding: 40, textAlign: "center", color: "var(--ink-4)" }}>
         <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>nic</div>
-        <p style={{ fontWeight: 700 }}>Nie znaleziono</p>
-        <button onClick={() => router.back()} style={{
-          fontSize: 13, marginTop: 8, cursor: "pointer", background: "none",
-          border: "none", color: "var(--ink-3)", textDecoration: "underline",
-        }}>Wróć</button>
+        <p style={{ fontWeight: 700 }}>Ładowanie...</p>
       </div>
     );
   }

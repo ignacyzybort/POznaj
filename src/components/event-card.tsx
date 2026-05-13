@@ -22,10 +22,10 @@ export default function EventCard({
   const going_count = event.going ?? 0;
 
   return (
-    <div className={`pz-card ${className}`} onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }}>
-      <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
+    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card ${className}`} style={{ cursor: "pointer" }}>
+      <div style={{ pointerEvents: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} className="pz-art-morph" />
-      </a>
+      </div>
 
       <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
@@ -33,12 +33,10 @@ export default function EventCard({
           <HeatMeter score={event.score} />
         </div>
 
-        <a href={`/event/${event.id}`} style={{ color: "inherit", textDecoration: "none" }}>
-          <h3 className="pz-h" style={{
-            fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
-            margin: 0, lineHeight: 1.18,
-          }}>{event.title}</h3>
-        </a>
+        <h3 className="pz-h" style={{
+          fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
+          margin: 0, lineHeight: 1.18, cursor: "pointer",
+        }}>{event.title}</h3>
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 12 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>

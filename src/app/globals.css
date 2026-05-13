@@ -187,8 +187,10 @@
 
 /* Scroll */
 .pz-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.pz-scroll::-webkit-scrollbar { display: none; }
-*::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.pz-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+.pz-scroll::-webkit-scrollbar-track { background: transparent; }
+.pz-scroll::-webkit-scrollbar-thumb { background: var(--ink-5); border-radius: 99px; }
+.pz-scroll::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }
 
 /* Shared pills */
 .pz-pill {
