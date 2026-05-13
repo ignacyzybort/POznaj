@@ -34,8 +34,6 @@ export default function SearchOverlay({
     );
   }).slice(0, 8);
 
-  const recents = ["Tama", "Croissant", "Kino Muza"];
-
   return (
     <div style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
@@ -67,16 +65,7 @@ export default function SearchOverlay({
       </div>
 
       <div className="pz-scroll" style={{ flex: 1, padding: "6px 18px 16px" }}>
-        {!q && (
-          <>
-            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Ostatnio szukane</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {recents.map((r) => (
-                <button key={r} className="pz-chip" onClick={() => setQ(r)}>{r}</button>
-              ))}
-            </div>
-          </>
-        )}
+
         <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{q ? "Wyniki" : "Popularne dziś"}</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {filtered.map((ev) => (

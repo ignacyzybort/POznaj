@@ -28,14 +28,14 @@ export default function PlanPage() {
   );
 
   return (
-    <div className="p-5 pt-10" style={{ paddingBottom: 100 }}>
-      <div className="pz-eyebrow">Kalendarz</div>
-      <h1 className="text-3xl font-bold tracking-tight mt-1 mb-5" style={{ color: "var(--ink)" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(54px + var(--safe-t)) 18px 100px" }}>
+      <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Kalendarz</div>
+      <h1 className="pz-h" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em" }}>
         Następne dwa tygodnie.
       </h1>
 
       {/* Day strip */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-5 scrollbar-none">
+      <div className="pz-scroll" style={{ display: "flex", gap: 8, paddingBottom: 12, marginBottom: 20, overflowX: "auto" }}>
         {days.map((day) => {
           const active = isSameDay(day, selectedDay);
           const hasEvents = events.some((e) => isSameDay(startOfDay(new Date(e.startDate)), day));
@@ -43,19 +43,14 @@ export default function PlanPage() {
             <button
               key={day.toISOString()}
               onClick={() => setSelectedDay(day)}
-              className="flex flex-col items-center gap-1 py-2.5 px-3.5 rounded-2xl border-0 cursor-pointer transition-all shrink-0"
-              style={{
-                background: active ? "var(--ink)" : "var(--bg-elev)",
-                color: active ? "var(--bg)" : "var(--ink-2)",
-                border: active ? "none" : "0.5px solid var(--line)",
-              }}
+              className="pz-chip"
+              data-active={active ? "true" : undefined}
+              style={{ flexDirection: "column", gap: 4, padding: "10px 14px", border: active ? "none" : "0.5px solid var(--line)" }}
             >
-              <span className="text-[10px] font-semibold">{format(day, "EEEEE", { locale: pl })}</span>
-              <span className="text-lg font-bold">{format(day, "d")}</span>
+              <span className="pz-eyebrow" style={{ fontSize: 9, color: active ? "var(--bg)" : "var(--ink-4)" }}>{format(day, "EEEEE", { locale: pl })}</span>
+              <span style={{ fontSize: 18, fontWeight: 700 }}>{format(day, "d")}</span>
               {hasEvents && (
-                <div className="flex gap-0.5">
-                  <div className="w-1 h-1 rounded-full" style={{ background: active ? "var(--bg)" : "var(--ink-3)" }} />
-                </div>
+                <span style={{ width: 4, height: 4, borderRadius: 99, background: active ? "var(--bg)" : "var(--ink-4)" }} />
               )}
             </button>
           );
@@ -64,40 +59,37 @@ export default function PlanPage() {
 
       {/* Events for selected day */}
       {dayEvents.length === 0 ? (
-        <div className="py-16 text-center" style={{ color: "var(--ink-4)" }}>
-          <div className="text-4xl mb-3">🌙</div>
-          <p className="text-base font-semibold">Luz</p>
-          <p className="text-sm mt-1">Idź na spacer na Cytadelę</p>
+        <div style={{ padding: "64px 0", textAlign: "center", color: "var(--ink-4)" }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>🌙</div>
+          <p style={{ fontSize: 15, fontWeight: 700 }}>Luz</p>
+          <p style={{ fontSize: 13, marginTop: 4 }}>Idź na spacer na Cytadelę</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {dayEvents
             .sort((a, b) => (a.time ?? "00:00").localeCompare(b.time ?? "00:00"))
             .map((ev) => (
               <Link
                 key={ev.id}
                 href={`/event/${ev.id}`}
-                className="flex items-start gap-4 p-3 rounded-2xl no-underline"
-                style={{ background: "var(--bg-soft)" }}
+                style={{ display: "flex", gap: 16, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit" }}
               >
-                <div className="text-center min-w-[40px]">
-                  <div className="text-xs font-bold" style={{ color: "var(--ink-3)" }}>
+                <div style={{ textAlign: "center", minWidth: 44 }}>
+                  <div className="pz-num" style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-3)" }}>
                     {ev.time ?? "--:--"}
                   </div>
                 </div>
-                <div className="w-0.5 shrink-0 self-stretch rounded-full" style={{ background: "var(--line)" }} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--bg-elev)", color: "var(--ink-3)" }}>
-                      {ev.category}
-                    </span>
+                <div style={{ width: 2, flexShrink: 0, alignSelf: "stretch", borderRadius: 99, background: "var(--line)" }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="pz-pill" style={{ fontSize: 10 }}>{ev.category}</span>
                     <HeatMeter score={ev.score} />
                   </div>
-                  <p className="text-sm font-bold mt-1 line-clamp-1" style={{ color: "var(--ink)" }}>
+                  <p className="pz-h" style={{ fontSize: 13, fontWeight: 700, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {ev.title}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--ink-3)" }}>
-                    📍 {ev.placeName} · {ev.district === "Inny" ? "Poznań" : ev.district}
+                  <p style={{ fontSize: 12, marginTop: 2, color: "var(--ink-3)" }}>
+                    {ev.placeName} · {ev.district === "Inny" ? "Poznań" : ev.district}
                   </p>
                 </div>
               </Link>

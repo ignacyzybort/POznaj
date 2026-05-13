@@ -31,13 +31,13 @@ export default function MapPage() {
       const result: Record<string, string> = {};
       for (const [k, v] of Object.entries(c)) {
         const ratio = v / max;
-        const r = 180 + Math.round(75 * ratio);
-        const g = 80 - Math.round(50 * ratio);
-        const b = 80 - Math.round(50 * ratio);
+        const r = Math.round(61 + (255 - 61) * ratio);
+        const g = Math.round(90 + (56 - 90) * ratio);
+        const b = Math.round(64 + (35 - 64) * ratio);
         result[k] = `rgb(${r},${g},${b})`;
       }
       for (const s of DISTRICT_SHAPES) {
-        if (!result[s.id]) result[s.id] = "rgb(200,200,200)";
+        if (!result[s.id]) result[s.id] = "rgb(230,235,225)";
       }
       setColors(result);
     });

@@ -96,6 +96,10 @@ export function SettingsIcon({ size }: { size?: number }) {
   return <Icon size={size}><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4.8a7 7 0 0 0-1.9-1.1L14 3h-4l-.6 2.6a7 7 0 0 0-1.9 1.1L5.1 6 3.1 9.5l2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-.8c.6.5 1.2.8 1.9 1.1L10 21h4l.6-2.6c.7-.2 1.3-.6 1.9-1.1l2.4.8 2-3.5-2-1.5c.1-.3.1-.7.1-1.1z"/></Icon>;
 }
 
+export function EditIcon({ size }: { size?: number }) {
+  return <Icon size={size}><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></Icon>;
+}
+
 export function PlusIcon({ size }: { size?: number }) {
   return <Icon size={size}><path d="M12 5v14M5 12h14"/></Icon>;
 }

@@ -11,6 +11,7 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
+import { SettingsIcon, EditIcon } from "@/components/icons";
 
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
@@ -120,10 +121,10 @@ export default function ProfilPage() {
         {/* Gear + Edit at top-right */}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
           <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4.8a7 7 0 0 0-1.9-1.1L14 3h-4l-.6 2.6a7 7 0 0 0-1.9 1.1L5.1 6 3.1 9.5l2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-.8c.6.5 1.2.8 1.9 1.1L10 21h4l.6-2.6c.7-.2 1.3-.6 1.9-1.1l2.4.8 2-3.5-2-1.5c.1-.3.1-.7.1-1.1z"/></svg>
+            <SettingsIcon size={18} />
           </Link>
           <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            <EditIcon size={18} />
           </button>
         </div>
       </div>
@@ -267,18 +268,7 @@ export default function ProfilPage() {
       {/* Activity feed */}
       <div style={{ padding: "8px 18px 0" }}>
         <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
-        {friendsList.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {friendsList.slice(0, 5).map((f, i) => (
-              <div key={f.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "0.5px solid var(--line)" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 99, background: f.color, color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{f.name[0]}</div>
-                <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.4 }}><b style={{ color: "var(--ink)" }}>{f.name}</b> {["idzie na", "zapisała", "idzie na", "zapisał", "idzie na"][i]} <b style={{ color: "var(--ink)" }}>wydarzenie</b></div><div style={{ fontSize: 11.5, color: "var(--ink-4)", marginTop: 2 }}>{["2h temu", "5h temu", "8h temu", "wczoraj", "wczoraj"][i]}</div></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
-        )}
+        <p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
       </div>
 
       {/* Logout */}

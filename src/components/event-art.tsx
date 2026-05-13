@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { EventData, categoryColors } from "@/lib/data";
-import { CAT_GLYPH } from "@/lib/mock-extras";
+
+const CAT_GLYPH: Record<string, string> = {
+  Muzyka: "♪", Kino: "✦", Sztuka: "◆", Sport: "↗", Teatr: "☾",
+  Warsztaty: "✺", Konferencje: "◯", Jedzenie: "✿", Inne: "✶",
+};
 
 type Style = "collage" | "gradient" | "typographic";
 
