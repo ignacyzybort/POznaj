@@ -98,11 +98,12 @@ export default function ProfilPage() {
   if (!session?.user) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
-        <div style={{ padding: "54px 18px 18px" }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Profil</div>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>Twoje konto.</h1>
-        </div>
-        <div style={{ padding: "0 18px" }}>
+        <div style={{ padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+              poznaj<span style={{ color: "var(--sage)" }}>.</span>
+            </h1>
+          </div>
           <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
             <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>

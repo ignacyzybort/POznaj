@@ -161,7 +161,7 @@ export default function HomePage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-              <span className="pz-display" style={{ fontSize: 15, color: "var(--ink-3)", letterSpacing: "-0.01em" }}>
+              <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
                 poznaj<span style={{ color: "var(--sage)" }}>.</span>
               </span>
               <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>

@@ -36,30 +36,30 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
       {/* Progress */}
-      <div className="flex gap-1.5 justify-center pt-12 pb-4">
+      <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "calc(54px + var(--safe-t)) 24px 16px" }}>
         {steps.map((s, i) => (
-          <div
-            key={s}
-            className="h-1.5 rounded-full transition-all duration-300"
+          <div key={s}
             style={{
+              height: 6, borderRadius: 99,
               width: i === currentIdx ? 24 : 8,
               background: i <= currentIdx ? "var(--ink)" : "var(--line-2)",
+              transition: "width var(--dur-base) var(--ease-out-quart), background var(--dur-base)",
             }}
           />
         ))}
       </div>
 
-      <div className="flex-1 flex flex-col px-6 max-w-sm mx-auto w-full">
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "0 24px", maxWidth: 400, margin: "0 auto", width: "100%" }}>
         {/* Welcome */}
         {step === "welcome" && (
-          <div className="flex-1 flex flex-col justify-center text-center">
-            <div className="text-6xl mb-6">👋</div>
-            <h1 className="text-3xl font-black tracking-tight mb-3" style={{ color: "var(--ink)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
+            <div style={{ fontSize: 56, marginBottom: 24 }}>👋</div>
+            <h1 className="pz-h" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.035em", margin: "0 0 12px", lineHeight: 1.05, color: "var(--ink)" }}>
               Co dziś<br />w Poznaniu.
             </h1>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--ink-3)" }}>
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-3)", margin: 0 }}>
               POznaj pomoże Ci znaleźć najlepsze wydarzenia w mieście.
               Dopasujemy je do Twoich zainteresowań.
             </p>
@@ -68,27 +68,19 @@ export default function OnboardingPage() {
 
         {/* Categories */}
         {step === "categories" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold tracking-tight mb-2" style={{ color: "var(--ink)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 8px", color: "var(--ink)" }}>
               Co Cię interesuje?
             </h2>
-            <p className="text-sm mb-6" style={{ color: "var(--ink-3)" }}>
+            <p style={{ fontSize: 13, marginBottom: 24, color: "var(--ink-3)" }}>
               Wybierz kategorie, które lubisz
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {categories.map((c) => {
                 const active = selectedCategories.includes(c.value);
                 return (
-                  <button
-                    key={c.value}
-                    onClick={() => setSelectedCategories(toggle(selectedCategories, c.value))}
-                    className="px-4 py-2.5 rounded-full text-sm font-semibold border-0 cursor-pointer transition-all active:scale-95"
-                    style={{
-                      background: active ? "var(--ink)" : "var(--bg-soft)",
-                      color: active ? "var(--bg)" : "var(--ink-2)",
-                      border: active ? "none" : "0.5px solid var(--line)",
-                    }}
-                  >
+                  <button key={c.value} className="pz-chip" data-active={active ? "true" : undefined}
+                    onClick={() => setSelectedCategories(toggle(selectedCategories, c.value))}>
                     {categoryEmoji[c.value]} {c.label}
                   </button>
                 );
@@ -99,27 +91,19 @@ export default function OnboardingPage() {
 
         {/* Vibes */}
         {step === "vibes" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold tracking-tight mb-2" style={{ color: "var(--ink)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 8px", color: "var(--ink)" }}>
               Jaki nastrój?
             </h2>
-            <p className="text-sm mb-6" style={{ color: "var(--ink-3)" }}>
+            <p style={{ fontSize: 13, marginBottom: 24, color: "var(--ink-3)" }}>
               Jaki vibe najbardziej do Ciebie pasuje?
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {vibeOpts.map((v) => {
                 const active = selectedVibes.includes(v.value);
                 return (
-                  <button
-                    key={v.value}
-                    onClick={() => setSelectedVibes(toggle(selectedVibes, v.value))}
-                    className="px-4 py-2.5 rounded-full text-sm font-semibold border-0 cursor-pointer transition-all active:scale-95"
-                    style={{
-                      background: active ? "var(--ink)" : "var(--bg-soft)",
-                      color: active ? "var(--bg)" : "var(--ink-2)",
-                      border: active ? "none" : "0.5px solid var(--line)",
-                    }}
-                  >
+                  <button key={v.value} className="pz-chip" data-active={active ? "true" : undefined}
+                    onClick={() => setSelectedVibes(toggle(selectedVibes, v.value))}>
                     {vibeEmoji[v.value]} {v.label}
                   </button>
                 );
@@ -130,27 +114,19 @@ export default function OnboardingPage() {
 
         {/* District */}
         {step === "district" && (
-          <div className="flex-1 flex flex-col justify-center">
-            <h2 className="text-2xl font-bold tracking-tight mb-2" style={{ color: "var(--ink)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 8px", color: "var(--ink)" }}>
               Twoja dzielnica?
             </h2>
-            <p className="text-sm mb-6" style={{ color: "var(--ink-3)" }}>
+            <p style={{ fontSize: 13, marginBottom: 24, color: "var(--ink-3)" }}>
               Pokażemy Ci wydarzenia w okolicy
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {districts.map((d) => {
                 const active = selectedDistrict === d.value;
                 return (
-                  <button
-                    key={d.value}
-                    onClick={() => setSelectedDistrict(active ? "" : d.value)}
-                    className="px-4 py-2.5 rounded-full text-sm font-semibold border-0 cursor-pointer transition-all active:scale-95"
-                    style={{
-                      background: active ? "var(--ink)" : "var(--bg-soft)",
-                      color: active ? "var(--bg)" : "var(--ink-2)",
-                      border: active ? "none" : "0.5px solid var(--line)",
-                    }}
-                  >
+                  <button key={d.value} className="pz-chip" data-active={active ? "true" : undefined}
+                    onClick={() => setSelectedDistrict(active ? "" : d.value)}>
                     📍 {d.label}
                   </button>
                 );
@@ -161,12 +137,12 @@ export default function OnboardingPage() {
 
         {/* Ready */}
         {step === "ready" && (
-          <div className="flex-1 flex flex-col justify-center text-center">
-            <div className="text-6xl mb-6">✅</div>
-            <h1 className="text-3xl font-black tracking-tight mb-3" style={{ color: "var(--ink)" }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
+            <div style={{ fontSize: 56, marginBottom: 24 }}>✅</div>
+            <h1 className="pz-h" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.035em", margin: "0 0 12px", color: "var(--ink)" }}>
               Gotowe.
             </h1>
-            <p className="text-sm leading-relaxed" style={{ color: "var(--ink-3)" }}>
+            <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-3)", margin: 0 }}>
               Dziś masz to zrobione.
               {selectedCategories.length > 0 && ` ${selectedCategories.length} kategorie, `}
               {selectedVibes.length > 0 && `${selectedVibes.length} nastroje`}
@@ -176,31 +152,24 @@ export default function OnboardingPage() {
         )}
 
         {/* Navigation */}
-        <div className="flex items-center gap-3 pb-10 mt-auto">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 40, marginTop: "auto" }}>
           {currentIdx > 0 && (
-            <button
-              onClick={prev}
-              className="h-12 px-6 rounded-2xl text-sm font-semibold border-0 cursor-pointer transition-all active:scale-95"
-              style={{ background: "var(--bg-soft)", color: "var(--ink-2)" }}
-            >
+            <button onClick={prev} className="pz-btn ghost" style={{ flex: 1, height: 48 }}>
               ← Wstecz
             </button>
           )}
           {currentIdx < steps.length - 1 ? (
-            <button
-              onClick={next}
-              className="flex-1 h-12 rounded-2xl text-sm font-bold border-0 cursor-pointer transition-all active:scale-95"
-              style={{ background: "var(--ink)", color: "var(--bg)" }}
-            >
+            <button onClick={next} className="pz-btn primary" style={{ flex: 1, height: 48 }}>
               Dalej →
             </button>
           ) : (
-            <button
-              onClick={finish}
-              className="flex-1 h-12 rounded-2xl text-sm font-bold border-0 cursor-pointer transition-all active:scale-95"
-              style={{ background: "var(--sage)", color: "white" }}
-            >
-              Rozpocznij! 🚀
+            <button onClick={finish} style={{
+              flex: 1, height: 48, borderRadius: 28, border: 0, cursor: "pointer",
+              fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em",
+              background: "var(--sage)", color: "white",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              Rozpocznij!
             </button>
           )}
         </div>

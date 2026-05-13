@@ -23,16 +23,17 @@ export default function ListaPage() {
   if (!session) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
-        <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Twoja lista</div>
-        <h1 className="pz-h" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em" }}>Zapisane.</h1>
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+            poznaj<span style={{ color: "var(--sage)" }}>.</span>
+          </h1>
+        </div>
         <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🔖</div>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, color: "var(--ink-3)" }}>
             Zaloguj się, aby zapisywać wydarzenia
           </p>
-          <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 44, padding: "0 24px", borderRadius: 28, fontSize: 15, fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>
-            Zaloguj się
-          </Link>
+          <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 44, padding: "0 24px", borderRadius: 28, fontSize: 15, fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
         </div>
       </div>
     );
