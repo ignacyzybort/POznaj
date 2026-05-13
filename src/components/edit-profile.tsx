@@ -30,10 +30,12 @@ export default function EditProfile({
     form.append("type", type);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: form });
+      if (!res.ok) return;
       const data = await res.json();
       if (data.url) {
         if (type === "avatar") setAvatarPreview(data.url);
         else setCoverPreview(data.url);
+        onSaved();
       }
     } catch {}
     setUploading(null);

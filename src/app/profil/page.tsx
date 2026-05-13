@@ -114,8 +114,8 @@ export default function ProfilPage() {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
-      {/* Cover banner — 140px */}
-      <div style={{ height: 140, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
+      {/* Cover banner — 120px */}
+      <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
         {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
         {/* Gear + Edit at top-right */}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
@@ -128,9 +128,9 @@ export default function ProfilPage() {
         </div>
       </div>
 
-      {/* Avatar — overlaps bottom of cover by 40px */}
+      {/* Avatar — fully below the cover banner */}
       <div style={{ padding: "0 18px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 14, marginTop: -48 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
           <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : `linear-gradient(135deg, hsl(${hue2},70%,55%), hsl(${hue1},80%,40%))` }}>
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
