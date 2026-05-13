@@ -452,6 +452,17 @@
   to { stroke-dashoffset: 0; }
 }
 
+/* Confetti */
+@keyframes pz-confetti-fall {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(120px) rotate(720deg) scale(0.3); opacity: 0; }
+}
+.pz-confetti {
+  position: fixed; width: 6px; height: 6px; border-radius: 1px;
+  pointer-events: none; z-index: 100;
+  animation: pz-confetti-fall 0.8s var(--ease-out-quart) both;
+}
+
 /* Spinner */
 @keyframes pz-spin { to { transform: rotate(360deg); } }
 .pz-spinner {

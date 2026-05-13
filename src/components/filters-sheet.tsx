@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
 
@@ -36,6 +36,32 @@ export default function FiltersSheet({
     setTimeout(() => { setExiting(false); onClose(); }, 300);
   };
 
+  const startY = useRef(0);
+  const startTime = useRef(0);
+  const [dragY, setDragY] = useState(0);
+  const dragging = useRef(false);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 1) return;
+    startY.current = e.touches[0].clientY;
+    startTime.current = Date.now();
+    dragging.current = true;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!dragging.current) return;
+    const dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) setDragY(dy);
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    const dy = e.changedTouches[0].clientY - startY.current;
+    const elapsed = Date.now() - startTime.current;
+    const velocity = elapsed > 0 ? dy / elapsed : 0;
+    if (dy > 80 || velocity > 0.4) close();
+    else setDragY(0);
+  };
+
   if (!show) return null;
 
   const sections: { key: keyof ActiveFilters; title: string; opts: { v: string; label: string; emoji?: string }[] }[] = [
@@ -47,7 +73,13 @@ export default function FiltersSheet({
   return (
     <>
       <div className="pz-sheet-backdrop" data-open={open && !exiting} onClick={close} />
-      <div className="pz-sheet" data-open={open && !exiting} style={{ maxHeight: "86%" }}>
+      <div className="pz-sheet" data-open={open && !exiting}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        style={{
+          maxHeight: "86%",
+          transform: open && !exiting ? (dragY ? `translateY(${dragY}px)` : undefined) : undefined,
+          transition: dragY > 0 && dragging.current ? "none" : undefined,
+        }}>
         <div className="pz-sheet-grabber" />
         <div style={{
           padding: "14px 18px 8px", display: "flex",

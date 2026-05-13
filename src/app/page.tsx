@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
 import EventCard from "@/components/event-card";
@@ -330,15 +330,31 @@ export default function HomePage() {
               <div className="pz-skeleton" style={{ height: 18, width: "90%" }} />
               <div className="pz-skeleton" style={{ height: 14, width: "70%" }} />
             </div>
-          )) : filtered.map((ev, i) => (
-            <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
-              <EventCard event={ev}
-                         onOpen={() => openEvent(ev)}
-                         onSave={() => toggleSave(ev.id)}
-                         saved={savedIds.includes(ev.id)}
-                         className="pz-card-stagger" />
-            </div>
-          ))}
+          )) : filtered.map((ev, i) => {
+            const isFeature = (i > 0 && i % 4 === 3);
+            return isFeature ? (
+              <React.Fragment key={ev.id}>
+                <div onClick={() => openEvent(ev)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
+                  className="pz-card-stagger pz-section-reveal"
+                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 200, cursor: "pointer" } as React.CSSProperties}>
+                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 60%)", padding: 20, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                    <span className="pz-pill solid" style={{ alignSelf: "flex-start", marginBottom: 8, fontSize: 11 }}>{ev.category}</span>
+                    <h3 style={{ margin: 0, color: "white", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1 }}>{ev.title}</h3>
+                    <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
+                  </div>
+                </div>
+              </React.Fragment>
+            ) : (
+              <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+                <EventCard event={ev}
+                           onOpen={() => openEvent(ev)}
+                           onSave={() => toggleSave(ev.id)}
+                           saved={savedIds.includes(ev.id)}
+                           className="pz-card-stagger" />
+              </div>
+            );
+          })}
           {!loading && filtered.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
               <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>

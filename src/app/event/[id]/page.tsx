@@ -9,6 +9,7 @@ import CategoryTag from "@/components/category-tag";
 import VibePill from "@/components/vibe-pill";
 import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
+import Confetti from "@/components/confetti";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
 const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
@@ -38,6 +39,7 @@ export default function EventDetailPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [reminded, setReminded] = useState(false);
   const [animatingSave, setAnimatingSave] = useState(false);
+  const [confetti, setConfetti] = useState(false);
 
   useEffect(() => {
     fetch(`/api/events/${params.id}`).then((r) => r.json()).then((d) => {
@@ -222,13 +224,14 @@ export default function EventDetailPage() {
         }}>
           <span className={saved && animatingSave ? "pz-bookmark-draw" : ""}>{saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}</span>
         </button>
-        <button onClick={() => setGoing(!going)} className="pz-btn primary pz-btn-ripple" style={{
+        <button onClick={() => { if (!going) setConfetti(true); setGoing(!going); }} className="pz-btn primary pz-btn-ripple" style={{
           flex: 1, background: going ? "var(--sage)" : "var(--ink)",
         }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
       </div>
 
+      <Confetti active={confetti} />
       <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );
