@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { districts } from "@/lib/data";
 
 export default function EditProfile({
@@ -8,7 +8,7 @@ export default function EditProfile({
   onClose,
   onSaved,
 }: {
-  user: { name: string | null; handle: string | null; bio: string | null; district: string | null };
+  user: { name: string | null; handle: string | null; bio: string | null; district: string | null; image: string | null; coverImage: string | null };
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -16,7 +16,28 @@ export default function EditProfile({
   const [handle, setHandle] = useState(user.handle ?? "");
   const [bio, setBio] = useState(user.bio ?? "");
   const [district, setDistrict] = useState(user.district ?? "");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user.image);
+  const [coverPreview, setCoverPreview] = useState<string | null>(user.coverImage);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
+
+  const upload = async (file: File, type: "avatar" | "cover") => {
+    setUploading(type);
+    const form = new FormData();
+    form.append("file", file);
+    form.append("type", type);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (data.url) {
+        if (type === "avatar") setAvatarPreview(data.url);
+        else setCoverPreview(data.url);
+      }
+    } catch {}
+    setUploading(null);
+  };
 
   const save = async () => {
     setSaving(true);
@@ -39,36 +60,62 @@ export default function EditProfile({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
-      <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", overflow: "auto" }}>
+      <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
         </div>
 
+        {/* Avatar upload */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>
+            Zdjęcie profilowe
+          </label>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 99, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
+              {avatarPreview && <img src={avatarPreview} alt="" className="w-full h-full object-cover" />}
+            </div>
+            <button onClick={() => avatarRef.current?.click()} disabled={uploading === "avatar"}
+              style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: "pointer", background: "var(--bg-soft)", color: "var(--ink)" }}>
+              {uploading === "avatar" ? "Przesyłanie..." : "📷 Zmień"}
+            </button>
+            <input ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f, "avatar"); }} />
+          </div>
+        </div>
+
+        {/* Cover upload */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>
+            Zdjęcie w tle
+          </label>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 80, height: 48, borderRadius: 12, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
+              {coverPreview && <img src={coverPreview} alt="" className="w-full h-full object-cover" />}
+            </div>
+            <button onClick={() => coverRef.current?.click()} disabled={uploading === "cover"}
+              style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: "pointer", background: "var(--bg-soft)", color: "var(--ink)" }}>
+              {uploading === "cover" ? "Przesyłanie..." : "🌅 Zmień"}
+            </button>
+            <input ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f, "cover"); }} />
+          </div>
+        </div>
+
         <div className="space-y-4">
           <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
-              Imię i nazwisko
-            </label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Imię</label>
             <input value={name} onChange={(e) => setName(e.target.value)}
               style={{ width: "100%", height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)" }} />
           </div>
-
           <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
-              Nazwa użytkownika
-            </label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Nazwa użytkownika</label>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 14, color: "var(--ink-3)" }}>@</span>
               <input value={handle} onChange={(e) => setHandle(e.target.value.replace(/\s/g, ""))}
                 style={{ flex: 1, height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)" }} />
             </div>
           </div>
-
           <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
-              Dzielnica
-            </label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Dzielnica</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
               {districts.map((d) => {
                 const active = district === d.value;
@@ -82,11 +129,8 @@ export default function EditProfile({
               })}
             </div>
           </div>
-
           <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>
-              O mnie
-            </label>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>O mnie</label>
             <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
               style={{ width: "100%", padding: "10px 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)", resize: "none" }} />
           </div>
