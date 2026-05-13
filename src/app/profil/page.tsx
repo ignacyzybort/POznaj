@@ -23,9 +23,20 @@ export default function ProfilPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [attendanceData, setAttendanceData] = useState<any[]>([]);
   const [friendsList, setFriendsList] = useState<{ id: string; name: string; color: string }[]>([]);
+  const [notifs, setNotifs] = useState<any[]>([]);
+  const [pendingReqs, setPendingReqs] = useState<any[]>([]);
+
+  const fetchNotifs = () => {
+    if (!session?.user) return;
+    fetch("/api/notifications").then((r) => r.json()).then((d) => {
+      setNotifs(d.notifications ?? []);
+      setPendingReqs(d.requests ?? []);
+    }).catch(() => {});
+  };
 
   useEffect(() => {
     if (!session?.user) return;
+    fetchNotifs();
     fetch("/api/friends").then((r) => r.json()).then((d) => {
       setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
         id: x.id,
@@ -135,6 +146,74 @@ export default function ProfilPage() {
         <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
         <PassportCard stamps={stamps} />
       </div>
+
+      {/* Notifications Inbox */}
+      {(pendingReqs.length > 0 || notifs.length > 0) && (
+        <div style={{ padding: "0 18px 14px" }}>
+          <div className="pz-card" style={{ padding: 16 }}>
+            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
+              <span>📬</span>
+              <span>Powiadomienia ({pendingReqs.length + notifs.length})</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              {pendingReqs.map((req) => (
+                <div key={req.id} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
+                  borderBottom: "0.5px solid var(--line)",
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 99,
+                    background: COLORS[req.senderId?.length % COLORS.length] ?? "#888",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    color: "white", fontSize: 14, fontWeight: 800, flexShrink: 0,
+                  }}>{req.senderName?.[0]?.toUpperCase() ?? "?"}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{req.senderName}</div>
+                    <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>chce być Twoim znajomym</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={async () => {
+                      await fetch("/api/notifications", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ notificationId: req.id, action: "accept" }),
+                      });
+                      setToast("✅ Znajomy dodany!");
+                      fetchNotifs();
+                    }} style={{
+                      border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600,
+                      background: "var(--sage)", color: "white", cursor: "pointer",
+                    }}>Akceptuj</button>
+                    <button onClick={async () => {
+                      await fetch("/api/notifications", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ notificationId: req.id, action: "reject" }),
+                      });
+                      fetchNotifs();
+                    }} style={{
+                      border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600,
+                      background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer",
+                    }}>Odrzuć</button>
+                  </div>
+                </div>
+              ))}
+              {notifs.filter(n => n.type !== "FRIEND_REQUEST").map((n) => (
+                <div key={n.id} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "8px 0",
+                  borderBottom: "0.5px solid var(--line)",
+                }}>
+                  <span style={{ fontSize: 20 }}>🔔</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>
+                    {n.body && <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{n.body}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Vibe quiz + Year-in-review */}
       <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
