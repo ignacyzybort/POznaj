@@ -1,7 +1,8 @@
-import { put } from "@vercel/blob";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -26,12 +27,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
   }
 
-  const blob = await put(`profiles/${type}-${session.user.id}-${Date.now()}`, file, {
-    access: "public",
-  });
+  const ext = file.name.split(".").pop() || "jpg";
+  const filename = `${type}-${session.user.id}-${Date.now()}.${ext}`;
 
-  const updateData = type === "avatar" ? { image: blob.url } : { coverImage: blob.url };
+  let url: string;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const { put } = await import("@vercel/blob");
+    const blob = await put(`profiles/${filename}`, file, { access: "public" });
+    url = blob.url;
+  } else {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const dir = join(process.cwd(), "public", "uploads");
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, filename), bytes);
+    url = `/uploads/${filename}`;
+  }
+
+  const updateData = type === "avatar" ? { image: url } : { coverImage: url };
   await prisma.user.update({ where: { id: session.user.id }, data: updateData });
 
-  return NextResponse.json({ url: blob.url });
+  return NextResponse.json({ url });
 }
