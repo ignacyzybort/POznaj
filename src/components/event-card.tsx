@@ -35,7 +35,7 @@ export default function EventCard({
   const going_count = event.going ?? 0;
 
   return (
-    <div className="pz-card pz-fade-in" onClick={onOpen} style={{ cursor: "pointer" }}>
+    <div className="pz-card pz-fade-in" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} style={{ cursor: "pointer" }}>
       <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
       </a>

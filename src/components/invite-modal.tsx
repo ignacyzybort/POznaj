@@ -11,6 +11,12 @@ interface SearchUser {
 
 export default function InviteModal({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
+  const [exiting, setExiting] = useState(false);
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
   const [users, setUsers] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [sentIds, setSentIds] = useState<string[]>([]);
@@ -43,11 +49,14 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      background: "rgba(20,19,15,0.5)",
+      animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+    }}>
       <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", display: "flex", flexDirection: "column" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Zaproś znajomych</h2>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          <button onClick={close} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
         </div>
 
         <input autoFocus type="text" placeholder="Szukaj po nazwie lub emailu..." value={query}
@@ -55,7 +64,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
           style={{ width: "100%", height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)", marginBottom: 12 }} />
 
         <div className="pz-scroll" style={{ flex: 1, minHeight: 0 }}>
-          {loading && <p style={{ color: "var(--ink-3)", fontSize: 13, textAlign: "center", padding: 20 }}>Szukanie...</p>}
+          {loading && <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: 20, color: "var(--ink-3)" }}><span className="pz-spinner" /><span style={{ fontSize: 13 }}>Szukanie...</span></div>}
           {!loading && query.length < 2 && (
             <p style={{ color: "var(--ink-4)", fontSize: 13, textAlign: "center", padding: 20 }}>Wpisz co najmniej 2 znaki</p>
           )}

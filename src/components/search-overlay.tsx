@@ -30,6 +30,12 @@ export default function SearchOverlay({
   onOpen: (ev: EventData) => void;
 }) {
   const [q, setQ] = useState(initial ?? "");
+  const [exiting, setExiting] = useState(false);
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
 
   const filtered = events.filter((e) => {
     if (!q) return true;
@@ -46,7 +52,7 @@ export default function SearchOverlay({
   return (
     <div style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
-      animation: "pz-fade-in 0.22s ease both",
+      animation: exiting ? "pz-fade-out 0.2s ease both" : "pz-fade-in 0.22s ease both",
       display: "flex", flexDirection: "column",
     }}>
       <div style={{ padding: "54px 16px 10px", display: "flex", gap: 10, alignItems: "center" }}>
@@ -67,7 +73,7 @@ export default function SearchOverlay({
             }}
           />
         </div>
-        <button onClick={() => { onCommit(q); onClose(); }} style={{
+        <button onClick={() => { onCommit(q); close(); }} style={{
           border: 0, background: "transparent", color: "var(--ink-2)",
           fontSize: 15, fontWeight: 600, cursor: "pointer",
         }}>Anuluj</button>
@@ -87,7 +93,7 @@ export default function SearchOverlay({
         <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{q ? "Wyniki" : "Popularne dziś"}</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {filtered.map((ev) => (
-            <button key={ev.id} onClick={() => { onCommit(q); onOpen(ev); onClose(); }} style={{
+            <button key={ev.id} onClick={() => { onCommit(q); onOpen(ev); close(); }} style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 4px", border: 0, background: "transparent",
               cursor: "pointer", textAlign: "left",

@@ -126,18 +126,16 @@ export default function EventDetailPage() {
           justifyContent: "space-between", gap: 8,
         }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{
-            width: 40, height: 40, borderRadius: 99, border: 0,
-            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-            color: "var(--ink)", cursor: "pointer",
+            width: 44, height: 44, borderRadius: 99, border: 0,
+            background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+            boxShadow: "var(--line) 0 0 0 0.5px, 0 2px 10px rgba(0,0,0,0.08)",
           }}><BackIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{
-            width: 40, height: 40, borderRadius: 99, border: 0,
-            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-            color: "var(--ink)", cursor: "pointer",
+            width: 44, height: 44, borderRadius: 99, border: 0,
+            background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+            boxShadow: "var(--line) 0 0 0 0.5px, 0 2px 10px rgba(0,0,0,0.08)",
           }}><ShareIcon size={20} /></button>
         </div>
 
@@ -209,7 +207,7 @@ export default function EventDetailPage() {
       {/* Pinned action bar — outside scroll, at the very bottom */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        padding: "14px 16px 28px", display: "flex", gap: 10,
+        padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10,
         background: "linear-gradient(180deg, transparent, var(--bg) 30%)",
       }}>
         <button onClick={toggleSave} style={{

@@ -168,12 +168,12 @@ export default function HomePage() {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => setSearchOpen(true)} aria-label="Szukaj" style={{
-              width: 40, height: 40, borderRadius: 99, border: 0,
+              width: 44, height: 44, borderRadius: 99, border: 0,
               background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
               display: "inline-flex", alignItems: "center", justifyContent: "center",
             }}><SearchIcon size={20} /></button>
             <button onClick={() => setFiltersOpen(true)} aria-label="Filtry" style={{
-              width: 40, height: 40, borderRadius: 99, border: 0,
+              width: 44, height: 44, borderRadius: 99, border: 0,
               background: activeCount ? "var(--ink)" : "var(--bg-soft)",
               color: activeCount ? "var(--bg)" : "var(--ink)",
               cursor: "pointer", position: "relative",
@@ -262,7 +262,7 @@ export default function HomePage() {
               padding: "6px 18px 14px", overflowX: "auto",
             }}>
               {forYou.map((ev, i) => (
-                <div key={ev.id} onClick={() => openEvent(ev)} className="pz-pop" style={{
+                <div key={ev.id} onClick={() => openEvent(ev)} className="pz-pop" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }} style={{
                   flex: "0 0 220px", borderRadius: 22, overflow: "hidden",
                   position: "relative", height: 280, cursor: "pointer",
                 }}>

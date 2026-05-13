@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
 
@@ -19,6 +20,23 @@ export default function FiltersSheet({
   onClear: () => void;
 }) {
   const count = active.category.length + active.district.length + active.vibe.length;
+  const [exiting, setExiting] = useState(false);
+  const [show, setShow] = useState(open);
+
+  useEffect(() => {
+    if (open) setShow(true);
+    else {
+      setExiting(true);
+      setTimeout(() => { setExiting(false); setShow(false); }, 300);
+    }
+  }, [open]);
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(() => { setExiting(false); onClose(); }, 300);
+  };
+
+  if (!show) return null;
 
   const sections: { key: keyof ActiveFilters; title: string; opts: { v: string; label: string; emoji?: string }[] }[] = [
     { key: "category", title: "Kategorie", opts: categories.map((c) => ({ v: c.value, label: c.label })) },
@@ -28,8 +46,8 @@ export default function FiltersSheet({
 
   return (
     <>
-      <div className="pz-sheet-backdrop" data-open={open} onClick={onClose} />
-      <div className="pz-sheet" data-open={open} style={{ maxHeight: "86%" }}>
+      <div className="pz-sheet-backdrop" data-open={open && !exiting} onClick={close} />
+      <div className="pz-sheet" data-open={open && !exiting} style={{ maxHeight: "86%" }}>
         <div className="pz-sheet-grabber" />
         <div style={{
           padding: "14px 18px 8px", display: "flex",
@@ -38,7 +56,7 @@ export default function FiltersSheet({
           <h2 className="pz-h" style={{
             margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em",
           }}>Filtry</h2>
-          <button onClick={onClose} aria-label="Zamknij" style={{
+          <button onClick={close} aria-label="Zamknij" style={{
             width: 32, height: 32, borderRadius: 99, border: 0,
             background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -72,7 +90,7 @@ export default function FiltersSheet({
           borderTop: "0.5px solid var(--line)",
         }}>
           <button className="pz-btn ghost" onClick={onClear}>Wyczyść</button>
-          <button className="pz-btn primary" style={{ flex: 1 }} onClick={onClose}>
+          <button className="pz-btn primary" style={{ flex: 1 }} onClick={close}>
             Pokaż {count > 0 ? `(${count})` : "wyniki"}
           </button>
         </div>

@@ -59,7 +59,13 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [recommendations, setRecommendations] = useState<EventData[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const router = useRouter();
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
 
   const q = questions[step];
   const isLast = step === questions.length - 1;
@@ -99,7 +105,10 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
 
   if (showResults) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+        background: "rgba(20,19,15,0.5)",
+        animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+      }}>
         <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", overflow: "auto" }}>
           <div className="text-center mb-4">
             <span className="text-4xl">🎯</span>
@@ -120,7 +129,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
                   style={{ background: "var(--bg-soft)", display: "flex" }}
                 >
                   <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-elev)]">
-                    {ev.imageUrl && <img src={ev.imageUrl} alt="" className="w-full h-full object-cover" />}
+                    {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold line-clamp-2" style={{ color: "var(--ink)" }}>{ev.title}</p>
@@ -133,7 +142,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          <button onClick={onClose} className="w-full py-3 rounded-2xl text-sm font-bold border-0 cursor-pointer"
+          <button onClick={close} className="w-full py-3 rounded-2xl text-sm font-bold border-0 cursor-pointer"
             style={{ background: "var(--ink)", color: "var(--bg)" }}>
             Super!
           </button>
@@ -143,7 +152,10 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      background: "rgba(20,19,15,0.5)",
+      animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+    }}>
       <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
         <div className="flex gap-1.5 mb-6">
           {questions.map((_, i) => (
@@ -170,7 +182,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        <button onClick={onClose} className="w-full py-3 rounded-2xl text-sm font-semibold border-0 cursor-pointer"
+        <button onClick={close} className="w-full py-3 rounded-2xl text-sm font-semibold border-0 cursor-pointer"
           style={{ background: "var(--bg-soft)", color: "var(--ink-3)" }}>
           ✕ Zamknij
         </button>

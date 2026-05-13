@@ -36,7 +36,7 @@ export default function EventArt({
       <div className="pz-art" style={{ height, background: "var(--bg-soft)" }}>
         <img
           src={event.imageUrl}
-          alt=""
+          alt={`Zdjęcie wydarzenia: ${event.title}`}
           onError={() => setImgFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />

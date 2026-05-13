@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @import "@fontsource/inter/400.css";
 @import "@fontsource/inter/500.css";
@@ -53,11 +52,30 @@
   --c-inne: #E8E3D8;
   --c-inne-ink: #1A1A1A;
 
+  /* Semantic tokens */
+  --bg-page: var(--bg);
+  --bg-card: var(--bg-elev);
+  --bg-surface: var(--bg-soft);
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-2);
+  --text-tertiary: var(--ink-3);
+  --text-muted: var(--ink-4);
+  --border-subtle: var(--line);
+  --border-strong: var(--line-2);
+  --accent-confirm: var(--sage);
+  --accent-hot: var(--hot);
+  --accent-warm: var(--hot-2);
+
   --hot: #FF3823;
   --hot-2: #FF7A0F;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
   --font-display: 'Instrument Serif', 'New York', 'Times New Roman', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
 }
 
 .dark {
@@ -78,12 +96,35 @@
   --sage-soft: rgba(143, 178, 142, 0.16);
 }
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus-visible outlines */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.pz-btn:focus-visible,
+.pz-chip:focus-visible,
+.pz-card:focus-visible,
+.pz-tab:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 /* Base stage */
 .pz-stage {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
   font-feature-settings: 'cv11', 'ss01';
+  min-height: 100dvh;
   height: 100%;
   width: 100%;
   position: relative;
@@ -123,7 +164,7 @@
 /* Chip */
 .pz-chip {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px; border-radius: 999px;
+  padding: 11px 14px; min-height: 44px; border-radius: 999px;
   font-size: 13px; font-weight: 500; letter-spacing: -0.01em;
   background: var(--bg-elev); color: var(--ink-2);
   border: 0.5px solid var(--line); white-space: nowrap;
@@ -144,23 +185,26 @@
 
 /* Tab bar */
 .pz-tabbar {
-  position: absolute; bottom: 12px; left: 14px; right: 14px;
+  position: absolute;
+  bottom: calc(12px + var(--safe-b));
+  left: calc(14px + var(--safe-l));
+  right: calc(14px + var(--safe-r));
   height: 64px; border-radius: 28px;
   background: var(--bg-elev);
   border: 0.5px solid var(--line-2);
   box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 8px 30px rgba(20,19,15,0.10);
   display: flex; align-items: center; justify-content: space-around;
   padding: 0 8px; z-index: 50;
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
 .dark .pz-tabbar { background: rgba(36,38,44,0.82); border-color: rgba(244,244,246,0.10); }
 .pz-tab {
-  flex: 1; height: 48px; border-radius: 20px;
+  flex: 1; min-height: 48px; border-radius: 20px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 2px;
   color: var(--ink-3); background: transparent; border: 0; cursor: pointer;
   font-size: 10px; font-weight: 600; letter-spacing: -0.01em;
   transition: color 0.12s, background 0.12s;
+  padding: 6px 4px;
 }
 .pz-tab[data-active="true"] { color: var(--ink); }
 .pz-tab svg { width: 22px; height: 22px; }
@@ -214,10 +258,25 @@
 }
 
 @keyframes pz-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 .pz-fade-in { animation: pz-fade-in 0.35s ease both; }
+
+@keyframes pz-fade-out {
+  from { opacity: 1; transform: translateY(0); filter: blur(0); }
+  to { opacity: 0; transform: translateY(6px); filter: blur(4px); }
+}
+.pz-fade-out { animation: pz-fade-out 0.22s ease both; }
+
+/* Atmospheric noise overlay on stage */
+.pz-stage::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay; opacity: 0.035;
+}
+.dark .pz-stage::after { opacity: 0.06; }
 
 @keyframes pz-pop {
   0% { transform: scale(0.92); opacity: 0; }
@@ -275,15 +334,21 @@
 /* Status dot */
 .pz-dot { width: 6px; height: 6px; border-radius: 99px; background: currentColor; display: inline-block; }
 
-@layer base {
-  * { @apply border-transparent; }
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--font-sans);
-    font-feature-settings: 'cv11', 'ss01';
-    letter-spacing: -0.005em;
-    -webkit-font-smoothing: antialiased;
-  }
-  ::selection { background: var(--ink); color: var(--bg); }
+/* Spinner */
+@keyframes pz-spin { to { transform: rotate(360deg); } }
+.pz-spinner {
+  width: 18px; height: 18px; border-radius: 99px;
+  border: 2px solid var(--line); border-top-color: currentColor;
+  animation: pz-spin 0.6s linear infinite;
+  display: inline-block;
 }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--ink); color: var(--bg); }

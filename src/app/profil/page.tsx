@@ -116,7 +116,7 @@ export default function ProfilPage() {
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Cover banner — 120px */}
       <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
-        {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
+        {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" className="w-full h-full object-cover" />}
         {/* Gear + Edit at top-right */}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
           <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
@@ -133,7 +133,7 @@ export default function ProfilPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
           <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : `linear-gradient(135deg, hsl(${hue2},70%,55%), hsl(${hue1},80%,40%))` }}>
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt="Zdjęcie profilowe" className="w-full h-full object-cover" />
             ) : (
               <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 28, fontWeight: 800 }}>
                 {name[0]?.toUpperCase() ?? "?"}

@@ -20,6 +20,7 @@ export default function SurpriseModal({
   const [spinning, setSpinning] = useState(true);
   const [results, setResults] = useState<EventData[]>([]);
   const [picked, setPicked] = useState<EventData | null>(null);
+  const [exiting, setExiting] = useState(false);
 
   const spin = useCallback(() => {
     setSpinning(true);
@@ -48,7 +49,10 @@ export default function SurpriseModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      background: "rgba(20,19,15,0.5)",
+      animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+    }}>
       <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
         <div className="text-center mb-4">
           <span className="text-3xl">🔀</span>
@@ -69,7 +73,7 @@ export default function SurpriseModal({
               }}
             >
               <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-elev)]">
-                {ev.imageUrl && <img src={ev.imageUrl} alt="" className="w-full h-full object-cover" />}
+                {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover" />}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-bold line-clamp-1" style={{ color: "var(--ink)" }}>{ev.title}</p>
@@ -87,7 +91,7 @@ export default function SurpriseModal({
               🔄 Jeszcze raz
             </button>
           )}
-          <button onClick={onClose} className="flex-1 h-11 rounded-2xl text-sm font-bold border-0 cursor-pointer" style={{ background: "var(--ink)", color: "var(--bg)" }}>
+          <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="flex-1 h-11 rounded-2xl text-sm font-bold border-0 cursor-pointer" style={{ background: "var(--ink)", color: "var(--bg)" }}>
             {picked ? "🚀 Idę!" : "✕ Zamknij"}
           </button>
         </div>
