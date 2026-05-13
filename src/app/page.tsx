@@ -259,7 +259,7 @@ export default function HomePage() {
 
       {/* For You rail */}
       {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "6px 18px 0" }}>
+        <div className="pz-section-reveal" style={{ padding: "6px 18px 0" }}>
           <div style={{
             display: "flex", alignItems: "baseline",
             justifyContent: "space-between", marginBottom: 4,

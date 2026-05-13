@@ -37,6 +37,7 @@ export default function EventDetailPage() {
   const [going, setGoing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [reminded, setReminded] = useState(false);
+  const [animatingSave, setAnimatingSave] = useState(false);
 
   useEffect(() => {
     fetch(`/api/events/${params.id}`).then((r) => r.json()).then((d) => {
@@ -213,13 +214,13 @@ export default function EventDetailPage() {
         padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10,
         background: "linear-gradient(180deg, transparent, var(--bg) 30%)",
       }}>
-        <button onClick={toggleSave} style={{
+        <button onClick={() => { setAnimatingSave(true); toggleSave(); setTimeout(() => setAnimatingSave(false), 400); }} style={{
           width: 50, height: 50, borderRadius: 99, border: 0,
           background: saved ? "var(--ink)" : "var(--bg-soft)",
           color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
         }}>
-          {saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}
+          <span className={saved && animatingSave ? "pz-bookmark-draw" : ""}>{saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}</span>
         </button>
         <button onClick={() => setGoing(!going)} className="pz-btn primary pz-btn-ripple" style={{
           flex: 1, background: going ? "var(--sage)" : "var(--ink)",
