@@ -113,9 +113,9 @@ export default function ProfilPage() {
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
         <div style={{ padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
           <div style={{ marginBottom: 20 }}>
-            <h1 style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+            <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
               poznaj<span style={{ color: "var(--sage)" }}>.</span>
-            </h1>
+            </span>
           </div>
           <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
@@ -195,7 +195,7 @@ export default function ProfilPage() {
             { n: stats.attendance, l: "plany" }, { n: stats.savedEvents, l: "zapisane" }, { n: friendsList.length, l: "znajomi" },
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
-              <div className="pz-num" style={{ fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
+              <div className="pz-num" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
               <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
             </div>
           ))}
@@ -207,7 +207,7 @@ export default function ProfilPage() {
       <div style={{ padding: "0 18px 14px" }}>
         <div className="pz-card" style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div><span style={{ fontSize: "var(--text-2xl)", marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
+            <div><span style={{ fontSize: "var(--text-lg)", marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
             <span className="pz-num" style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
@@ -229,10 +229,10 @@ export default function ProfilPage() {
         <div className="pz-card" style={{ padding: 14 }}>
           <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Najczęstsza kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]} · {topCategory[1]}x</span></div>}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Odwiedzone dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 10</span></div>
-            {topVenue && <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Ulubione miejsce</span><span style={{ fontWeight: 700, color: "var(--ink)", textAlign: "right", maxWidth: "50%" }}>{topVenue[0]} · {topVenue[1]}x</span></div>}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>W tym miesiącu</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{monthlyCount[new Date().getMonth()]}</span></div>
+            {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Najczęstsza kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]} · {topCategory[1]}x</span></div>}
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Odwiedzone dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 10</span></div>
+            {topVenue && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Ulubione miejsce</span><span style={{ fontWeight: 700, color: "var(--ink)", textAlign: "right", maxWidth: "50%" }}>{topVenue[0]} · {topVenue[1]}x</span></div>}
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>W tym miesiącu</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{monthlyCount[new Date().getMonth()]}</span></div>
           </div>
         </div>
       </div>
@@ -273,12 +273,12 @@ export default function ProfilPage() {
       {/* Vibe quiz + wrapped */}
       <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
         <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-2xl)", fontWeight: 800 }}>?</div>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800 }}>?</div>
           <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
           <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
         </button>
         <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
+          <div><div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
           <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
         </button>
       </div>
@@ -294,7 +294,7 @@ export default function ProfilPage() {
         <div style={{ padding: "0 18px 14px", display: "flex", gap: 14, overflowX: "auto" }}>
           {friendsList.map((f) => (
             <a key={f.id} href={`/user/${f.id}`} style={{ textAlign: "center", flex: "0 0 56px", textDecoration: "none" }}>
-              <div style={{ width: 52, height: 52, borderRadius: 99, background: f.color, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, border: "2px solid var(--bg)", boxShadow: "0 4px 12px rgba(0,0,0,0.10)" }}>{f.name[0]}</div>
+              <div style={{ width: 52, height: 52, borderRadius: 99, background: f.color, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-lg)", fontWeight: 800, border: "2px solid var(--bg)", boxShadow: "0 4px 12px rgba(0,0,0,0.10)" }}>{f.name[0]}</div>
               <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, marginTop: 6, color: "var(--ink-2)" }}>{f.name}</div>
             </a>
           ))}

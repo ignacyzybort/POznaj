@@ -24,9 +24,9 @@ export default function ListaPage() {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
         <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+          <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
             poznaj<span style={{ color: "var(--sage)" }}>.</span>
-          </h1>
+          </span>
         </div>
         <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 16 }}>🔖</div>

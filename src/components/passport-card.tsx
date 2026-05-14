@@ -30,7 +30,7 @@ export default function PassportCard({ stamps }: { stamps: Record<string, number
               }}
             >
               <span style={{ fontSize: "var(--text-sm)" }}>{unlocked ? "✅" : "🔒"}</span>
-              <span style={{ fontSize: 7, fontWeight: 600, opacity: 0.8, lineHeight: 1.1 }}>
+              <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, opacity: 0.8, lineHeight: 1.1 }}>
                 {d.label.split(" ")[0]}
               </span>
             </div>

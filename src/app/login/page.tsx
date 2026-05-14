@@ -27,9 +27,9 @@ export default function LoginPage() {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 24px", maxWidth: 400, margin: "0 auto", width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <h1 style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.03em", margin: "0 0 8px", color: "var(--ink)" }}>
+          <span className="pz-sans-display" style={{ fontSize: 36, color: "var(--ink)" }}>
             poznaj<span style={{ color: "var(--sage)" }}>.</span>
-          </h1>
+          </span>
           <p style={{ fontSize: 17, color: "var(--ink-3)", margin: 0 }}>
             Co dziś w Poznaniu.
           </p>
