@@ -8,7 +8,7 @@ import EventArt from "@/components/event-art";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
 
 export default function EventCard({
-  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "pz-fade-in",
+  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "",
 }: {
   event: EventData;
   onOpen?: () => void;

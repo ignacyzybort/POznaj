@@ -119,7 +119,7 @@ export default function EventDetailPage() {
   return (
     <div data-category={event.category} style={{
       position: "absolute", inset: 0, background: "var(--bg)",
-      zIndex: 30, animation: "pz-fade-in var(--dur-slow) var(--ease-out-quart) both",
+      zIndex: 30,
     }}>
       {/* Scrollable content — ends above the action bar */}
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>
