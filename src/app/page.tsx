@@ -123,10 +123,11 @@ export default function HomePage() {
   const router = useRouter();
   const { data: session } = useSession();
   const openEvent = (ev: EventData) => {
+    sessionStorage.setItem("transition-art-id", ev.id);
     if (document.startViewTransition) {
-      document.startViewTransition(() => { router.push(`/event/${ev.id}`); });
+      document.startViewTransition(() => { window.location.href = `/event/${ev.id}`; });
     } else {
-      router.push(`/event/${ev.id}`);
+      window.location.href = `/event/${ev.id}`;
     }
   };
   const toggleSave = async (id: string) => {
@@ -390,7 +391,7 @@ export default function HomePage() {
       {surpriseOpen && (
         <SurpriseModal
           events={events}
-          onPick={(ev) => { router.push(`/event/${ev.id}`); }}
+          onPick={(ev) => { sessionStorage.setItem("transition-art-id", ev.id); window.location.href = `/event/${ev.id}`; }}
           onClose={() => setSurpriseOpen(false)}
         />
       )}

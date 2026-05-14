@@ -145,7 +145,7 @@ export default function EventDetailPage() {
 
         {/* Hero art */}
         <div style={{ height: 340, overflow: "hidden" }}>
-          <EventArt event={event} height={340} style="collage" className="pz-art-morph" />
+          <EventArt event={event} height={340} style="collage" />
         </div>
 
         {/* Category glow */}
