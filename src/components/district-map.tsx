@@ -1,6 +1,6 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap, Polygon } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect, useRef, useMemo } from "react";
 import type { EventData } from "@/lib/data";
@@ -207,6 +207,7 @@ export default function DistrictMap({
         zoom={11}
         style={{ width: "100%", height: "100%" }}
         zoomControl={false}
+        preferCanvas={true}
       >
         <DistrictBoundary />
         <TileLayer
@@ -216,7 +217,6 @@ export default function DistrictMap({
         <MapController selected={selectedDistrict} eventCounts={eventCounts} />
         {districtGeojson && (
           <GeoJSON
-            key={selectedDistrict ?? "all"}
             data={districtGeojson as any}
             onEachFeature={onEachFeature}
             style={(feature) => {
