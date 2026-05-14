@@ -215,7 +215,7 @@ export default function HomeClient({
             { v: "weekend", label: "Weekend" },
             { v: "week", label: "Ten tydzień" },
           ].map((o) => (
-            <button key={o.v} className="pz-chip" aria-pressed={quick === o.v}
+            <button key={o.v} className="pz-chip pz-chip-spring" aria-pressed={quick === o.v}
                     data-active={quick === o.v ? "true" : undefined}
                     onClick={() => setQuick(quick === o.v ? null : o.v)}>
               {o.label}
