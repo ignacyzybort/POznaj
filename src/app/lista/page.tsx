@@ -71,7 +71,7 @@ export default function ListaPage() {
             <Link key={a.id} href={`/event/${a.event.id}`} style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit" }}>
               <div style={{ width: 64, height: 64, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: "var(--bg-soft)" }}>
                 {a.event.imageUrl && (
-                  <img src={a.event.imageUrl} alt={a.event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img loading="lazy" src={a.event.imageUrl} alt={a.event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 )}
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>

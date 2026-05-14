@@ -42,6 +42,7 @@ export default function EventArt({
         <img
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
+          loading="lazy"
           onError={() => setImgFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />

@@ -23,6 +23,18 @@ const COVER_GRADIENTS = [
   "linear-gradient(135deg, var(--c-konferencje), var(--c-kino))",
 ];
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
+function timeAgo(d: Date): string {
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "przed chwilą";
+  if (mins < 60) return `${mins} min temu`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} godz temu`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} dni temu`;
+  return `${Math.floor(days / 7)} tyg temu`;
+}
+
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 
 function getBadge(count: number): { emoji: string; title: string } {
@@ -47,6 +59,7 @@ export default function ProfilPage() {
   const [userData, setUserData] = useState<any>(null);
   const [notifs, setNotifs] = useState<any[]>([]);
   const [pendingReqs, setPendingReqs] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [profileLoading, setProfileLoading] = useState(true);
 
@@ -78,6 +91,9 @@ export default function ProfilPage() {
         for (const a of items) { const dist = a.event?.district; if (dist) s[dist] = (s[dist] || 0) + 1; }
         for (const d of districts) { if (!s[d.value]) s[d.value] = 0; }
         setStamps(s);
+      }).catch(() => {}),
+      fetch("/api/activities").then((r) => r.json()).then((d) => {
+        setActivities(d.activities ?? []);
       }).catch(() => {}),
     ]).finally(() => setProfileLoading(false));
   }, [session, refreshKey]);
@@ -306,7 +322,28 @@ export default function ProfilPage() {
       {/* Activity feed */}
       <div style={{ padding: "8px 18px 0" }}>
         <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
+        {activities.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {activities.map((a) => (
+              <div key={a.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "0.5px solid var(--line)" }}>
+                <div style={{ width: 38, height: 38, borderRadius: 99, background: `hsl(${((a.user?.name ?? "").length * 37) % 360},70%,55%)`, color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
+                  {a.user?.name?.[0]?.toUpperCase() ?? "?"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-2)", lineHeight: 1.4 }}>
+                    <b style={{ color: "var(--ink)" }}>{a.user?.name ?? "Znajomy"}</b>{a.type === "GOING" ? " idzie na " : " zapisał "}
+                    <b style={{ color: "var(--ink)" }}>{a.event?.title ?? "wydarzenie"}</b>
+                  </div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-4)", marginTop: 2 }}>
+                    {timeAgo(new Date(a.createdAt))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
+        )}
       </div>
 
       {/* Logout */}
