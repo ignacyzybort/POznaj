@@ -14,13 +14,17 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search");
 
-  if (search) {
+  if (search !== null) {
+    const trimmed = search.trim();
+    if (trimmed.length < 2 || trimmed.length > 64) {
+      return NextResponse.json({ users: [] });
+    }
     const users = await prisma.user.findMany({
       where: {
         id: { not: userId },
         OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { email: { contains: search, mode: "insensitive" } },
+          { name: { contains: trimmed, mode: "insensitive" } },
+          { email: { contains: trimmed, mode: "insensitive" } },
         ],
       },
       select: { id: true, name: true, image: true, district: true, handle: true },

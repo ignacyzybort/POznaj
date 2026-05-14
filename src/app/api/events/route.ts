@@ -1,22 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, District, Category, Vibe } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { getRecommendations } from "@/lib/recommendations";
+
+const SEARCH_MAX = 100;
+
+function parseEnumArray<T extends Record<string, string>>(
+  raw: string[],
+  e: T,
+): { values: T[keyof T][]; invalid: string[] } {
+  const nonEmpty = raw.filter((v) => v !== "");
+  const valid: T[keyof T][] = [];
+  const invalid: string[] = [];
+  for (const v of nonEmpty) {
+    if (v in e) valid.push(v as T[keyof T]);
+    else invalid.push(v);
+  }
+  return { values: valid, invalid };
+}
+
+function parseNonNegInt(raw: string | null, fallback: number): number | null {
+  if (raw === null || raw === "") return fallback;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.floor(n);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const districtsParam = searchParams.getAll("district");
-  const categoriesParam = searchParams.getAll("category");
-  const vibesParam = searchParams.getAll("vibe");
-  const search = searchParams.get("search") || searchParams.get("q");
+  const districtsResult = parseEnumArray(searchParams.getAll("district"), District);
+  const categoriesResult = parseEnumArray(searchParams.getAll("category"), Category);
+  const vibesResult = parseEnumArray(searchParams.getAll("vibe"), Vibe);
+  const firstInvalid = (() => {
+    if (districtsResult.invalid.length) return { key: "district", values: districtsResult.invalid };
+    if (categoriesResult.invalid.length) return { key: "category", values: categoriesResult.invalid };
+    if (vibesResult.invalid.length) return { key: "vibe", values: vibesResult.invalid };
+    return null;
+  })();
+  if (firstInvalid) {
+    return NextResponse.json(
+      { error: `Invalid ${firstInvalid.key} value(s): ${firstInvalid.values.join(", ")}` },
+      { status: 400 },
+    );
+  }
+  const districts = districtsResult.values;
+  const categories = categoriesResult.values;
+  const vibes = vibesResult.values;
+
+  const rawSearch = searchParams.get("search") ?? searchParams.get("q");
+  let search: string | null = null;
+  if (rawSearch !== null) {
+    const trimmed = rawSearch.trim();
+    if (trimmed.length > SEARCH_MAX) {
+      return NextResponse.json(
+        { error: `Search must be ≤ ${SEARCH_MAX} chars` },
+        { status: 400 },
+      );
+    }
+    // 0–1 char: treated as "no search" (lets the client send incremental input
+    // without a 400 per keystroke). 2+ chars: apply the filter.
+    if (trimmed.length >= 2) search = trimmed;
+  }
+
   const quick = searchParams.get("quick");
   const budget = searchParams.get("budget");
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
-  const limit = Math.min(Number(searchParams.get("limit")) || 50, 200);
-  const offset = Number(searchParams.get("offset")) || 0;
+
+  const limitParsed = parseNonNegInt(searchParams.get("limit"), 50);
+  const offsetParsed = parseNonNegInt(searchParams.get("offset"), 0);
+  if (limitParsed === null || offsetParsed === null) {
+    return NextResponse.json({ error: "limit and offset must be non-negative integers" }, { status: 400 });
+  }
+  const limit = Math.min(Math.max(limitParsed, 1), 200);
+  const offset = offsetParsed;
   const sort = searchParams.get("sort") || "date"; // "date" or "score"
 
   const now = new Date();
@@ -24,14 +83,14 @@ export async function GET(request: NextRequest) {
     endDate: { gte: now },
   };
 
-  if (districtsParam.length > 0) {
-    where.district = { in: districtsParam as any };
+  if (districts.length > 0) {
+    where.district = { in: districts };
   }
-  if (categoriesParam.length > 0) {
-    where.category = { in: categoriesParam as any };
+  if (categories.length > 0) {
+    where.category = { in: categories };
   }
-  if (vibesParam.length > 0) {
-    where.vibes = { some: { vibe: { in: vibesParam as any } } };
+  if (vibes.length > 0) {
+    where.vibes = { some: { vibe: { in: vibes } } };
   }
   if (search) {
     where.OR = [

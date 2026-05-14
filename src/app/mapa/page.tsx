@@ -1,29 +1,14 @@
-"use client";
+import { getEvents } from "@/lib/events-server";
+import MapaClient from "./mapa-client";
 
-import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
-import { EventData } from "@/lib/data";
+export const dynamic = "force-dynamic";
 
-const DistrictMap = dynamic(() => import("@/components/district-map"), { ssr: false });
-
-export default function MapPage() {
-  const [events, setEvents] = useState<EventData[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/events?limit=200").then((r) => r.json()).then((d) => {
-      setEvents(d.events ?? []);
-    });
-  }, []);
+export default async function MapaPage() {
+  const events = await getEvents({ limit: 200 });
 
   return (
     <div style={{ position: "absolute", inset: 0 }}>
-      <DistrictMap
-        events={events}
-        selectedDistrict={selected}
-        onSelect={setSelected}
-        onBack={() => setSelected(null)}
-      />
+      <MapaClient events={events} />
     </div>
   );
 }
