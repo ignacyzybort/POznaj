@@ -89,7 +89,8 @@ export class FacebookScraper implements Scraper {
 
   private guessDistrict(text: string): string {
     const lower = text.toLowerCase();
-    if (lower.includes("stary rynek") || lower.includes("stare miasto") || lower.includes("śródmieście")) return "StareMiasto";
+    if (lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
+    if (lower.includes("stary rynek") || lower.includes("stare miasto")) return "StareMiasto";
     if (lower.includes("jeżyce") || lower.includes("jezyce")) return "Jezyce";
     if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz")) return "Grunwald";
     if (lower.includes("wilda")) return "Wilda";

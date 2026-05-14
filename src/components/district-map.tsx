@@ -136,7 +136,7 @@ function DistrictBoundary() {
   useEffect(() => {
     const dark = L.polygon(
       [[-90, -180], [-90, 180], [90, 180], [90, -180]],
-      { color: "#000", fillColor: "#000", fillOpacity: 0.55, weight: 0, interactive: false }
+      { color: "#111", fillColor: "#111", fillOpacity: 1.0, weight: 0, interactive: false }
     );
     if (CITY_BOUNDARY.length > 2) {
       // Add the city boundary as a hole

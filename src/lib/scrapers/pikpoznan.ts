@@ -5,7 +5,7 @@ import { matchVenue } from "@/lib/venues";
 
 function guessDistrict(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes("stary rynek") || lower.includes("śródmieście") || lower.includes("centrum")) return "StareMiasto";
+  if (lower.includes("stary rynek") || lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
   if (lower.includes("jeżyce") || lower.includes("jezyce") || lower.includes("rynek jeżycki")) return "Jezyce";
   if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz") || lower.includes("rynek łazarski")) return "Grunwald";
   if (lower.includes("wilda")) return "Wilda";
