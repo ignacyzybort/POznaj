@@ -1,7 +1,8 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
+import { useEffect, useRef, useCallback } from "react";
 import type { EventData } from "@/lib/data";
 import { categoryColors } from "@/lib/data";
 
@@ -27,6 +28,20 @@ function createCategoryMarker(category: string) {
   });
 }
 
+function MapAnimator({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, zoom, { duration: 1.0, easeLinearity: 0.5 });
+  }, [center[0], center[1], zoom, map]);
+  return null;
+}
+
+function MapRefCapture({ onMap }: { onMap: (m: L.Map) => void }) {
+  const map = useMap();
+  useEffect(() => { onMap(map); }, [map, onMap]);
+  return null;
+}
+
 export default function LeafletMap({
   center,
   events,
@@ -39,11 +54,26 @@ export default function LeafletMap({
   onBack: () => void;
 }) {
   const filtered = events.filter((e) => e.district === selectedDistrict && e.coordsX);
+  const mapRef = useRef<L.Map | null>(null);
+  const initialCenter: [number, number] = [52.408, 16.934];
+  const initialZoom = 12;
+
+  const captureMap = useCallback((m: L.Map) => { mapRef.current = m; }, []);
+
+  const handleBack = () => {
+    const m = mapRef.current;
+    if (m) {
+      m.flyTo(initialCenter, initialZoom, { duration: 0.6, easeLinearity: 0.5 });
+      setTimeout(onBack, 600);
+    } else {
+      onBack();
+    }
+  };
 
   return (
-    <div style={{ position: "absolute", inset: 0, animation: "pz-fade-in 0.3s ease both" }}>
+    <div style={{ position: "absolute", inset: 0 }}>
       <button
-        onClick={onBack}
+        onClick={handleBack}
         style={{
           position: "absolute", top: 54, left: 16, zIndex: 1000,
           padding: "8px 16px", borderRadius: 99, border: 0,
@@ -73,11 +103,13 @@ export default function LeafletMap({
       )}
 
       <MapContainer
-        center={center}
-        zoom={14}
+        center={initialCenter}
+        zoom={initialZoom}
         style={{ width: "100%", height: "100%" }}
         zoomControl={false}
       >
+        <MapRefCapture onMap={captureMap} />
+        <MapAnimator center={center} zoom={14} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
