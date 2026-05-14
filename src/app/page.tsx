@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
 import { PL_DAY_FULL, PL_MONTH_FULL, fmtFullDate, fmtShortDate, relDay } from "@/lib/date";
@@ -119,16 +120,17 @@ export default function HomePage() {
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
+  const router = useRouter();
   const { data: session } = useSession();
   const openEvent = (ev: EventData) => {
     if (document.startViewTransition) {
-      document.startViewTransition(() => { window.location.href = `/event/${ev.id}`; });
+      document.startViewTransition(() => { router.push(`/event/${ev.id}`); });
     } else {
-      window.location.href = `/event/${ev.id}`;
+      router.push(`/event/${ev.id}`);
     }
   };
   const toggleSave = async (id: string) => {
-    if (!session?.user) { window.location.href = "/login"; return; }
+    if (!session?.user) { router.push("/login"); return; }
     const isSaved = savedIds.includes(id);
     if (!isSaved) {
       await fetch("/api/attendance", {
@@ -137,7 +139,7 @@ export default function HomePage() {
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
       setToast("Zapisano ✅");
-      setTimeout(() => { window.location.href = "/lista"; }, DUR.reveal);
+      setTimeout(() => { router.push("/lista"); }, DUR.reveal);
     }
     setSavedIds((prev) =>
       isSaved ? prev.filter((v) => v !== id) : [...prev, id]
@@ -388,7 +390,7 @@ export default function HomePage() {
       {surpriseOpen && (
         <SurpriseModal
           events={events}
-          onPick={(ev) => { window.location.href = `/event/${ev.id}`; }}
+          onPick={(ev) => { router.push(`/event/${ev.id}`); }}
           onClose={() => setSurpriseOpen(false)}
         />
       )}

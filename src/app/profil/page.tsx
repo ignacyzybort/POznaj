@@ -128,11 +128,18 @@ export default function ProfilPage() {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
+      {/* Wordmark */}
+      <div style={{ padding: "calc(24px + var(--safe-t)) 18px 12px" }}>
+        <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+          poznaj<span style={{ color: "var(--sage)" }}>.</span>
+        </h1>
+      </div>
+
       {/* Cover banner — 120px */}
-      <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
+      <div style={{ margin: "0 18px", height: 120, borderRadius: 22, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
         {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         {/* Gear + Edit at top-right */}
-        <div style={{ position: "absolute", top: "calc(12px + var(--safe-t))", right: 12, display: "flex", gap: 6 }}>
+        <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
           <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
             <SettingsIcon size={18} />
           </Link>
