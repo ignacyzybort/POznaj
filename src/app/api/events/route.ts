@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, District, Category, Vibe } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { getRecommendations } from "@/lib/recommendations";
+
+const SEARCH_MAX = 100;
+
+function filterEnum<T extends Record<string, string>>(values: string[], e: T): T[keyof T][] {
+  return values.filter((v): v is T[keyof T] => v in e);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const districtsParam = searchParams.getAll("district");
-  const categoriesParam = searchParams.getAll("category");
-  const vibesParam = searchParams.getAll("vibe");
-  const search = searchParams.get("search") || searchParams.get("q");
+  const districts = filterEnum(searchParams.getAll("district"), District);
+  const categories = filterEnum(searchParams.getAll("category"), Category);
+  const vibes = filterEnum(searchParams.getAll("vibe"), Vibe);
+  const rawSearch = searchParams.get("search") || searchParams.get("q");
+  const search =
+    rawSearch && rawSearch.trim().length >= 2 && rawSearch.length <= SEARCH_MAX
+      ? rawSearch.trim()
+      : null;
   const quick = searchParams.get("quick");
   const budget = searchParams.get("budget");
   const dateFrom = searchParams.get("dateFrom");
   const dateTo = searchParams.get("dateTo");
-  const limit = Math.min(Number(searchParams.get("limit")) || 50, 200);
-  const offset = Number(searchParams.get("offset")) || 0;
+  const limit = Math.min(Math.max(Number(searchParams.get("limit")) || 50, 1), 200);
+  const offset = Math.max(Number(searchParams.get("offset")) || 0, 0);
   const sort = searchParams.get("sort") || "date"; // "date" or "score"
 
   const now = new Date();
@@ -24,14 +34,14 @@ export async function GET(request: NextRequest) {
     endDate: { gte: now },
   };
 
-  if (districtsParam.length > 0) {
-    where.district = { in: districtsParam as any };
+  if (districts.length > 0) {
+    where.district = { in: districts };
   }
-  if (categoriesParam.length > 0) {
-    where.category = { in: categoriesParam as any };
+  if (categories.length > 0) {
+    where.category = { in: categories };
   }
-  if (vibesParam.length > 0) {
-    where.vibes = { some: { vibe: { in: vibesParam as any } } };
+  if (vibes.length > 0) {
+    where.vibes = { some: { vibe: { in: vibes } } };
   }
   if (search) {
     where.OR = [
