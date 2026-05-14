@@ -111,7 +111,7 @@ export default function SettingsPage() {
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 8 }}>O POznaj</div>
           <div style={{ fontSize: 12, color: "var(--ink-3)", lineHeight: 1.6 }}>
             POznaj pomaga odkrywać najlepsze wydarzenia w Poznaniu.
-            Wersja 0.1 · Dane z PIK Poznań i Facebooka.
+            Wersja 0.2 · Dane z PIK Poznań i poznan.pl.
           </div>
         </div>
       </div>
