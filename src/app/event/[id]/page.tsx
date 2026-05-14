@@ -286,15 +286,28 @@ export default function EventDetailPage() {
               opacity: similarVisible ? 1 : 0,
               transition: "transform 0.45s var(--ease-spring), opacity 0.35s var(--ease-out-quart)",
             }}>
-              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Zobacz też</div>
+              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</div>
               <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
                 {similar.map((ev) => (
                   <a key={ev.id} href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }}
                     style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)" }}>
                     <EventArt event={ev} height={200} />
-                    <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12, background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.7))", color: "white" }}>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</p>
-                      <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85 }}>{ev.placeName}</p>
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: `linear-gradient(180deg, transparent 40%, ${(() => {
+                        const c = ev.category?.toLowerCase?.() ?? "inne";
+                        return c === "muzyka" ? "rgba(255,61,127,0.85)" :
+                               c === "kino" ? "rgba(110,61,255,0.85)" :
+                               c === "sztuka" ? "rgba(40,96,255,0.85)" :
+                               c === "sport" ? "rgba(200,255,46,0.85)" :
+                               c === "teatr" ? "rgba(255,107,44,0.85)" :
+                               "rgba(20,19,15,0.75)";
+                      })()} 100%)`,
+                    }}>
+                      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "white" }}>{ev.title}</p>
+                        <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85, color: "white" }}>{ev.placeName}</p>
+                      </div>
                     </div>
                   </a>
                 ))}

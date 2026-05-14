@@ -250,6 +250,59 @@ export default function HomeClient({
         </div>
       )}
 
+      {cleanHome && forYou.length > 0 && (
+        <div style={{ padding: "6px 18px 0" }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+            <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
+              Polecane dla Ciebie
+            </h2>
+          </div>
+          <div style={{ margin: "0 -18px" }}>
+            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto", paddingRight: 36 }}>
+              {forYou.map((ev, i) => (
+                <div
+                  key={ev.id}
+                  onClick={() => openEvent(ev)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
+                  style={{
+                    flex: "0 0 200px", borderRadius: 22, overflow: "hidden",
+                    position: "relative", height: 200, cursor: "pointer",
+                    transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
+                    boxShadow: "var(--shadow-sm)",
+                  }}
+                  className="pz-section-reveal"
+                >
+                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: `linear-gradient(180deg, transparent 40%, ${(() => {
+                      const c = ev.category?.toLowerCase?.() ?? "inne";
+                      return c === "muzyka" ? "rgba(255,61,127,0.85)" :
+                             c === "kino" ? "rgba(110,61,255,0.85)" :
+                             c === "sztuka" ? "rgba(40,96,255,0.85)" :
+                             c === "sport" ? "rgba(200,255,46,0.85)" :
+                             c === "teatr" ? "rgba(255,107,44,0.85)" :
+                             "rgba(20,19,15,0.75)";
+                    })()} 100%)`,
+                  }}>
+                    <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
+                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white" }}>{ev.title}</h3>
+                      <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: 200, background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
+                <div style={{ width: 40, height: 40, borderRadius: 99, background: "var(--ink)", color: "var(--bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>→</div>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>Zobacz<br />wszystko</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* All events */}
       <div style={{ padding: "8px 18px 0" }}>
         <div style={{
@@ -312,87 +365,6 @@ export default function HomeClient({
           )}
         </div>
       </div>
-
-      {/* For You rail — bottom of page, personalized discovery */}
-      {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "18px 0 0" }}>
-          <div style={{ height: 1, margin: "0 18px", background: "var(--line)" }} />
-          <div style={{ padding: "12px 18px 0" }}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-              <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
-                Polecane dla Ciebie
-              </h2>
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 12, padding: "0 18px 18px", overflowX: "auto", paddingRight: 36 }}>
-            {forYou.map((ev, i) => (
-              <div
-                key={ev.id}
-                onClick={() => openEvent(ev)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
-                style={{
-                  flex: "0 0 200px", borderRadius: 22, overflow: "hidden",
-                  position: "relative", height: 200, cursor: "pointer",
-                  transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
-                  boxShadow: "var(--shadow-sm)",
-                }}
-                className="pz-section-reveal"
-              >
-                <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: `linear-gradient(180deg, transparent 40%, ${(() => {
-                    const c = ev.category?.toLowerCase?.() ?? "inne";
-                    return c === "muzyka" ? "rgba(255,61,127,0.85)" :
-                           c === "kino" ? "rgba(110,61,255,0.85)" :
-                           c === "sztuka" ? "rgba(40,96,255,0.85)" :
-                           c === "sport" ? "rgba(200,255,46,0.85)" :
-                           c === "teatr" ? "rgba(255,107,44,0.85)" :
-                           "rgba(20,19,15,0.75)";
-                  })()} 100%)`,
-                }}>
-                  <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                    <h3 className="pz-h" style={{
-                      margin: 0, fontSize: 16, fontWeight: 700,
-                      letterSpacing: "-0.02em", lineHeight: 1.15,
-                      color: "white",
-                    }}>{ev.title}</h3>
-                    <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>
-                      {relDay(new Date(ev.startDate))} · {ev.time ?? "—"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {/* "See all" CTA */}
-            <div
-              onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }}
-              style={{
-                flex: "0 0 120px", borderRadius: 22, height: 200,
-                background: "var(--bg-soft)", cursor: "pointer",
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 8,
-                transition: "transform 0.2s var(--ease-out-quart)",
-              }}
-            >
-              <div style={{
-                width: 40, height: 40, borderRadius: 99,
-                background: "var(--ink)", color: "var(--bg)",
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                fontSize: 18, fontWeight: 700,
-              }}>→</div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>
-                Zobacz<br />wszystko
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {searchOpen && (
         <SearchOverlay

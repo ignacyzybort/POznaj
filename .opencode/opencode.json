@@ -1,0 +1,184 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "skills": {
+    "paths": [".opencode/skills", ".agents/skills"]
+  },
+  "agent": {
+    "orchestrator": {
+      "description": "Goal decomposition and multi-agent coordination. Use for any multi-step task: decompose into sub-tasks, dispatch agents in parallel, synthesize results. Always use when the user says 'swarm', 'multi-agent', 'plan and execute', or describes a task requiring multiple agents.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "frontend": {
+      "description": "React/Next.js UI development. Use for component creation, page building, UI fixes, styling work. Use when user mentions: component, page, UI, frontend, React, event-card, tab-bar, home-client, any .tsx file under src/app/ or src/components/.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "backend": {
+      "description": "API routes, Prisma queries, server logic. Use for any /api/ route changes, database queries, server-side logic. Use when user mentions: API, route, endpoint, server, database query.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "fullstack": {
+      "description": "Cross-stack features touching both frontend and backend. Use for features that span UI + API + database. Use when a task requires changes to both .tsx components and /api/ routes or prisma queries.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "nextjs": {
+      "description": "Next.js 16 patterns: RSC, SSR, routing, Turbopack, middleware, App Router. Use for Next.js-specific questions: server components, client islands, dynamic imports, metadata, error.tsx, loading.tsx, middleware/proxy, next.config.ts.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "prisma": {
+      "description": "Prisma v7 schema design, migrations, optimized queries, indexes, relations. Use for schema.prisma changes, migration planning, N+1 query detection, index recommendations. Use when user mentions: Prisma, schema, migration, model, relation, query.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "auth": {
+      "description": "Auth.js v5 (NextAuth) configuration, OAuth flows, session handling, protected routes. Use for auth-related work on src/lib/auth.ts, middleware, login page, session checks. Use when user mentions: auth, login, sign-in, session, OAuth, Google, Apple, email magic link.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "scraper": {
+      "description": "Cheerio-based event scraping from pik.poznan.pl, poznan.pl, Facebook. Use for scraper changes in src/lib/scrapers/, run.ts, venue matching, dedup logic. Use when user mentions: scraper, scrape, crawl, extract, events source, new scraper.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "css": {
+      "description": "Tailwind CSS v4, pz-* design system, globals.css, CSS custom properties, animations. Use for styling-only changes: new utility classes, token additions, CSS animation keyframes, responsive adjustments. Use when user mentions: CSS, style, styling, utility, token, animation in globals.css.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "motion": {
+      "description": "Framer Motion / motion library: page transitions, micro-interactions, AnimatePresence. Use for motion-specific work in page-transition.tsx or adding animations to components. Use when user mentions: animation, motion, framer, transition, animate, spring.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "a11y": {
+      "description": "WCAG 2.2 AA compliance: ARIA patterns, keyboard navigation, focus management, screen reader support, touch targets, contrast. Use for accessibility audits and fixes. Use when user mentions: accessibility, a11y, WCAG, ARIA, keyboard, screen reader, focus, contrast, touch target.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "tester": {
+      "description": "Write and run unit/integration tests, verify coverage. Use for test implementation and verification. Use when user mentions: test, testing, coverage, unit test, integration test, TDD.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "testgen": {
+      "description": "Find test coverage gaps and auto-generate test stubs. Scans changed files, checks for corresponding test files, proposes missing tests. Use when user mentions: test gaps, test coverage, generate tests, missing tests.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "reviewer": {
+      "description": "Code quality review: correctness, readability, maintainability, best practices. NOT for security (use 'security' agent). Use for pre-PR reviews, code analysis, refactoring suggestions. Use when user mentions: review, code review, quality, refactor, clean code.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "security": {
+      "description": "OWASP Top 10, CVE scanning, SQL injection, XSS, CSRF, input validation. Use for security audits of API routes, authentication, data handling. Use when user mentions: security, vulnerability, CVE, OWASP, SQL injection, XSS, CSRF, exploit.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "secrets": {
+      "description": "Detect hardcoded API keys, tokens, passwords in source code. Check .env hygiene, git history for leaked secrets. Use when user mentions: secrets, API key, token leak, credential, .env, hardcoded.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "perf": {
+      "description": "Performance analysis: bundle size, N+1 queries, rendering bottlenecks, image optimization, lazy loading. Use when user mentions: performance, slow, optimize, bundle, render time, load time.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "deadcode": {
+      "description": "Find unused imports, dead files, orphaned code, unused functions. Use for cleanup passes. Use when user mentions: dead code, unused, cleanup, remove, delete unused.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "architect": {
+      "description": "Architecture decisions, ADRs, schema design, dependency analysis, system structure. Use when planning structural changes, evaluating tradeoffs, or making architectural decisions. Use when user mentions: architecture, ADR, design decision, schema design, dependency, tradeoff.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "docs": {
+      "description": "Documentation: README, changelog, inline code documentation, AGENTS.md. Use when user mentions: documentation, docs, README, changelog, document, comment.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "ui-designer": {
+      "description": "Visual design polish: spacing, typography, layout, visual hierarchy, shadows, corner radius. Use for visual refinement of components and pages. Use when user mentions: design, visual, polish, spacing, layout, hierarchy, look, feel.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "ux-reviewer": {
+      "description": "UX review: interaction flows, affordance, information architecture, user journeys. NOT visual design (use ui-designer). Use when user mentions: UX, user experience, flow, interaction, affordance, journey, usability.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "colorist": {
+      "description": "Color: OKLCH conversions, contrast ratio checks, palette design, token color assignments. Use when user mentions: color, contrast, palette, shade, hue, dark mode color, token color.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "typographer": {
+      "description": "Typography: font scale consistency, heading hierarchy, line heights, letter-spacing, font tokens. Use when user mentions: typography, font, text, heading, type scale, line height, letter spacing.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "devops": {
+      "description": "Vercel deployment, CI/CD, environment variables, build configuration. Use when user mentions: deploy, Vercel, CI/CD, build, environment, env var, production.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "deps": {
+      "description": "Package dependency management: npm audit, version upgrades, compatibility checks, bundle analysis. Use when user mentions: dependency, package, npm, upgrade, audit, install, remove package.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "seed": {
+      "description": "Database seeding and fixture data generation. Use for scripts/seed.ts changes, generating test data, populating development database. Use when user mentions: seed, fixture, test data, populate database.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "map": {
+      "description": "Leaflet maps, GeoJSON processing, district boundaries, marker rendering, coordinate handling. Use for src/components/district-map.tsx changes. Use when user mentions: map, Leaflet, GeoJSON, district, coordinate, marker, pin, flyTo.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "data": {
+      "description": "Scraped data quality, deduplication logic, venue matching, event data validation. Use for src/lib/data.ts, venues.ts, scoring.ts changes. Use when user mentions: data quality, dedup, venue, event data, scoring, validation.",
+      "mode": "subagent",
+      "model": "opencode-go/qwen3.5-plus"
+    },
+    "audit-worker": {
+      "description": "Auto-triggered after file edits: runs reviewer + security on changed files. Checks Supermemory for last session context. Reports all findings in structured format. Invoke with: 'run audit'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "testgaps-worker": {
+      "description": "Auto-triggered after new feature: finds new .tsx/.ts files, checks for corresponding test files, generates test stubs if missing. Invoke with: 'run testgaps'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "typecheck-worker": {
+      "description": "Auto-triggered after code changes: runs npx tsc --noEmit, reports all type errors with file:line references. Invoke with: 'run typecheck'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "lintfix-worker": {
+      "description": "Auto-triggered after edits: runs npm run lint, attempts auto-fixes, reports remaining warnings/errors. Invoke with: 'run lintfix'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "deadscan-worker": {
+      "description": "Auto-triggered after deletions: finds newly orphaned imports and dead code from removed files. Invoke with: 'run deadscan'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    },
+    "buildguard-worker": {
+      "description": "Auto-triggered before commit: runs npm run build, reports pass/fail with extracted error messages. Blocks commit if build fails. Invoke with: 'run buildguard'.",
+      "mode": "subagent",
+      "model": "opencode-zen/deepseek-v4-flash-free"
+    }
+  }
+}
