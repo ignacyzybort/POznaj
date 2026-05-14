@@ -1,14 +1,17 @@
 {
-  "name": "POznaj — Wydarzenia w Poznaniu",
+  "name": "POznaj — Co dziś w Poznaniu",
   "short_name": "POznaj",
   "description": "Najciekawsze wydarzenia w Poznaniu",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#18181b",
+  "background_color": "#FDFCF8",
+  "theme_color": "#14130F",
   "scope": "/",
   "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
+  ],
+  "splash_pages": null,
+  "prefer_related_applications": false
 }

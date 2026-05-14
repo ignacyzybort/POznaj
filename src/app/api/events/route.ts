@@ -8,12 +8,18 @@ export async function GET(request: NextRequest) {
   const districtsParam = searchParams.getAll("district");
   const categoriesParam = searchParams.getAll("category");
   const vibesParam = searchParams.getAll("vibe");
-  const search = searchParams.get("search");
-  const limit = Math.min(Number(searchParams.get("limit")) || 50, 100);
+  const search = searchParams.get("search") || searchParams.get("q");
+  const quick = searchParams.get("quick");
+  const budget = searchParams.get("budget");
+  const dateFrom = searchParams.get("dateFrom");
+  const dateTo = searchParams.get("dateTo");
+  const limit = Math.min(Number(searchParams.get("limit")) || 50, 200);
   const offset = Number(searchParams.get("offset")) || 0;
+  const sort = searchParams.get("sort") || "date"; // "date" or "score"
 
+  const now = new Date();
   const where: Prisma.EventWhereInput = {
-    endDate: { gte: new Date() },
+    endDate: { gte: now },
   };
 
   if (districtsParam.length > 0) {
@@ -23,24 +29,80 @@ export async function GET(request: NextRequest) {
     where.category = { in: categoriesParam as any };
   }
   if (vibesParam.length > 0) {
-    where.vibes = {
-      some: {
-        vibe: { in: vibesParam as any },
-      },
-    };
+    where.vibes = { some: { vibe: { in: vibesParam as any } } };
   }
   if (search) {
     where.OR = [
-      { title: { contains: search } },
-      { description: { contains: search } },
-      { placeName: { contains: search } },
+      { title: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+      { placeName: { contains: search, mode: "insensitive" } },
     ];
   }
+
+  // Quick date filters
+  if (quick === "today") {
+    const end = new Date(now); end.setHours(23, 59, 59, 999);
+    where.startDate = { gte: new Date(now.setHours(0, 0, 0, 0)), lte: end };
+  } else if (quick === "tonight") {
+    const end = new Date(now); end.setHours(23, 59, 59, 999);
+    where.startDate = { gte: new Date(now.setHours(0, 0, 0, 0)), lte: end };
+    where.time = { gte: "18:00" };
+  } else if (quick === "tomorrow") {
+    const t = new Date(now); t.setDate(t.getDate() + 1);
+    const end = new Date(t); end.setHours(23, 59, 59, 999);
+    where.startDate = { gte: new Date(t.setHours(0, 0, 0, 0)), lte: end };
+  } else if (quick === "weekend") {
+    const fri = new Date(now); fri.setDate(fri.getDate() + ((5 - fri.getDay() + 7) % 7));
+    const sun = new Date(fri); sun.setDate(sun.getDate() + 2); sun.setHours(23, 59, 59, 999);
+    where.startDate = { gte: fri, lte: sun };
+  } else if (quick === "week") {
+    const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
+    where.startDate = { gte: now, lte: weekEnd };
+  }
+
+  // Custom date range
+  if (dateFrom) {
+    const from = new Date(dateFrom);
+    where.startDate = { ...(where.startDate as any || {}), gte: from };
+  }
+  if (dateTo) {
+    const to = new Date(dateTo); to.setHours(23, 59, 59, 999);
+    where.startDate = { ...(where.startDate as any || {}), lte: to };
+  }
+
+  // Budget filters
+  if (budget === "free") {
+    where.OR = [
+      ...((where.OR as any[]) || []),
+      { price: { startsWith: "0" } },
+      { price: { contains: "free", mode: "insensitive" as any } },
+      { price: { contains: "bezpł", mode: "insensitive" as any } },
+      { price: { contains: "wolny", mode: "insensitive" as any } },
+    ];
+  } else if (budget === "cheap") {
+    where.OR = [
+      ...((where.OR as any[]) || []),
+      { price: { startsWith: "0" } },
+      { price: { contains: "free", mode: "insensitive" as any } },
+      { price: { lte: "45" } },
+    ];
+  } else if (budget === "student") {
+    where.OR = [
+      ...((where.OR as any[]) || []),
+      { price: { startsWith: "0" } },
+      { price: { contains: "free", mode: "insensitive" as any } },
+    ];
+  }
+
+  const orderBy: Prisma.EventOrderByWithRelationInput[] =
+    sort === "score"
+      ? [{ score: "desc" }, { startDate: "asc" }]
+      : [{ startDate: "asc" }, { score: "desc" }];
 
   const events = await prisma.event.findMany({
     where,
     include: { vibes: { select: { vibe: true } } },
-    orderBy: { startDate: "asc" },
+    orderBy,
     take: limit,
     skip: offset,
   });
@@ -68,8 +130,6 @@ export async function GET(request: NextRequest) {
     coordsX: e.coordsX,
     coordsY: e.coordsY,
   }));
-
-  serialized.sort((a, b) => b.score - a.score);
 
   return NextResponse.json({ events: serialized, total });
 }

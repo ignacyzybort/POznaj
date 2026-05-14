@@ -110,6 +110,12 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
             </div>
           )}
         </div>
+        <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}&travelmode=transit`}
+          target="_blank" rel="noopener noreferrer"
+          className="pz-chip" style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          Transit
+        </a>
         <a href={`https://maps.apple.com/?q=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip" style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}>

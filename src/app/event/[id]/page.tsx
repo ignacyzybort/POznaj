@@ -29,6 +29,7 @@ export default function EventDetailPage() {
   const [animatingSave, setAnimatingSave] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [similar, setSimilar] = useState<EventData[]>([]);
 
   const fetchEvent = () => {
     setError(null);
@@ -41,6 +42,13 @@ export default function EventDetailPage() {
   };
 
   useEffect(() => { fetchEvent(); }, [params.id]);
+
+  useEffect(() => {
+    if (!event) return;
+    fetch(`/api/events?category=${event.category}&limit=5&sort=score`).then((r) => r.json()).then((d) => {
+      setSimilar((d.events ?? []).filter((e: EventData) => e.id !== event.id).slice(0, 4));
+    }).catch(() => {});
+  }, [event]);
 
   const onRemind = async () => {
     if (reminded) return;
@@ -237,8 +245,27 @@ export default function EventDetailPage() {
         </button>
       </div>
 
-      <Confetti active={confetti} />
-      <Toast msg={toast} onClear={() => setToast(null)} />
+          {/* Similar events */}
+          {similar.length > 0 && (
+            <div style={{ padding: "0 18px 18px" }}>
+              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Zobacz też</div>
+              <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
+                {similar.map((ev) => (
+                  <a key={ev.id} href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }}
+                    style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)" }}>
+                    <EventArt event={ev} height={200} />
+                    <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12, background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.7))", color: "white" }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</p>
+                      <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85 }}>{ev.placeName}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <Confetti active={confetti} />
+          <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );
 }

@@ -17,19 +17,9 @@ import Toast from "@/components/toast";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 
-function priceNum(p?: string): number {
-  if (!p) return 0;
-  const n = parseInt(p.replace(/\D/g, ""), 10);
-  return Number.isFinite(n) ? n : 0;
-}
-function isFree(p?: string): boolean {
-  if (!p) return false;
-  const x = p.toLowerCase();
-  return x.includes("free") || x.includes("wolny") || x.includes("bezpł") || x.startsWith("0");
-}
-
 export default function HomePage() {
   const [events, setEvents] = useState<EventData[]>([]);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -44,14 +34,28 @@ export default function HomePage() {
     category: [], district: [], vibe: [],
   });
 
+  const buildQuery = () => {
+    const params = new URLSearchParams();
+    params.set("limit", "200");
+    params.set("sort", "score");
+    if (search) params.set("q", search);
+    if (quick) params.set("quick", quick);
+    if (budget) params.set("budget", budget);
+    for (const c of activeFilters.category) params.append("category", c);
+    for (const d of activeFilters.district) params.append("district", d);
+    for (const v of activeFilters.vibe) params.append("vibe", v);
+    return params.toString();
+  };
+
   const fetchEvents = () => {
     setLoading(true);
     setError(null);
-    fetch("/api/events?limit=100").then((r) => {
+    fetch(`/api/events?${buildQuery()}`).then((r) => {
       if (!r.ok) throw new Error("Błąd ładowania");
       return r.json();
     }).then((d) => {
       if (d.events) setEvents(d.events);
+      setTotal(d.total ?? d.events?.length ?? 0);
       setLoading(false);
     }).catch(() => {
       setError("Nie udało się załadować wydarzeń");
@@ -59,63 +63,13 @@ export default function HomePage() {
     });
   };
 
-  useEffect(() => { fetchEvents(); }, []);
+  useEffect(() => { fetchEvents(); }, [quick, search, budget, activeFilters]);
 
   const today = new Date();
   const forYou = useMemo(
     () => [...events].sort((a, b) => b.score - a.score).slice(0, 5),
     [events],
   );
-
-  const filtered = useMemo(() => {
-    let evs = events.slice().sort(
-      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
-    );
-    if (search) {
-      const q = search.toLowerCase();
-      evs = evs.filter((e) =>
-        e.title.toLowerCase().includes(q) ||
-        e.placeName.toLowerCase().includes(q) ||
-        e.district.toLowerCase().includes(q));
-    }
-    if (activeFilters.category.length) {
-      evs = evs.filter((e) => activeFilters.category.includes(e.category));
-    }
-    if (activeFilters.district.length) {
-      evs = evs.filter((e) => activeFilters.district.includes(e.district));
-    }
-    if (activeFilters.vibe.length) {
-      evs = evs.filter((e) => e.vibes?.some((v) => activeFilters.vibe.includes(v)));
-    }
-    if (budget === "free") evs = evs.filter((e) => isFree(e.price));
-    if (budget === "cheap") evs = evs.filter((e) => isFree(e.price) || priceNum(e.price) <= 45);
-    if (budget === "student") evs = evs.filter((e) => isFree(e.price) || priceNum(e.price) <= 60);
-    const now = new Date();
-    if (quick === "today") {
-      evs = evs.filter((e) => new Date(e.startDate).toDateString() === now.toDateString());
-    }
-    if (quick === "tonight") {
-      evs = evs.filter((e) => {
-        const s = new Date(e.startDate);
-        return s.toDateString() === now.toDateString() && s.getHours() >= 18;
-      });
-    }
-    if (quick === "tomorrow") {
-      const t = new Date(now); t.setDate(t.getDate() + 1);
-      evs = evs.filter((e) => new Date(e.startDate).toDateString() === t.toDateString());
-    }
-    if (quick === "weekend") {
-      evs = evs.filter((e) => {
-        const d = new Date(e.startDate);
-        const diff = Math.round((d.getTime() - now.getTime()) / 86400000);
-        return diff >= 0 && diff <= 5 && (d.getDay() === 5 || d.getDay() === 6 || d.getDay() === 0);
-      });
-    }
-    if (quick === "week") {
-      evs = evs.filter((e) => (new Date(e.startDate).getTime() - now.getTime()) / 86400000 < 7);
-    }
-    return evs;
-  }, [events, search, quick, budget, activeFilters]);
 
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
@@ -309,7 +263,7 @@ export default function HomePage() {
           }}>{quick || search || activeCount || budget ? "Wyniki" : "Wszystko, co się dzieje"}</h2>
           <span className="pz-num" style={{
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
-          }}>{filtered.length}</span>
+          }}>{total}</span>
         </div>
         <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
           {loading ? Array.from({ length: 6 }).map((_, i) => (
@@ -319,7 +273,7 @@ export default function HomePage() {
               <div className="pz-skeleton" style={{ height: 18, width: "90%" }} />
               <div className="pz-skeleton" style={{ height: 14, width: "70%" }} />
             </div>
-          )) : filtered.map((ev, i) => {
+          )) : events.map((ev, i) => {
             const isFeature = (i > 0 && i % 4 === 3);
             return isFeature ? (
               <React.Fragment key={ev.id}>
@@ -350,7 +304,7 @@ export default function HomePage() {
               <button onClick={fetchEvents} className="pz-btn primary" style={{ height: 44, fontSize: 13 }}>Spróbuj ponownie</button>
             </div>
           )}
-          {!loading && !error && filtered.length === 0 && (
+          {!loading && !error && events.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
               <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
               <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
