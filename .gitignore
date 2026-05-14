@@ -43,3 +43,9 @@ next-env.d.ts
 # database
 *.db
 prisma/config.ts
+
+# Agent infrastructure (dev only, not in production)
+.agents/
+skills-lock.json
+/AGENTS.md
+/CLAUDE.md
