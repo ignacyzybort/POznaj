@@ -69,7 +69,7 @@ function computeCityBoundary(): [number, number][] {
 
 const CITY_BOUNDARY = computeCityBoundary();
 
-function createCategoryMarker(category: string) {
+function createCategoryMarker(category: string, index: number) {
   const colors = categoryColors[category] ?? categoryColors.Inne;
   return L.divIcon({
     html: `<span style="
@@ -79,6 +79,8 @@ function createCategoryMarker(category: string) {
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
       font-size: 13px; font-weight: 800; line-height: 1;
       border: 2px solid white;
+      animation: pz-pop 0.3s var(--ease-spring) both;
+      animation-delay: ${index * 60}ms;
     ">${CAT_INITIAL[category] ?? "?"}</span>`,
     className: "", iconSize: [36, 36], iconAnchor: [18, 18],
   });
@@ -102,23 +104,60 @@ function getHue(id: string): number {
   return DISTRICT_HUES[id] ?? 0;
 }
 
-function MapController({ selected, eventCounts }: { selected: string | null; eventCounts: Record<string, number> }) {
+function MapController({ selected, eventCounts, geoRef }: { selected: string | null; eventCounts: Record<string, number>; geoRef: React.RefObject<L.GeoJSON | null> }) {
   const map = useMap();
-  const geojsonRef = useRef<L.GeoJSON | null>(null);
   const prevSelected = useRef(selected);
+  const glowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  /* Fix 2: smoother flyTo with eased camera movement */
   useEffect(() => {
     if (selected && DISTRICT_CENTERS[selected]) {
-      map.flyTo(DISTRICT_CENTERS[selected], 14, { duration: 1.0 });
+      map.flyTo(DISTRICT_CENTERS[selected], 14, { duration: 1.2, easeLinearity: 0.1 });
     } else {
-      map.flyTo([52.408, 16.934], 11, { duration: 0.6 });
+      map.flyTo([52.408, 16.934], 11, { duration: 1.2, easeLinearity: 0.1 });
     }
   }, [selected, map]);
 
+  /* Fix 3: district glow pulse when selection changes */
   useEffect(() => {
-    if (!geojsonRef.current) return;
+    if (!geoRef?.current) return;
+    if (glowTimer.current) clearTimeout(glowTimer.current);
+
+    /* Remove glow from all layers first */
+    geoRef.current.eachLayer((layer) => {
+      const el = (layer as any).getElement?.();
+      if (el) L.DomUtil.removeClass(el, "pz-district-glow");
+    });
+
+    /* Apply glow to newly selected district */
+    if (selected) {
+      geoRef.current.eachLayer((layer) => {
+        const feat = (layer as any).feature;
+        if (!feat) return;
+        const id = getId(feat);
+        if (id === selected) {
+          const el = (layer as any).getElement?.();
+          if (el) L.DomUtil.addClass(el, "pz-district-glow");
+        }
+      });
+      glowTimer.current = setTimeout(() => {
+        geoRef.current?.eachLayer((layer) => {
+          const el = (layer as any).getElement?.();
+          if (el) L.DomUtil.removeClass(el, "pz-district-glow");
+        });
+      }, 600);
+    }
+
+    return () => {
+      if (glowTimer.current) clearTimeout(glowTimer.current);
+    };
+  }, [selected, geoRef]);
+
+  /* Update district fill styles based on event counts */
+  useEffect(() => {
+    if (!geoRef?.current) return;
     const maxCount = Math.max(...Object.values(eventCounts), 1);
-    geojsonRef.current.eachLayer((layer) => {
+    geoRef.current.eachLayer((layer) => {
       const feat = (layer as any).feature;
       if (!feat) return;
       const id = getId(feat);
@@ -126,7 +165,7 @@ function MapController({ selected, eventCounts }: { selected: string | null; eve
       const count = eventCounts[id] ?? 0;
       (layer as L.Path).setStyle(getStyle(id, isSelected, !!selected && !isSelected, count, maxCount));
     });
-  }, [selected, eventCounts]);
+  }, [selected, eventCounts, geoRef]);
 
   return null;
 }
@@ -157,6 +196,7 @@ export default function DistrictMap({
   onBack: () => void;
 }) {
   const [tilesVisible, setTilesVisible] = useState(false);
+  const geoRef = useRef<L.GeoJSON | null>(null);
 
   const handleSelect = (id: string) => { onSelect(id); setTilesVisible(true); };
   const handleBack = () => { onBack(); setTilesVisible(false); };
@@ -212,7 +252,6 @@ export default function DistrictMap({
         zoom={11}
         style={{ width: "100%", height: "100%" }}
         zoomControl={false}
-        preferCanvas={true}
       >
         <DistrictBoundary />
         {tilesVisible && (
@@ -221,9 +260,10 @@ export default function DistrictMap({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
         )}
-        <MapController selected={selectedDistrict} eventCounts={eventCounts} />
+        <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} />
         {districtGeojson && (
           <GeoJSON
+            ref={geoRef}
             data={districtGeojson as any}
             onEachFeature={onEachFeature}
             style={(feature) => {
@@ -234,11 +274,11 @@ export default function DistrictMap({
             }}
           />
         )}
-        {filteredEvents.map((ev) => (
+        {filteredEvents.map((ev, i) => (
           <Marker
             key={ev.id}
             position={[ev.coordsX!, ev.coordsY!]}
-            icon={createCategoryMarker(ev.category)}
+            icon={createCategoryMarker(ev.category, i)}
           >
             <Popup>
               <a href={`/event/${ev.id}`}

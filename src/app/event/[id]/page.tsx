@@ -30,9 +30,15 @@ export default function EventDetailPage() {
   const [confetti, setConfetti] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [similar, setSimilar] = useState<EventData[]>([]);
+  const [glowVisible, setGlowVisible] = useState(false);
+  const [actionBarVisible, setActionBarVisible] = useState(false);
+  const [similarVisible, setSimilarVisible] = useState(false);
 
   const fetchEvent = () => {
     setError(null);
+    setGlowVisible(false);
+    setActionBarVisible(false);
+    setSimilarVisible(false);
     fetch(`/api/events/${params.id}`).then((r) => {
       if (!r.ok) throw new Error("Nie znaleziono");
       return r.json();
@@ -43,10 +49,27 @@ export default function EventDetailPage() {
 
   useEffect(() => { fetchEvent(); }, [params.id]);
 
+  // Glow fades in on mount
+  useEffect(() => {
+    if (!event) return;
+    const frame = requestAnimationFrame(() => setGlowVisible(true));
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
+
+  // Action bar slides up after delay
+  useEffect(() => {
+    if (!event) return;
+    const t = setTimeout(() => setActionBarVisible(true), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [event?.id]);
+
   useEffect(() => {
     if (!event) return;
     fetch(`/api/events?category=${event.category}&limit=5&sort=score`).then((r) => r.json()).then((d) => {
       setSimilar((d.events ?? []).filter((e: EventData) => e.id !== event.id).slice(0, 4));
+      setTimeout(() => setSimilarVisible(true), 100);
     }).catch(() => {});
   }, [event]);
 
@@ -161,7 +184,13 @@ export default function EventDetailPage() {
         </div>
 
         {/* Category glow */}
-        <div className="pz-detail-glow" style={{ position: "absolute", top: 300, left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1 }} />
+        <div className="pz-detail-glow" style={{
+          position: "absolute", top: 300, left: 0, right: 0, height: 200,
+          pointerEvents: "none", zIndex: 1,
+          "--glow-color": `var(--c-${event.category.toLowerCase()})`,
+          opacity: glowVisible ? 1 : 0,
+          transition: "opacity 0.6s",
+        } as React.CSSProperties} />
 
         {/* Content */}
         <div style={{ padding: "20px 18px 30px", position: "relative", zIndex: 2 }}>
@@ -229,6 +258,10 @@ export default function EventDetailPage() {
         position: "absolute", bottom: 0, left: 0, right: 0,
         padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10,
         background: "linear-gradient(180deg, transparent, var(--bg) 30%)",
+        transform: actionBarVisible ? "translateY(0)" : "translateY(80px)",
+        opacity: actionBarVisible ? 1 : 0,
+        transition: "transform 0.4s var(--ease-spring), opacity 0.3s var(--ease-out-quart)",
+        transitionDelay: "0.3s",
       }}>
         <button onClick={() => { setAnimatingSave(true); toggleSave(); setTimeout(() => setAnimatingSave(false), 400); }} style={{
           width: 50, height: 50, borderRadius: 99, border: 0,
@@ -247,7 +280,12 @@ export default function EventDetailPage() {
 
           {/* Similar events */}
           {similar.length > 0 && (
-            <div style={{ padding: "0 18px 18px" }}>
+            <div style={{
+              padding: "0 18px 18px",
+              transform: similarVisible ? "translateX(0)" : "translateX(40px)",
+              opacity: similarVisible ? 1 : 0,
+              transition: "transform 0.45s var(--ease-spring), opacity 0.35s var(--ease-out-quart)",
+            }}>
               <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Zobacz też</div>
               <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
                 {similar.map((ev) => (
