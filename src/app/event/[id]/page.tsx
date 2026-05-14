@@ -138,7 +138,7 @@ export default function EventDetailPage() {
         {/* Detail header */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 5,
-          padding: "54px 16px 10px", display: "flex",
+          padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex",
           justifyContent: "space-between", gap: 8,
         }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{

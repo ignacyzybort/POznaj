@@ -124,9 +124,9 @@ export default function HomeClient({
   const clearFilters = () => setActiveFilters({ category: [], district: [], vibe: [] });
 
   return (
-    <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       {/* Header */}
-      <div style={{ padding: "54px 18px 6px" }}>
+      <div style={{ padding: "calc(54px + var(--safe-t)) 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
@@ -256,10 +256,10 @@ export default function HomeClient({
                     background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.65))",
                     color: "white",
                   }}>
-                    <h4 className="pz-h" style={{
+                    <h3 className="pz-h" style={{
                       margin: 0, fontSize: 17, fontWeight: 700,
                       letterSpacing: "-0.02em", lineHeight: 1.15,
-                    }}>{ev.title}</h4>
+                    }}>{ev.title}</h3>
                     <div style={{ fontSize: 11.5, opacity: 0.85, marginTop: 4, fontWeight: 500 }}>
                       {ev.placeName}
                     </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { EventData, categoryEmoji } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
+import { ShuffleIcon, RefreshIcon, ArrowIcon } from "@/components/icons";
 
 function getRandomEvents(events: EventData[], count: number): EventData[] {
   const shuffled = [...events].sort(() => Math.random() - 0.5);
@@ -51,15 +52,15 @@ export default function SurpriseModal({
   };
 
   return (
-<div role="dialog" aria-modal="true" style={{
-  position: "fixed", inset: 0, zIndex: 50,
+    <div role="dialog" aria-modal="true" style={{
+      position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: "var(--ink-3)",
+      background: "var(--scrim)",
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
     }}>
       <div style={{ margin: "0 16px", maxWidth: 384, width: "100%", padding: 24, borderRadius: 28, background: "var(--bg-elev)" }}>
         <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 28 }}>🔀</span>
+          <ShuffleIcon size={18} />
           <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Zaskocz mnie</h2>
           <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", margin: 0 }}>{spinning ? "Losowanie..." : "Wybierz jedno!"}</p>
         </div>
@@ -74,8 +75,9 @@ export default function SurpriseModal({
                 width: "100%", display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 22,
                 textAlign: "left", border: 0, cursor: spinning || !!picked ? "default" : "pointer",
                 background: picked?.id === ev.id ? "var(--sage-soft)" : "var(--bg-soft)",
-                opacity: spinning ? 0.6 + Math.random() * 0.4 : 1,
+                opacity: spinning ? 0.65 : 1,
                 transition: "transform var(--dur-fast) var(--ease-out-quart)",
+                animation: spinning ? "pz-pulse 0.15s var(--ease-out-quart) infinite alternate" : undefined,
               }}
             >
               <div style={{ width: 48, height: 48, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
@@ -94,11 +96,11 @@ export default function SurpriseModal({
         <div style={{ display: "flex", gap: 8 }}>
           {!spinning && !picked && (
             <button onClick={spin} className="pz-btn ghost" style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
-              🔄 Jeszcze raz
+              <RefreshIcon size={18} /> Jeszcze raz
             </button>
           )}
           <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="pz-btn primary" style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
-            {picked ? "🚀 Idę!" : "✕ Zamknij"}
+            {picked ? <><ArrowIcon size={18} /> Idę!</> : "✕ Zamknij"}
           </button>
         </div>
       </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import { districts } from "@/lib/data";
+import { PassportIcon, CheckIcon, LockIcon } from "@/components/icons";
 
 export default function PassportCard({ stamps }: { stamps: Record<string, number> }) {
   return (
     <div style={{
       padding: 16, borderRadius: 22,
-      background: "linear-gradient(135deg, var(--c-konferencje), #2A1F5A)",
+      background: "linear-gradient(135deg, var(--c-kino) 0%, var(--c-konferencje) 100%)",
       color: "white",
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -14,7 +15,7 @@ export default function PassportCard({ stamps }: { stamps: Record<string, number
           <p className="pz-eyebrow" style={{ fontSize: 10, opacity: 0.6 }}>Paszport</p>
           <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, margin: 0 }}>Dzielnice Poznania</p>
         </div>
-        <span style={{ fontSize: 24 }}>🛂</span>
+        <PassportIcon size={16} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
         {districts.map((d) => {
@@ -29,7 +30,7 @@ export default function PassportCard({ stamps }: { stamps: Record<string, number
                 boxShadow: unlocked ? "inset 0 0 0 1px rgba(255,255,255,0.3)" : "none",
               }}
             >
-              <span style={{ fontSize: "var(--text-sm)" }}>{unlocked ? "✅" : "🔒"}</span>
+              {unlocked ? <CheckIcon size={14} /> : <LockIcon size={14} />}
               <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, opacity: 0.8, lineHeight: 1.1 }}>
                 {d.label.split(" ")[0]}
               </span>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
+import { SunIcon, RainIcon, TramIcon } from "@/components/icons";
 
 const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
   Centrum: { lat: 52.406, lon: 16.918 },
@@ -37,7 +38,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div className="pz-card" style={{ padding: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 18 }}>🌤️</span>
+            <SunIcon size={16} />
             <span className="pz-eyebrow">Pogoda</span>
           </div>
           {weather ? (
@@ -46,7 +47,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
                 {weather.temp}°C · {weather.condition}
               </div>
               <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>
-                {weather.rain ? "Możliwy deszcz ☔" : "Bez opadów"}
+                {weather.rain ? <>Możliwy deszcz <RainIcon size={16} /></> : "Bez opadów"}
               </div>
             </>
           ) : (
@@ -56,7 +57,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
         <a href={`https://maps.google.com/?daddr=${encodeURIComponent(fullAddress)}&dir_action=transit`}
           target="_blank" rel="noopener noreferrer" className="pz-card" style={{ padding: 12, display: "block", textDecoration: "none", color: "inherit" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 18 }}>🚋</span>
+            <TramIcon size={16} />
             <span className="pz-eyebrow">Dojazd</span>
           </div>
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
@@ -74,7 +75,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
           boxShadow: "inset 0 0 0 0.5px rgba(255,107,44,0.25)",
           display: "flex", alignItems: "center", gap: 10,
         }}>
-          <span style={{ fontSize: 20 }}>🌧️</span>
+          <RainIcon size={16} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>Deszcz w prognozie</div>
             <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Wydarzenie na zewnątrz — kurtkę bierz.</div>

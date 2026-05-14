@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useEscape } from "@/hooks/use-escape";
+import { PinIcon } from "@/components/icons";
 
 interface SearchUser {
   id: string;
@@ -83,7 +84,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--ink)" }}>{u.name ?? "Użytkownik"}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{u.district ? `📍 ${u.district}` : ""}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{u.district ? <><PinIcon size={14} /> {u.district}</> : ""}</div>
                 </div>
                 <button onClick={() => invite(u.id)} disabled={sent}
                   style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: sent ? "default" : "pointer", background: sent ? "var(--bg-soft)" : "var(--ink)", color: sent ? "var(--ink-3)" : "var(--bg)" }}>

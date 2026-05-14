@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { districts } from "@/lib/data";
 import CropModal from "@/components/crop-modal";
 import { useEscape } from "@/hooks/use-escape";
+import { CameraIcon, CoverIcon } from "@/components/icons";
 
 export default function EditProfile({
   user,
@@ -113,7 +114,7 @@ export default function EditProfile({
               </div>
               <button onClick={() => avatarRef.current?.click()} disabled={uploading === "avatar"}
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "avatar" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "avatar" ? 0.5 : 1 }}>
-                {uploading === "avatar" ? "Przesyłanie..." : "📷 Zmień"}
+                {uploading === "avatar" ? "Przesyłanie..." : <><CameraIcon size={18} /> Zmień</>}
               </button>
               <input ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "avatar"); }} />
             </div>
@@ -128,7 +129,7 @@ export default function EditProfile({
               </div>
               <button onClick={() => coverRef.current?.click()} disabled={uploading === "cover"}
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "cover" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "cover" ? 0.5 : 1 }}>
-                {uploading === "cover" ? "Przesyłanie..." : "🌅 Zmień"}
+                {uploading === "cover" ? "Przesyłanie..." : <><CoverIcon size={18} /> Zmień</>}
               </button>
               <input ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "cover"); }} />
             </div>

@@ -5,7 +5,7 @@ export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number;
   return (
     <div className="pz-card" style={{
       padding: 16,
-      background: "linear-gradient(135deg, var(--c-teatr) 0%, var(--c-muzyka) 100%)",
+      background: "linear-gradient(135deg, var(--hot-2) 0%, var(--hot) 100%)",
       color: "white", border: "none",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>

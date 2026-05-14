@@ -108,7 +108,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
     <div role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: "var(--ink-3)",
+      background: "var(--scrim)",
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
     }}>
       {content}

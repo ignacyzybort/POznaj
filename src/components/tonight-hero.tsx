@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { EventData } from "@/lib/data";
+import { categoryColors, type EventData } from "@/lib/data";
 import { relDay } from "@/lib/date";
 import EventArt from "@/components/event-art";
 import { ChevronIcon } from "@/components/icons";
@@ -53,7 +53,7 @@ export default function TonightHero({
             background: "rgba(0,0,0,0.45)",
             fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--c-muzyka)", boxShadow: "0 0 8px var(--c-muzyka)" }} />
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: categoryColors[ev.category].bg, boxShadow: `0 0 8px ${categoryColors[ev.category].bg}` }} />
             Dziś wieczorem
           </div>
           <div style={{ display: "flex", gap: 4 }}>
