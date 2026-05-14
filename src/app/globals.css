@@ -326,6 +326,15 @@
 }
 .pz-fade-out { animation: pz-fade-out var(--dur-base) var(--ease-out-quart) both; }
 
+/* Skip-to-content link */
+.pz-skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 9999;
+  padding: 12px 20px; background: var(--ink); color: var(--bg);
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  border-radius: 0 0 12px 0;
+}
+.pz-skip-link:focus { left: 0; }
+
 /* Atmospheric noise overlay on stage */
 .pz-stage::after {
   content: '';

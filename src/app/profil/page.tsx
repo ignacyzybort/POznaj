@@ -12,6 +12,7 @@ import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 import { SettingsIcon, EditIcon, ChevronIcon } from "@/components/icons";
+import { computeChallenges } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
   "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
@@ -101,6 +102,7 @@ export default function ProfilPage() {
   const goingItems = attendanceData.filter((a) => a.status === "GOING");
   const weeksActive = Math.min(goingItems.length, 8);
   const badge = getBadge(goingItems.length);
+  const challenges = computeChallenges(goingItems);
 
   const catCount: Record<string, number> = {};
   const venueCount: Record<string, number> = {};
@@ -239,6 +241,34 @@ export default function ProfilPage() {
           </div>
         </div>
       </div>
+
+      {/* Challenges */}
+      {challenges.length > 0 && (
+        <div style={{ padding: "0 18px 14px" }}>
+          <div className="pz-card" style={{ padding: 14 }}>
+            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Wyzwania</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {challenges.map((c) => (
+                <div key={c.id}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 16 }}>{c.icon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{c.title}</span>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: c.done ? "var(--sage)" : "var(--ink-3)" }}>
+                      {c.done ? "✅" : `${c.progress}/${c.max}`}
+                    </span>
+                  </div>
+                  <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
+                    <div style={{ width: `${(c.progress / c.max) * 100}%`, height: "100%", borderRadius: 99, background: c.done ? "var(--sage)" : "var(--ink-3)", transition: "width var(--dur-slow) var(--ease-out-quart)" }} />
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{c.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Activity stats */}
       <div style={{ padding: "0 18px 14px" }}>

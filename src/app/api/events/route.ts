@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { auth } from "@/lib/auth";
+import { getRecommendations } from "@/lib/recommendations";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -131,5 +133,24 @@ export async function GET(request: NextRequest) {
     coordsY: e.coordsY,
   }));
 
-  return NextResponse.json({ events: serialized, total });
+  // Compute recommendations if requested
+  let recommended: any[] | null = null;
+  if (searchParams.get("recommended") === "true") {
+    const session = await auth();
+    if (session?.user?.id) {
+      const recs = await getRecommendations(session.user.id, 5);
+      recommended = (recs as any[]).map((e) => ({
+        id: e.id,
+        title: e.title,
+        placeName: e.placeName,
+        district: e.district,
+        category: e.category,
+        score: e.recommendationScore,
+        startDate: e.startDate.toISOString(),
+        imageUrl: e.imageUrl,
+      }));
+    }
+  }
+
+  return NextResponse.json({ events: serialized, total, recommended });
 }
