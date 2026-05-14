@@ -533,3 +533,83 @@ body {
   filter: blur(60px);
   pointer-events: none;
 }
+
+/* ─── Micro-interactions ─── */
+
+/* Card hover lift */
+.pz-card-lift {
+  transition: transform 0.25s var(--ease-out-quart), box-shadow 0.25s var(--ease-out-quart);
+}
+.pz-card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* Chip spring press — tighter bounce than default button scale */
+.pz-chip-spring {
+  transition: transform 0.15s var(--ease-spring);
+}
+.pz-chip-spring:active {
+  transform: scale(0.91);
+}
+
+/* Toast slide-up + bounce */
+@keyframes pz-toast-enter {
+  0%   { opacity: 0; translate: 0 12px; scale: 0.95; }
+  40%  { opacity: 1; }
+  70%  { translate: 0 -4px; scale: 1.02; }
+  100% { translate: 0 0; scale: 1; }
+}
+
+/* Skeleton breathing — sage tinted */
+.pz-skeleton-breath {
+  background: var(--sage-soft);
+  animation: pz-breathe 2s ease-in-out infinite;
+}
+@keyframes pz-breathe {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 0.9; }
+}
+
+/* Image progressive reveal */
+.pz-img-reveal {
+  filter: blur(8px) brightness(0.9);
+  transition: filter 0.5s var(--ease-out-quart);
+}
+.pz-img-reveal.loaded {
+  filter: blur(0) brightness(1);
+}
+
+/* Scroll progress bar */
+.pz-scroll-progress {
+  position: fixed;
+  top: 0; left: 0; height: 2px;
+  background: var(--sage);
+  z-index: 999;
+  transform-origin: left;
+  transition: transform 0.15s linear;
+}
+
+/* Bookmark bounce */
+.pz-bookmark-bounce {
+  animation: pz-bmark 0.35s var(--ease-spring);
+}
+@keyframes pz-bmark {
+  0%   { scale: 0.7; }
+  30%  { scale: 1.25; }
+  60%  { scale: 0.9; }
+  100% { scale: 1; }
+}
+
+/* Grid filter transition — exit */
+@keyframes pz-card-out {
+  to { opacity: 0; scale: 0.95; translate: 0 4px; }
+}
+.pz-card-out {
+  animation: pz-card-out 0.2s var(--ease-out-quart) both;
+}
+
+/* Empty state pulse */
+.pz-empty-pulse {
+  animation: pz-breathe 2.5s ease-in-out infinite;
+}

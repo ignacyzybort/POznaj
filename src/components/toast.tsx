@@ -11,7 +11,8 @@ export default function Toast({ msg, onClear }: { msg: string | null; onClear: (
 
   if (!msg) return null;
   return (
-    <div className="pz-pop" style={{
+    <div className="pz-toast-enter" style={{
+      animation: "pz-toast-enter 0.4s var(--ease-spring) both",
       position: "fixed", left: "50%", bottom: 96,
       transform: "translateX(-50%)", zIndex: 80,
       background: "var(--ink)", color: "var(--bg)",

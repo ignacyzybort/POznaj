@@ -36,6 +36,7 @@ export default function HomeClient({
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recommended, setRecommended] = useState<EventData[] | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     category: [], district: [], vibe: [],
   });
@@ -73,6 +74,8 @@ export default function HomeClient({
 
   // Skip the very first run — initialEvents already covers the default view.
   const firstRun = useRef(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (firstRun.current) {
       firstRun.current = false;
@@ -84,17 +87,44 @@ export default function HomeClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quick, search, budget, activeFilters]);
 
+  const { data: session } = useSession();
+
+  // Fetch personalized recommendations for logged-in users
+  useEffect(() => {
+    if (!session?.user) return;
+    const ctrl = new AbortController();
+    fetch("/api/events?recommended=true&limit=6", { signal: ctrl.signal })
+      .then((r) => r.json())
+      .then((d) => { if (d.recommended) setRecommended(d.recommended); })
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [session]);
+
+
+  // Scroll progress bar
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !progressRef.current) return;
+    const onScroll = () => {
+      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight);
+      progressRef.current!.style.transform = `scaleX(${Math.min(pct, 1)})`;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
   const today = new Date();
   const forYou = useMemo(
-    () => [...events].sort((a, b) => b.score - a.score).slice(0, 5),
-    [events],
+    () => {
+      if (recommended && recommended.length > 0) return recommended as EventData[];
+      return [...events].sort((a, b) => b.score - a.score).slice(0, 5);
+    },
+    [events, recommended],
   );
 
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
   const router = useRouter();
-  const { data: session } = useSession();
   const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
   const toggleSave = async (id: string) => {
     if (!session?.user) { router.push("/login"); return; }
@@ -124,7 +154,8 @@ export default function HomeClient({
   const clearFilters = () => setActiveFilters({ category: [], district: [], vibe: [] });
 
   return (
-    <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
+    <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
+      <div className="pz-scroll-progress" ref={progressRef} />
       {/* Header */}
       <div style={{ padding: "calc(54px + var(--safe-t)) 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -219,58 +250,6 @@ export default function HomeClient({
         </div>
       )}
 
-      {/* For You rail */}
-      {cleanHome && forYou.length > 0 && (
-        <div className="pz-section-reveal" style={{ padding: "6px 18px 0" }}>
-          <div style={{
-            display: "flex", alignItems: "baseline",
-            justifyContent: "space-between", marginBottom: 4,
-          }}>
-            <h2 className="pz-h" style={{
-              margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em",
-            }}>Pod Ciebie</h2>
-            <span className="pz-eyebrow">Top z tygodnia</span>
-          </div>
-          <div style={{ margin: "0 -18px" }}>
-            <div className="pz-scroll" style={{
-              display: "flex", gap: 14,
-              padding: "6px 18px 14px", overflowX: "auto",
-            }}>
-              {forYou.map((ev, i) => (
-                <div key={ev.id} onClick={() => openEvent(ev)} className="pz-pop" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }} style={{
-                  flex: "0 0 220px", borderRadius: 22, overflow: "hidden",
-                  position: "relative", height: 280, cursor: "pointer",
-                }}>
-                  <EventArt event={ev} height={280} style={i === 0 ? "collage" : (i % 2 === 0 ? "gradient" : "collage")} forceArt={!ev.imageUrl} />
-                  <div style={{ position: "absolute", left: 12, top: 12 }}>
-                    <span className="pz-pill solid" style={{
-                      background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
-                      color: "white", fontSize: 11,
-                    }}>
-                      <span className="pz-dot" style={{ color: "var(--hot)" }} />
-                      {relDay(new Date(ev.startDate))} · {ev.time ?? "—"}
-                    </span>
-                  </div>
-                  <div style={{
-                    position: "absolute", left: 0, right: 0, bottom: 0, padding: 14,
-                    background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.65))",
-                    color: "white",
-                  }}>
-                    <h3 className="pz-h" style={{
-                      margin: 0, fontSize: 17, fontWeight: 700,
-                      letterSpacing: "-0.02em", lineHeight: 1.15,
-                    }}>{ev.title}</h3>
-                    <div style={{ fontSize: 11.5, opacity: 0.85, marginTop: 4, fontWeight: 500 }}>
-                      {ev.placeName}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* All events */}
       <div style={{ padding: "8px 18px 0" }}>
         <div style={{
@@ -287,10 +266,10 @@ export default function HomeClient({
         <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
           {loading ? Array.from({ length: 6 }).map((_, i) => (
             <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
-              <div className="pz-skeleton" style={{ height: 132 }} />
-              <div className="pz-skeleton" style={{ height: 14, width: "60%" }} />
-              <div className="pz-skeleton" style={{ height: 18, width: "90%" }} />
-              <div className="pz-skeleton" style={{ height: 14, width: "70%" }} />
+              <div className="pz-skeleton pz-skeleton-breath" style={{ height: 132 }} />
+              <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "60%" }} />
+              <div className="pz-skeleton pz-skeleton-breath" style={{ height: 18, width: "90%" }} />
+              <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
           )) : events.map((ev, i) => {
             const isFeature = (i > 0 && i % 4 === 3);
@@ -325,7 +304,7 @@ export default function HomeClient({
           )}
           {!loading && !error && events.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
-              <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
+              <div className="pz-display pz-empty-pulse" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
               <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
                 Spróbuj zluzować filtry, w mieście jest więcej życia.
               </p>
@@ -333,6 +312,87 @@ export default function HomeClient({
           )}
         </div>
       </div>
+
+      {/* For You rail — bottom of page, personalized discovery */}
+      {cleanHome && forYou.length > 0 && (
+        <div style={{ padding: "18px 0 0" }}>
+          <div style={{ height: 1, margin: "0 18px", background: "var(--line)" }} />
+          <div style={{ padding: "12px 18px 0" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+              <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
+                Polecane dla Ciebie
+              </h2>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, padding: "0 18px 18px", overflowX: "auto", paddingRight: 36 }}>
+            {forYou.map((ev, i) => (
+              <div
+                key={ev.id}
+                onClick={() => openEvent(ev)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
+                style={{
+                  flex: "0 0 200px", borderRadius: 22, overflow: "hidden",
+                  position: "relative", height: 200, cursor: "pointer",
+                  transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+                className="pz-section-reveal"
+              >
+                <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: `linear-gradient(180deg, transparent 40%, ${(() => {
+                    const c = ev.category?.toLowerCase?.() ?? "inne";
+                    return c === "muzyka" ? "rgba(255,61,127,0.85)" :
+                           c === "kino" ? "rgba(110,61,255,0.85)" :
+                           c === "sztuka" ? "rgba(40,96,255,0.85)" :
+                           c === "sport" ? "rgba(200,255,46,0.85)" :
+                           c === "teatr" ? "rgba(255,107,44,0.85)" :
+                           "rgba(20,19,15,0.75)";
+                  })()} 100%)`,
+                }}>
+                  <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
+                    <h3 className="pz-h" style={{
+                      margin: 0, fontSize: 16, fontWeight: 700,
+                      letterSpacing: "-0.02em", lineHeight: 1.15,
+                      color: "white",
+                    }}>{ev.title}</h3>
+                    <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>
+                      {relDay(new Date(ev.startDate))} · {ev.time ?? "—"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {/* "See all" CTA */}
+            <div
+              onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }}
+              style={{
+                flex: "0 0 120px", borderRadius: 22, height: 200,
+                background: "var(--bg-soft)", cursor: "pointer",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center", gap: 8,
+                transition: "transform 0.2s var(--ease-out-quart)",
+              }}
+            >
+              <div style={{
+                width: 40, height: 40, borderRadius: 99,
+                background: "var(--ink)", color: "var(--bg)",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                fontSize: 18, fontWeight: 700,
+              }}>→</div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>
+                Zobacz<br />wszystko
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {searchOpen && (
         <SearchOverlay

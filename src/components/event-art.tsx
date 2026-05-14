@@ -35,6 +35,7 @@ export default function EventArt({
   className?: string;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   if (!forceArt && event.imageUrl && !imgFailed) {
     return (
@@ -43,6 +44,8 @@ export default function EventArt({
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
           loading="lazy"
+          className={`pz-img-reveal${imgLoaded ? ' loaded' : ''}`}
+          onLoad={() => setImgLoaded(true)}
           onError={() => setImgFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
