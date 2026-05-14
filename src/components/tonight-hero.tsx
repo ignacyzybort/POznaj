@@ -80,7 +80,7 @@ export default function TonightHero({
           </div>
           <h1 className="pz-h" style={{
             margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: "-0.04em",
-            lineHeight: 0.96,
+            lineHeight: 1.05,
           }}>{ev.title}</h1>
           {ev.description && (
             <p style={{ margin: "10px 0 14px", fontSize: "var(--text-base)", lineHeight: 1.4, opacity: 0.92 }}>

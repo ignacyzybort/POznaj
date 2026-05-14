@@ -47,7 +47,7 @@ export default function PlanPage() {
               data-active={active ? "true" : undefined}
               style={{ flexDirection: "column", gap: 4, padding: "10px 14px" }}
             >
-              <span className="pz-eyebrow" style={{ fontSize: 9, color: active ? "var(--bg)" : "var(--ink-4)" }}>{format(day, "EEEEE", { locale: pl })}</span>
+              <span className="pz-eyebrow" style={{ fontSize: 9, color: active ? "var(--bg)" : "var(--ink-4)" }}>{format(day, "EEEEEE", { locale: pl })}</span>
               <span style={{ fontSize: 18, fontWeight: 700 }}>{format(day, "d")}</span>
               {hasEvents && (
                 <span style={{ width: 4, height: 4, borderRadius: 99, background: active ? "var(--bg)" : "var(--ink-4)" }} />

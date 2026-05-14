@@ -163,7 +163,7 @@ export default function EventDetailPage() {
           }}>{event.title}</h1>
 
           <div style={{
-            marginTop: 16, padding: 14, borderRadius: 18,
+            marginTop: 16, padding: 14, borderRadius: 22,
             background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
           }}>
             <HeatMeter score={event.score} size="md" />
@@ -177,7 +177,8 @@ export default function EventDetailPage() {
               title={event.placeName}
               sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
             <StatCard icon={<UsersIcon size={14} />} label="Popularność"
-              title={`🔥 ${event.score}`} sub="na podstawie dopasowania" />
+              title={event.score >= 70 ? "Bardzo popularne" : event.score >= 40 ? "Rośnie" : "Nowość"}
+              sub={`${event.score} pkt · na podstawie dopasowania`} />
             <StatCard icon={<SparkIcon size={14} />} label="Bilet"
               title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"}
               sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
@@ -194,7 +195,7 @@ export default function EventDetailPage() {
 
           {/* Notification row */}
           <div style={{
-            marginTop: 18, padding: 14, borderRadius: 18,
+            marginTop: 18, padding: 14, borderRadius: 22,
             background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
@@ -243,7 +244,7 @@ function StatCard({ icon, label, title, sub }: {
 }) {
   return (
     <div style={{
-      padding: 12, borderRadius: 16,
+      padding: 12, borderRadius: 22,
       background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
       <div style={{

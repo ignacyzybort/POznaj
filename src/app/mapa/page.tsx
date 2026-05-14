@@ -29,15 +29,20 @@ export default function MapPage() {
       const vals = Object.values(c);
       const max = Math.max(...vals, 1);
       const result: Record<string, string> = {};
+      const districtHues: Record<string, number> = {
+        StareMiasto: 340, Jezyce: 35, Lazarz: 200, Grunwald: 120,
+        Wilda: 280, Rataje: 160, Piatkowo: 50, Winogrady: 10,
+        NoweMiasto: 220, Inny: 0,
+      };
       for (const [k, v] of Object.entries(c)) {
         const ratio = v / max;
-        const r = Math.round(61 + (255 - 61) * ratio);
-        const g = Math.round(90 + (56 - 90) * ratio);
-        const b = Math.round(64 + (35 - 64) * ratio);
-        result[k] = `rgb(${r},${g},${b})`;
+        const baseHue = districtHues[k] ?? 0;
+        const sat = 55 + Math.round(20 * ratio);
+        const lit = 45 - Math.round(15 * ratio);
+        result[k] = `hsl(${baseHue}, ${sat}%, ${lit}%)`;
       }
       for (const s of DISTRICT_SHAPES) {
-        if (!result[s.id]) result[s.id] = "rgb(230,235,225)";
+        if (!result[s.id]) result[s.id] = "hsl(0, 0%, 92%)";
       }
       setColors(result);
     });

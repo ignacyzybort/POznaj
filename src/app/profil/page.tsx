@@ -13,6 +13,15 @@ import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 import { SettingsIcon, EditIcon, ChevronIcon } from "@/components/icons";
 
+const COVER_GRADIENTS = [
+  "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
+  "linear-gradient(135deg, var(--c-kino), var(--c-muzyka))",
+  "linear-gradient(135deg, var(--c-sztuka), #06B6D4)",
+  "linear-gradient(135deg, #C8FF2E, var(--sage))",
+  "linear-gradient(135deg, var(--c-teatr), var(--c-sztuka))",
+  "linear-gradient(135deg, var(--c-warsztaty), var(--c-teatr))",
+  "linear-gradient(135deg, var(--c-konferencje), var(--c-kino))",
+];
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 
@@ -96,8 +105,7 @@ export default function ProfilPage() {
   const avatarUrl = userData?.image;
   const coverUrl = userData?.coverImage;
 
-  const hue1 = (name.length * 37) % 360;
-  const hue2 = (hue1 + 40) % 360;
+  const coverGradient = COVER_GRADIENTS[name.length % COVER_GRADIENTS.length];
 
   if (!session?.user) {
     return (
@@ -121,7 +129,7 @@ export default function ProfilPage() {
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Cover banner — 120px */}
-      <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
+      <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
         {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         {/* Gear + Edit at top-right */}
         <div style={{ position: "absolute", top: "calc(12px + var(--safe-t))", right: 12, display: "flex", gap: 6 }}>
@@ -137,7 +145,7 @@ export default function ProfilPage() {
       {/* Avatar — fully below the cover banner */}
       <div style={{ padding: "0 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
-          <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : `linear-gradient(135deg, hsl(${hue2},70%,55%), hsl(${hue1},80%,40%))` }}>
+          <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : coverGradient }}>
             {avatarUrl ? (
               <img src={avatarUrl} alt="Zdjęcie profilowe" className="w-full h-full object-cover" />
             ) : (

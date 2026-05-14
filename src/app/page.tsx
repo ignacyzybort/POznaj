@@ -240,12 +240,9 @@ export default function HomePage() {
       {/* Surprise me CTA */}
       {cleanHome && (
         <div style={{ padding: "0 18px 14px" }}>
-          <button onClick={() => setSurpriseOpen(true)} style={{
-            width: "100%", padding: "14px 18px", borderRadius: 18,
-            border: "0.5px dashed var(--ink-5)", background: "transparent",
-            color: "var(--ink)", fontSize: 14, fontWeight: 600,
-            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-            cursor: "pointer", letterSpacing: "-0.01em",
+          <button onClick={() => setSurpriseOpen(true)} className="pz-btn ghost" style={{
+            width: "100%", height: 50, fontSize: "var(--text-sm)",
+            border: "0.5px solid var(--ink-4)", background: "var(--bg-soft)",
           }}>
             <ShuffleIcon size={16} />
             Zaskocz mnie — losowy plan

@@ -178,6 +178,7 @@
 .pz-display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; }
 .pz-display.tight { letter-spacing: -0.04em; }
 .pz-sans-display { font-family: var(--font-sans); font-weight: 700; letter-spacing: -0.035em; }
+.pz-h { font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
 .pz-mono { font-family: var(--font-mono); font-weight: 500; letter-spacing: -0.02em; }
 .pz-num { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
 

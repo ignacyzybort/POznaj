@@ -3,19 +3,59 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackIcon } from "@/components/icons";
-import { districts, categories, vibes } from "@/lib/filters";
-import { categoryVisual } from "@/lib/visuals";
+import { districts } from "@/lib/data";
 import { useTheme } from "@/components/theme-provider";
+import { DUR } from "@/lib/duration";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, toggle: toggleTheme } = useTheme();
+  const [notifyBefore, setNotifyBefore] = useState(() => {
+    if (typeof window === "undefined") return 30;
+    return parseInt(localStorage.getItem("poznaj-notify-minutes") ?? "30", 10);
+  });
+  const [savedDistrict, setSavedDistrict] = useState(() => {
+    if (typeof window === "undefined") return "";
+    return localStorage.getItem("poznaj-district") ?? "";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("poznaj-notify-minutes", String(notifyBefore));
+  }, [notifyBefore]);
+
+  useEffect(() => {
+    if (savedDistrict) localStorage.setItem("poznaj-district", savedDistrict);
+    else localStorage.removeItem("poznaj-district");
+  }, [savedDistrict]);
+
+  const toggleRow = (label: string, sub: string, active: boolean, onToggle: () => void, accent?: string) => (
+    <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em" }}>{label}</div>
+          <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>{sub}</div>
+        </div>
+        <button onClick={onToggle} style={{
+          position: "relative", width: 48, height: 28, borderRadius: 99, border: 0, cursor: "pointer",
+          background: active ? (accent ?? "var(--sage)") : "var(--line-2)",
+          transition: `background ${DUR.fast}ms var(--ease-out-quart)`,
+        }}>
+          <div style={{
+            position: "absolute", top: 2, width: 24, height: 24, borderRadius: 99,
+            background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
+            transition: `left ${DUR.fast}ms var(--ease-out-quart)`,
+            left: active ? 22 : 2,
+          }} />
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
-      <div style={{ padding: "54px 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
         <button onClick={() => router.back()} style={{
-          width: 40, height: 40, borderRadius: 99, border: 0,
+          width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
         }}>
@@ -27,24 +67,33 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <div style={{ padding: "6px 18px 30px" }}>
-        {/* Dark mode toggle */}
-        <div className="pz-card" style={{ padding: 16, marginBottom: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>🎨 Tryb ciemny</div>
-              <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>{theme === "dark" ? "Włączony" : "Wyłączony"}</div>
-            </div>
-            <button onClick={toggleTheme} style={{
-              position: "relative", width: 48, height: 28, borderRadius: 99, border: 0, cursor: "pointer",
-              background: theme === "dark" ? "var(--sage)" : "var(--line-2)", transition: "background 0.2s",
-            }}>
-              <div style={{
-                position: "absolute", top: 2, width: 24, height: 24, borderRadius: 99,
-                background: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s",
-                left: theme === "dark" ? 22 : 2,
-              }} />
-            </button>
+      <div style={{ padding: "6px 18px 96px" }}>
+        {toggleRow("Wygląd", theme === "dark" ? "Tryb ciemny" : "Tryb jasny", theme === "dark", toggleTheme, "var(--c-kino)")}
+
+        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, true, () => {})}
+
+        {/* Domyślna dzielnica */}
+        <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>📍 Dzielnica</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {districts.map((d) => {
+              const active = savedDistrict === d.value;
+              return (
+                <button key={d.value} className="pz-chip" data-active={active ? "true" : undefined}
+                  onClick={() => setSavedDistrict(active ? "" : d.value)}>
+                  {d.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* O aplikacji */}
+        <div className="pz-card" style={{ padding: 16 }}>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 8 }}>O POznaj</div>
+          <div style={{ fontSize: 12, color: "var(--ink-3)", lineHeight: 1.6 }}>
+            POznaj pomaga odkrywać najlepsze wydarzenia w Poznaniu.
+            Wersja 0.1 · Dane z PIK Poznań i Facebooka.
           </div>
         </div>
       </div>
