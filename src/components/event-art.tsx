@@ -34,13 +34,11 @@ export default function EventArt({
   forceArt?: boolean;
   className?: string;
 }) {
-  const artId = typeof window !== "undefined" ? sessionStorage.getItem("transition-art-id") : null;
-  const isTransitionTarget = artId === event.id;
   const [imgFailed, setImgFailed] = useState(false);
 
   if (!forceArt && event.imageUrl && !imgFailed) {
     return (
-      <div className={`pz-art ${className}`} style={{ height, background: "var(--bg-soft)", viewTransitionName: isTransitionTarget ? `art-${event.id}` : undefined }}>
+      <div className={`pz-art ${className}`} style={{ height, background: "var(--bg-soft)" }}>
         <img
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
@@ -76,7 +74,7 @@ export default function EventArt({
 
   if (style === "gradient") {
     return (
-      <div className={`pz-art ${className}`} style={{ viewTransitionName: isTransitionTarget ? `art-${event.id}` : undefined,
+      <div className={`pz-art ${className}`} style={{
         height,
         background: `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`,
         color: tone.fg,
@@ -110,7 +108,6 @@ export default function EventArt({
   return (
     <div className={`pz-art pz-art-noise ${className}`} style={{
       height, background: tone.bg, color: tone.fg, position: "relative",
-      viewTransitionName: isTransitionTarget ? `art-${event.id}` : undefined,
     }}>
       <svg
         width="100%" height="100%"

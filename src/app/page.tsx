@@ -122,14 +122,7 @@ export default function HomePage() {
 
   const router = useRouter();
   const { data: session } = useSession();
-  const openEvent = (ev: EventData) => {
-    sessionStorage.setItem("transition-art-id", ev.id);
-    if (document.startViewTransition) {
-      document.startViewTransition(() => { window.location.href = `/event/${ev.id}`; });
-    } else {
-      window.location.href = `/event/${ev.id}`;
-    }
-  };
+  const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
   const toggleSave = async (id: string) => {
     if (!session?.user) { router.push("/login"); return; }
     const isSaved = savedIds.includes(id);
@@ -391,7 +384,7 @@ export default function HomePage() {
       {surpriseOpen && (
         <SurpriseModal
           events={events}
-          onPick={(ev) => { sessionStorage.setItem("transition-art-id", ev.id); window.location.href = `/event/${ev.id}`; }}
+          onPick={(ev) => { router.push(`/event/${ev.id}`); }}
           onClose={() => setSurpriseOpen(false)}
         />
       )}
