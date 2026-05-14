@@ -53,7 +53,7 @@ export default function SettingsPage() {
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em" }}>{label}</div>
           <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>{sub}</div>
         </div>
-        <button onClick={onToggle} style={{
+        <button role="switch" aria-checked={active} onClick={onToggle} style={{
           position: "relative", width: 48, height: 28, borderRadius: 99, border: 0, cursor: "pointer",
           background: active ? (accent ?? "var(--sage)") : "var(--line-2)",
           transition: `background ${DUR.fast}ms var(--ease-out-quart)`,
@@ -72,7 +72,7 @@ export default function SettingsPage() {
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
       <div style={{ padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
-        <button onClick={() => router.back()} style={{
+        <button onClick={() => router.back()} aria-label="Wróć" style={{
           width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",

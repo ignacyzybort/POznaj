@@ -49,10 +49,10 @@ export default function EventCard({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {friends.length > 0 && <AvStack people={friends} max={3} />}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{
+          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} aria-label="Zapisz" style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",
-            cursor: "pointer", padding: 4, display: "inline-flex",
-          }} aria-label="Save">
+            cursor: "pointer", padding: 0, display: "inline-flex", width: 44, height: 44, alignItems: "center", justifyContent: "center",
+          }}>
             <BookmarkIcon size={18} fill={saved} />
           </button>
         </div>

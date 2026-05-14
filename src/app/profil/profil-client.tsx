@@ -166,10 +166,10 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
-          <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
+          <Link href="/settings" aria-label="Ustawienia" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
             <SettingsIcon size={18} />
           </Link>
-          <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
+          <button onClick={() => setEditOpen(true)} aria-label="Edytuj profil" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
             <EditIcon size={18} />
           </button>
         </div>
@@ -290,8 +290,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                   <div style={{ width: 36, height: 36, borderRadius: 99, background: COLORS[(req.senderId?.length ?? 0) % COLORS.length] ?? "#888", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "var(--text-base)", fontWeight: 800, flexShrink: 0 }}>{req.senderName?.[0]?.toUpperCase() ?? "?"}</div>
                   <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{req.senderName}</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>chce być Twoim znajomym</div></div>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer" }}>Akceptuj</button>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer" }}>Odrzuć</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Akceptuj</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Odrzuć</button>
                   </div>
                 </div>
               ))}

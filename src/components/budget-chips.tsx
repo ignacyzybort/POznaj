@@ -14,7 +14,7 @@ export default function BudgetChips({
   return (
     <div style={{ display: "flex", gap: 8 }}>
       {opts.map((o) => (
-        <button key={o.id} className="pz-chip"
+        <button key={o.id} className="pz-chip" aria-pressed={active === o.id}
                 data-active={active === o.id ? "true" : undefined}
                 onClick={() => onToggle(active === o.id ? null : o.id)}>
           {o.label}

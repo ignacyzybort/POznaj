@@ -1,16 +1,13 @@
 export { districts, categories, vibes, vibeEmoji, categoryColors, categoryEmoji } from "./data";
 
 export const preferenceLabels: Record<string, string> = {
+  Centrum: "Centrum",
   StareMiasto: "Stare Miasto",
+  NoweMiasto: "Nowe Miasto",
   Jezyce: "Jeżyce",
-  Lazarz: "Łazarz",
   Grunwald: "Grunwald",
   Wilda: "Wilda",
-  Rataje: "Rataje",
-  Piatkowo: "Piątkowo",
-  Winogrady: "Winogrady",
-  NoweMiasto: "Nowe Miasto",
-  Inny: "Inny",
+  Inny: "Poznań",
   Kino: "Kino",
   Sztuka: "Sztuka",
   Muzyka: "Muzyka",

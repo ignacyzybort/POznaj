@@ -1,4 +1,3 @@
-import { Event } from "../generated/prisma";
 import { differenceInDays } from "date-fns";
 
 export interface UserPreferences {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { districts } from "@/lib/data";
 import CropModal from "@/components/crop-modal";
+import { useEscape } from "@/hooks/use-escape";
 
 export default function EditProfile({
   user,
@@ -20,6 +21,7 @@ export default function EditProfile({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user.image);
   const [coverPreview, setCoverPreview] = useState<string | null>(user.coverImage);
   const [saving, setSaving] = useState(false);
+  useEscape(onClose);
   const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
   const [cropTarget, setCropTarget] = useState<"avatar" | "cover" | null>(null);
   const [cropFile, setCropFile] = useState<{ url: string; file: File; type: "avatar" | "cover" } | null>(null);
@@ -92,14 +94,14 @@ export default function EditProfile({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
         background: "rgba(20,19,15,0.5)",
         animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
       }}>
         <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
-            <button onClick={close} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            <button onClick={close} style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Avatar upload */}
@@ -134,20 +136,21 @@ export default function EditProfile({
 
           <div className="space-y-4">
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Imię</label>
-              <input value={name} onChange={(e) => setName(e.target.value)}
+              <label htmlFor="edit-name" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Imię</label>
+              <input id="edit-name" value={name} onChange={(e) => setName(e.target.value)}
                 style={{ width: "100%", height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)" }} />
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Nazwa użytkownika</label>
+              <label htmlFor="edit-handle" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Nazwa użytkownika</label>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 14, color: "var(--ink-3)" }}>@</span>
-                <input value={handle} onChange={(e) => setHandle(e.target.value.replace(/\s/g, ""))}
+                <input id="edit-handle" value={handle} onChange={(e) => setHandle(e.target.value.replace(/\s/g, ""))}
                   style={{ flex: 1, height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)" }} />
               </div>
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Dzielnica</label>
+              <label htmlFor="edit-district" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Dzielnica</label>
+              <input id="edit-district" type="hidden" value={district} readOnly />
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {districts.map((d) => {
                   const active = district === d.value;
@@ -160,8 +163,8 @@ export default function EditProfile({
               </div>
             </div>
             <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>O mnie</label>
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
+              <label htmlFor="edit-bio" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>O mnie</label>
+              <textarea id="edit-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3}
                 style={{ width: "100%", padding: "10px 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)", resize: "none" }} />
             </div>
           </div>

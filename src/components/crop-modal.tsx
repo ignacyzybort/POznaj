@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Cropper, { Area } from "react-easy-crop";
+import { useEscape } from "@/hooks/use-escape";
 
 export default function CropModal({
   imageUrl,
@@ -18,6 +19,7 @@ export default function CropModal({
   const [zoom, setZoom] = useState(1);
   const [cropping, setCropping] = useState(false);
   const croppedAreaRef = useRef<Area | null>(null);
+  useEscape(onClose);
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     croppedAreaRef.current = croppedAreaPixels;
@@ -49,7 +51,7 @@ export default function CropModal({
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--ink-3)" }}>
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--ink-3)" }}>
       <div className="rounded-3xl overflow-hidden mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
         <div className="p-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", textAlign: "center" }}>
@@ -72,7 +74,9 @@ export default function CropModal({
         {/* Zoom slider */}
         <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 14, color: "var(--ink-3)" }}>🔍</span>
+          <label htmlFor="crop-zoom-range" style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-2)", marginBottom: 4 }}>Zoom</label>
           <input
+            id="crop-zoom-range"
             type="range"
             min={1}
             max={3}

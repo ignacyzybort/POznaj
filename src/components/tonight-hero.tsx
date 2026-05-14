@@ -67,7 +67,13 @@ export default function TonightHero({
           </div>
         </div>
 
-        <div onClick={() => onOpen(ev)} style={{ cursor: "pointer" }}>
+        <div
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(ev); } }}
+          onClick={() => onOpen(ev)}
+          style={{ cursor: "pointer" }}
+        >
           <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
             <span style={{
               padding: "4px 10px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 700,

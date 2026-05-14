@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useEscape } from "@/hooks/use-escape";
 
 export default function YearInReview({
   open, onClose, stats,
@@ -15,6 +16,7 @@ export default function YearInReview({
     setExiting(true);
     setTimeout(onClose, 200);
   };
+  useEscape(close);
 
   if (!open) return null;
 
@@ -31,7 +33,7 @@ export default function YearInReview({
   const c = CARDS[card];
 
   return (
-    <div style={{
+    <div role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 130, background: "black",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24,
       animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,

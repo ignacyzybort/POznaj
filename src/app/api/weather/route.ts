@@ -9,11 +9,11 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const lat = searchParams.get("lat");
-  const lon = searchParams.get("lon");
-  const eventTime = searchParams.get("time"); // optional: event start time (epoch ms)
+  const lat = parseFloat(searchParams.get("lat") ?? "");
+  const lon = parseFloat(searchParams.get("lon") ?? "");
+  const eventTime = searchParams.get("time");
 
-  if (!lat || !lon) {
+  if (isNaN(lat) || isNaN(lon)) {
     return NextResponse.json({ error: "Missing lat/lon" }, { status: 400 });
   }
 

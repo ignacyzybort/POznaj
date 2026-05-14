@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
+import { useEscape } from "@/hooks/use-escape";
 
 export type ActiveFilters = {
   category: string[];
@@ -36,6 +37,7 @@ export default function FiltersSheet({
     setExiting(true);
     setTimeout(() => { setExiting(false); onClose(); }, DUR.slow);
   };
+  useEscape(close);
 
   const startY = useRef(0);
   const startTime = useRef(0);
@@ -74,7 +76,7 @@ export default function FiltersSheet({
   return (
     <>
       <div className="pz-sheet-backdrop" data-open={open && !exiting} onClick={close} />
-      <div className="pz-sheet" data-open={open && !exiting}
+      <div className="pz-sheet" role="dialog" aria-modal="true" data-open={open && !exiting}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
         style={{
           maxHeight: "86%",
@@ -90,7 +92,7 @@ export default function FiltersSheet({
             margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em",
           }}>Filtry</h2>
           <button onClick={close} aria-label="Zamknij" style={{
-            width: 32, height: 32, borderRadius: 99, border: 0,
+            width: 44, height: 44, borderRadius: 99, border: 0,
             background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
           }}>
@@ -106,7 +108,7 @@ export default function FiltersSheet({
                 {s.opts.map((o) => {
                   const isActive = active[s.key].includes(o.v);
                   return (
-                    <button key={o.v} className="pz-chip"
+                    <button key={o.v} className="pz-chip" aria-pressed={isActive}
                             data-active={isActive ? "true" : undefined}
                             onClick={() => onToggle(s.key, o.v)}>
                       {o.emoji && <span>{o.emoji}</span>}{o.label}

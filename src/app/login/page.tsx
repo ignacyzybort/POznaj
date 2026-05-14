@@ -88,7 +88,9 @@ export default function LoginPage() {
               }}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
+              <label htmlFor="login-email" className="sr-only">Email</label>
               <input
+                id="login-email"
                 type="email"
                 placeholder="Twój email"
                 value={email}

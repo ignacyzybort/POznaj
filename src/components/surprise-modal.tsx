@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { EventData, categoryEmoji } from "@/lib/data";
+import { useEscape } from "@/hooks/use-escape";
 
 function getRandomEvents(events: EventData[], count: number): EventData[] {
   const shuffled = [...events].sort(() => Math.random() - 0.5);
@@ -21,6 +22,7 @@ export default function SurpriseModal({
   const [results, setResults] = useState<EventData[]>([]);
   const [picked, setPicked] = useState<EventData | null>(null);
   const [exiting, setExiting] = useState(false);
+  useEscape(onClose);
 
   const spin = useCallback(() => {
     setSpinning(true);
@@ -49,8 +51,8 @@ export default function SurpriseModal({
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 50,
+<div role="dialog" aria-modal="true" style={{
+  position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--ink-3)",
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,

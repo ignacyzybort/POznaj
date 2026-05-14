@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { EventData } from "@/lib/data";
+import { useEscape } from "@/hooks/use-escape";
 
 const questions = [
   {
@@ -60,6 +61,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [recommendations, setRecommendations] = useState<EventData[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [exiting, setExiting] = useState(false);
+  useEscape(onClose);
   const router = useRouter();
 
   const close = () => {
@@ -103,7 +105,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   };
 
   const overlay = (content: React.ReactNode) => (
-    <div style={{
+    <div role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--ink-3)",
