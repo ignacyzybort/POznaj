@@ -1,6 +1,32 @@
 import { Scraper, ScrapedEvent } from "./base";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { matchVenue } from "@/lib/venues";
+
+const CAT_MAP: Record<string, string> = {
+  kino: "Kino", film: "Kino",
+  muzyka: "Muzyka", koncert: "Muzyka",
+  teatr: "Teatr", spektakl: "Teatr",
+  sztuka: "Sztuka", wystawa: "Sztuka", wernisaż: "Sztuka",
+  sport: "Sport", bieg: "Sport",
+  warsztaty: "Warsztaty", warsztat: "Warsztaty",
+  konferencja: "Konferencje", wykład: "Konferencje",
+  jedzenie: "Jedzenie", kulinaria: "Jedzenie",
+};
+
+function guessCategory(title: string, text: string): string {
+  const lower = (title + " " + text).toLowerCase();
+  for (const [key, val] of Object.entries(CAT_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  return "Inne";
+}
+
+function relDate(daysFromNow: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export class PoznanPlScraper implements Scraper {
   name = "poznanpl";
@@ -8,92 +34,86 @@ export class PoznanPlScraper implements Scraper {
   async scrape(): Promise<ScrapedEvent[]> {
     const events: ScrapedEvent[] = [];
 
-    for (let offset = 0; offset < 40; offset += 10) {
-      try {
-        const res = await axios.get(
-          `https://www.poznan.pl/mim/kultura/events/2026-05-12,calendarPage.html?offset=${offset}&limit=10`,
-          {
-            headers: {
-              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-              Accept: "text/html,application/xhtml+xml",
-            },
-            timeout: 15000,
-          }
-        );
+    // Scrape next 7 days
+    for (let day = 0; day < 7; day++) {
+      const dateStr = relDate(day);
+      let foundOnDay = 0;
 
-        const $ = cheerio.load(res.data);
-        let found = 0;
+      for (let offset = 0; offset < 40; offset += 10) {
+        try {
+          const res = await axios.get(
+            `https://www.poznan.pl/mim/kultura/events/${dateStr},calendarPage.html?offset=${offset}&limit=10`,
+            {
+              headers: {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                Accept: "text/html,application/xhtml+xml",
+              },
+              timeout: 15000,
+            }
+          );
 
-        $("[class*='event'], .calendar-event, .calendar-events-list > div, .events-list > div, .event-item, tr.event, .day-has-event, .day-has-events").each((_, el) => {
-          const title = $(el).find("a, .title, .event-title, h3, h4").first().text().trim();
-          if (!title || title.length < 3) return;
+          const $ = cheerio.load(res.data);
+          let found = 0;
 
-          const link = $(el).find("a").first().attr("href") || "";
-          const fullLink = link.startsWith("http") ? link : `https://www.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
+          $("[class*='event'], .calendar-event, .calendar-events-list > div, .events-list > div, .event-item, tr.event, .day-has-event, .day-has-events").each((_, el) => {
+            const title = $(el).find("a, .title, .event-title, h3, h4").first().text().trim();
+            if (!title || title.length < 3) return;
 
-          const text = $(el).text();
-          const img = $(el).find("img").first().attr("src") || "";
+            const link = $(el).find("a").first().attr("href") || "";
+            const fullLink = link.startsWith("http") ? link : `https://www.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
 
-          const now = new Date();
-          let startDate: Date;
-          let endDate: Date;
+            const text = $(el).text();
+            const img = $(el).find("img").first().attr("src") || "";
 
-          const dateMatch = text.match(/(\d{1,2})[.\\-](\d{1,2})[.\\-](\d{4})/);
-          if (dateMatch) {
-            startDate = new Date(parseInt(dateMatch[3]), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[1]));
-          } else {
-            startDate = now;
-          }
+            const startDate = new Date(dateStr);
+            let endDate = new Date(dateStr);
 
-          endDate = startDate;
+            const timeMatch = text.match(/(\d{1,2})[.:](\d{2})/);
+            const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : undefined;
 
-          const timeMatch = text.match(/(\d{1,2})[.:](\d{2})/);
-          const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : undefined;
+            const placeMatch = text.match(/(?:miejsce|gdzie|venue)[:\s]+([^\n,]+)/i);
+            let placeName = placeMatch ? placeMatch[1].trim() : "";
 
-          const placeMatch = text.match(/(?:miejsce|gdzie|venue)[:\s]+([^\n,]+)/i);
-          const placeName = placeMatch ? placeMatch[1].trim() : "Poznań";
+            // Fallback: find the best venue-like word in the text
+            if (!placeName) {
+              const tokens = text.split(/[\s,]+/);
+              const knownVenues = ["CK Zamek", "Stary Browar", "Kino Muza", "Tama", "Blue Note", "MTP", "Cytadela", "Concordia", "POSiR", "Aula UAM", "Teatr Polski", "Teatr Wielki", "Filharmonia", "Estrada"];
+              for (const v of knownVenues) {
+                if (text.includes(v)) { placeName = v; break; }
+              }
+            }
+            if (!placeName) placeName = "Poznań";
 
-          const catMap: Record<string, string> = {
-            kino: "Kino", film: "Kino",
-            muzyka: "Muzyka", koncert: "Muzyka",
-            teatr: "Teatr", spektakl: "Teatr",
-            sztuka: "Sztuka", wystawa: "Sztuka", wernisaż: "Sztuka",
-            sport: "Sport", bieg: "Sport",
-            warsztaty: "Warsztaty", warsztat: "Warsztaty",
-            konferencja: "Konferencje", wykład: "Konferencje",
-            jedzenie: "Jedzenie", kulinaria: "Jedzenie",
-          };
-          const lower = (title + " " + text).toLowerCase();
-          let category = "Inne";
-          for (const [key, val] of Object.entries(catMap)) {
-            if (lower.includes(key)) { category = val; break; }
-          }
+            // Match venue for district + coords
+            const venue = matchVenue(placeName);
+            const category = guessCategory(title, text);
 
-          const imgUrl = img.startsWith("http") ? img : "";
-
-          events.push({
-            title,
-            imageUrl: imgUrl || undefined,
-            sourceUrl: fullLink,
-            startDate,
-            endDate,
-            time,
-            placeName,
-            district: "Inny",
-            category,
-            vibes: ["Kulturalne"],
-            source: "poznanpl",
-            sourceId: `poznanpl-${Buffer.from(title).toString("base64").slice(0, 24)}`,
+            events.push({
+              title,
+              imageUrl: img.startsWith("http") ? img : undefined,
+              sourceUrl: fullLink,
+              startDate,
+              endDate,
+              time,
+              placeName,
+              district: venue?.district ?? "Inny",
+              category,
+              vibes: ["Kulturalne"],
+              source: "poznanpl",
+              sourceId: `poznanpl-${Buffer.from(title).toString("base64").slice(0, 24)}-${dateStr}`,
+              coordsX: venue?.lat,
+              coordsY: venue?.lon,
+            });
+            found++;
+            foundOnDay++;
           });
-          found++;
-        });
 
-        console.log(`[PoznanPl] offset=${offset}: ${found} events`);
-        if (found === 0) break;
-      } catch (e) {
-        console.error(`[PoznanPl] offset=${offset}: error, stopping`);
-        break;
+          if (found === 0) break;
+        } catch {
+          break;
+        }
       }
+      console.log(`[PoznanPl] ${dateStr}: ${foundOnDay} events`);
     }
 
     return events;
