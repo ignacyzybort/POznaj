@@ -7,15 +7,12 @@ datasource db {
 }
 
 enum District {
+  Centrum
   StareMiasto
+  NoweMiasto
   Jezyce
-  Lazarz
   Grunwald
   Wilda
-  Rataje
-  Piatkowo
-  Winogrady
-  NoweMiasto
   Inny
 }
 

@@ -12,17 +12,30 @@ const CAT_INITIAL: Record<string, string> = {
   Teatr: "T", Warsztaty: "W", Konferencje: "Kf", Jedzenie: "J", Inne: "I",
 };
 
+const GEO_NAME_TO_ID: Record<string, string> = {
+  "Centrum": "Centrum", "Stare Miasto": "StareMiasto",
+  "Nowe Miasto": "NoweMiasto", "Jeżyce": "Jezyce",
+  "Grunwald": "Grunwald", "Wilda": "Wilda",
+};
+
+const ID_TO_NAME = Object.fromEntries(
+  Object.entries(GEO_NAME_TO_ID).map(([k, v]) => [v, k])
+);
+
+function getId(feature: any): string {
+  return GEO_NAME_TO_ID[feature?.properties?.name] ?? feature?.properties?.name ?? "";
+}
+
 const DISTRICT_HUES: Record<string, number> = {
-  StareMiasto: 340, Jezyce: 35, Lazarz: 200, Grunwald: 120,
-  Wilda: 280, Rataje: 160, Piatkowo: 50, Winogrady: 10, NoweMiasto: 220,
+  Centrum: 30, StareMiasto: 340, NoweMiasto: 220,
+  Jezyce: 35, Grunwald: 120, Wilda: 280,
+  Inny: 0,
 };
 
 const DISTRICT_CENTERS: Record<string, [number, number]> = {
-  StareMiasto: [52.408, 16.934], Jezyce: [52.418, 16.895],
-  Grunwald: [52.396, 16.898], Wilda: [52.381, 16.923],
-  Rataje: [52.380, 16.970], Lazarz: [52.393, 16.882],
-  Piatkowo: [52.458, 16.920], Winogrady: [52.430, 16.935],
-  NoweMiasto: [52.395, 16.965],
+  Centrum: [52.406, 16.918], StareMiasto: [52.430, 16.940],
+  NoweMiasto: [52.380, 16.970], Jezyce: [52.418, 16.895],
+  Grunwald: [52.390, 16.870], Wilda: [52.381, 16.923],
 };
 
 function createCategoryMarker(category: string) {
@@ -61,7 +74,7 @@ function MapController({ selected, onDistrictClick, eventCounts }:
     geojsonRef.current.eachLayer((layer) => {
       const feat = (layer as any).feature;
       if (!feat) return;
-      const id = feat.properties?.id;
+      const id = getId(feat);
       const isSelected = id === selected;
       const count = eventCounts[id] ?? 0;
       const maxCount = Math.max(...Object.values(eventCounts), 1);
@@ -106,7 +119,7 @@ export default function DistrictMap({
     : [];
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
-    const id = feature.properties?.id;
+    const id = getId(feature);
     layer.on({
       click: () => { if (id) onSelect(id); },
       mouseover: (e) => { (e.target as L.Path).setStyle({ weight: 4, color: "white" }); },
@@ -117,12 +130,12 @@ export default function DistrictMap({
     });
     // Tooltip with district name
     if (id) {
-      layer.bindTooltip(id, { sticky: true, direction: "center" });
+      layer.bindTooltip(feature?.properties?.name ?? id, { sticky: true, direction: "center" });
     }
   };
 
   const pointToLayer = (feature: any, latlng: L.LatLngExpression) => {
-    const id = feature.properties?.id;
+    const id = getId(feature);
     const count = eventCounts[id] ?? 0;
     const maxCount = Math.max(...Object.values(eventCounts), 1);
     const ratio = count / maxCount;
@@ -169,7 +182,7 @@ export default function DistrictMap({
             data={geojsonData}
             onEachFeature={onEachFeature}
             style={(feature) => {
-              const id = feature?.properties?.id ?? "";
+              const id = getId(feature ?? {});
               const isSelected = id === selectedDistrict;
               const count = eventCounts[id] ?? 0;
               const maxCount = Math.max(...Object.values(eventCounts), 1);

@@ -35,7 +35,7 @@ export const VENUES: Record<string, { address: string; district: string; lat: nu
   "Park Cytadela": { address: "Aleja Armii Poznań", district: "Winogrady", lat: 52.430, lon: 16.938 },
   "Stary Rynek": { address: "Stary Rynek", district: "StareMiasto", lat: 52.408, lon: 16.934 },
   "Plac Wolności": { address: "Plac Wolności", district: "StareMiasto", lat: 52.407, lon: 16.928 },
-  "Rynek Łazarski": { address: "Rynek Łazarski", district: "Lazarz", lat: 52.391, lon: 16.885 },
+  "Rynek Łazarski": { address: "Rynek Łazarski", district: "Grunwald", lat: 52.391, lon: 16.885 },
   "Ostrów Tumski": { address: "Ostrów Tumski", district: "StareMiasto", lat: 52.411, lon: 16.948 },
   "Koncertowa Cafe": { address: "Święty Marcin 66", district: "StareMiasto", lat: 52.407, lon: 16.920 },
   "Posen Club": { address: "Wrocławska 25", district: "StareMiasto", lat: 52.405, lon: 16.934 },

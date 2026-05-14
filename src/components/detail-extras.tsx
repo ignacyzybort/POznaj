@@ -4,15 +4,12 @@ import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
 
 const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
-  StareMiasto: { lat: 52.408, lon: 16.934 },
+  Centrum: { lat: 52.406, lon: 16.918 },
+  StareMiasto: { lat: 52.430, lon: 16.940 },
+  NoweMiasto: { lat: 52.380, lon: 16.970 },
   Jezyce: { lat: 52.418, lon: 16.895 },
-  Lazarz: { lat: 52.393, lon: 16.882 },
-  Grunwald: { lat: 52.396, lon: 16.898 },
+  Grunwald: { lat: 52.390, lon: 16.870 },
   Wilda: { lat: 52.381, lon: 16.923 },
-  Rataje: { lat: 52.380, lon: 16.970 },
-  Piatkowo: { lat: 52.458, lon: 16.920 },
-  Winogrady: { lat: 52.430, lon: 16.935 },
-  NoweMiasto: { lat: 52.395, lon: 16.965 },
   Inny: { lat: 52.408, lon: 16.934 },
 };
 

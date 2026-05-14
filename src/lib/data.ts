@@ -23,16 +23,13 @@ export interface EventData {
 }
 
 export const districts = [
+  { value: "Centrum", label: "Centrum" },
   { value: "StareMiasto", label: "Stare Miasto" },
+  { value: "NoweMiasto", label: "Nowe Miasto" },
   { value: "Jezyce", label: "Jeżyce" },
-  { value: "Lazarz", label: "Łazarz" },
   { value: "Grunwald", label: "Grunwald" },
   { value: "Wilda", label: "Wilda" },
-  { value: "Rataje", label: "Rataje" },
-  { value: "Piatkowo", label: "Piątkowo" },
-  { value: "Winogrady", label: "Winogrady" },
-  { value: "NoweMiasto", label: "Nowe Miasto" },
-  { value: "Inny", label: "Inny" },
+  { value: "Inny", label: "Poznań" },
 ];
 
 export const categories = [
