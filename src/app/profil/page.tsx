@@ -82,13 +82,14 @@ export default function ProfilPage() {
     ]).finally(() => setProfileLoading(false));
   }, [session, refreshKey]);
 
-  const weeksActive = Math.min(attendanceData.length, 8);
-  const badge = getBadge(attendanceData.length);
+  const goingItems = attendanceData.filter((a) => a.status === "GOING");
+  const weeksActive = Math.min(goingItems.length, 8);
+  const badge = getBadge(goingItems.length);
 
   const catCount: Record<string, number> = {};
   const venueCount: Record<string, number> = {};
   const monthlyCount = new Array(12).fill(0);
-  for (const a of attendanceData) {
+  for (const a of goingItems) {
     const cat = a.event?.category; if (cat) catCount[cat] = (catCount[cat] || 0) + 1;
     const venue = a.event?.placeName; if (venue) venueCount[venue] = (venueCount[venue] || 0) + 1;
     const date = a.event?.startDate ? new Date(a.event.startDate) : null;
@@ -207,7 +208,7 @@ export default function ProfilPage() {
         <div className="pz-card" style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div><span style={{ fontSize: 24, marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
-            <span className="pz-num" style={{ fontSize: 13, color: "var(--ink-3)" }}>{attendanceData.length} wydarzeń</span>
+            <span className="pz-num" style={{ fontSize: 13, color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
             {monthlyCount.map((val, i) => {
@@ -277,7 +278,7 @@ export default function ProfilPage() {
           <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
         </button>
         <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
+          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
           <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
         </button>
       </div>
@@ -315,7 +316,7 @@ export default function ProfilPage() {
 
       {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}
       <YearInReview open={yirOpen} onClose={() => setYirOpen(false)}
-        stats={{ events: attendanceData.length, newPlaces: Object.values(stamps).filter(Boolean).length, friends: friendsList.length, topDistrict: Object.entries(stamps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Poznań", topCategory: topCategory?.[0] ?? "Kulturalne" }} />
+        stats={{ events: goingItems.length, newPlaces: Object.values(stamps).filter(Boolean).length, friends: friendsList.length, topDistrict: Object.entries(stamps).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Poznań", topCategory: topCategory?.[0] ?? "Kulturalne" }} />
       {inviteOpen && <InviteModal onClose={() => setInviteOpen(false)} />}
       {editOpen && userData && (
         <EditProfile

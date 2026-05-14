@@ -104,16 +104,20 @@ export default function EventDetailPage() {
     setSaved((s) => !s);
   };
   const toggleGoing = async () => {
-    if (!going) {
-      try {
-        await fetch("/api/attendance", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId: params.id, status: "GOING" }),
-        });
-        setToast("Idziesz 🎉");
-      } catch { setToast("Błąd"); }
+    const prev = going;
+    setGoing(!going);
+    if (!going) setConfetti(true);
+    try {
+      const res = await fetch("/api/attendance", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: params.id, status: "GOING" }),
+      });
+      if (!res.ok) throw new Error();
+      setToast(going ? "Nie idziesz" : "Idziesz 🎉");
+    } catch {
+      setGoing(prev);
+      setToast("Błąd");
     }
-    setGoing((g) => !g);
   };
 
   return (
@@ -226,7 +230,7 @@ export default function EventDetailPage() {
         }}>
           <span className={saved && animatingSave ? "pz-bookmark-draw" : ""}>{saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}</span>
         </button>
-        <button onClick={() => { if (!going) setConfetti(true); setGoing(!going); }} className="pz-btn primary pz-btn-ripple" style={{
+        <button onClick={toggleGoing} className="pz-btn primary pz-btn-ripple" style={{
           flex: 1, background: going ? "var(--sage)" : "var(--ink)",
         }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}

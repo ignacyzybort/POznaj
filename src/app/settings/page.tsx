@@ -18,6 +18,10 @@ export default function SettingsPage() {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("poznaj-district") ?? "";
   });
+  const [notificationsOn, setNotificationsOn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("poznaj-notifications") === "true";
+  });
 
   useEffect(() => {
     localStorage.setItem("poznaj-notify-minutes", String(notifyBefore));
@@ -27,6 +31,20 @@ export default function SettingsPage() {
     if (savedDistrict) localStorage.setItem("poznaj-district", savedDistrict);
     else localStorage.removeItem("poznaj-district");
   }, [savedDistrict]);
+
+  const toggleNotifications = () => {
+    if (!notificationsOn) {
+      Notification.requestPermission().then((perm) => {
+        if (perm === "granted" || perm === "denied") {
+          setNotificationsOn(perm === "granted");
+          localStorage.setItem("poznaj-notifications", perm === "granted" ? "true" : "false");
+        }
+      });
+    } else {
+      setNotificationsOn(false);
+      localStorage.setItem("poznaj-notifications", "false");
+    }
+  };
 
   const toggleRow = (label: string, sub: string, active: boolean, onToggle: () => void, accent?: string) => (
     <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
@@ -70,7 +88,7 @@ export default function SettingsPage() {
       <div style={{ padding: "6px 18px 96px" }}>
         {toggleRow("Wygląd", theme === "dark" ? "Tryb ciemny" : "Tryb jasny", theme === "dark", toggleTheme, "var(--c-kino)")}
 
-        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, true, () => {})}
+        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, notificationsOn, toggleNotifications)}
 
         {/* Domyślna dzielnica */}
         <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
