@@ -3,15 +3,24 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import type { EventData } from "@/lib/data";
+import { categoryColors } from "@/lib/data";
 
-function createIcon(emoji: string) {
+const CAT_INITIAL: Record<string, string> = {
+  Muzyka: "M", Kino: "K", Sztuka: "S", Sport: "Sp",
+  Teatr: "T", Warsztaty: "W", Konferencje: "Kf", Jedzenie: "J", Inne: "I",
+};
+
+function createCategoryMarker(category: string) {
+  const colors = categoryColors[category] ?? categoryColors.Inne;
   return L.divIcon({
     html: `<span style="
       display: inline-flex; align-items: center; justify-content: center;
       width: 36px; height: 36px; border-radius: 99px;
-      background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-      font-size: 18px; line-height: 1;
-    ">${emoji}</span>`,
+      background: ${colors.bg}; color: ${colors.fg};
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      font-size: 13px; font-weight: 800; line-height: 1;
+      border: 2px solid white;
+    ">${CAT_INITIAL[category] ?? "?"}</span>`,
     className: "",
     iconSize: [36, 36],
     iconAnchor: [18, 18],
@@ -77,7 +86,7 @@ export default function LeafletMap({
           <Marker
             key={ev.id}
             position={[ev.coordsX!, ev.coordsY!]}
-            icon={createIcon("🎵")}
+            icon={createCategoryMarker(ev.category)}
           >
             <Popup>
               <a

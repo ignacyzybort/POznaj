@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pl" className="h-full">
       <head>
         <meta name="theme-color" content="#FDFCF8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="h-full overflow-hidden">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { EventData } from "@/lib/data";
+import { EventData, categoryColors } from "@/lib/data";
 import Link from "next/link";
 import HeatMeter from "@/components/heat-meter";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
@@ -72,9 +72,10 @@ export default function PlanPage() {
               <Link
                 key={ev.id}
                 href={`/event/${ev.id}`}
-                style={{ display: "flex", gap: 16, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit" }}
+                style={{ display: "flex", gap: 16, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit", position: "relative", overflow: "hidden" }}
               >
-                <div style={{ textAlign: "center", minWidth: 44 }}>
+                <div style={{ position: "absolute", left: 0, top: 0, width: 4, height: "100%", background: (categoryColors[ev.category]?.bg ?? "#888") }} />
+                <div style={{ textAlign: "center", minWidth: 44, paddingLeft: 4 }}>
                   <div className="pz-num" style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-3)" }}>
                     {ev.time ?? "--:--"}
                   </div>

@@ -113,14 +113,14 @@ export default function ProfilPage() {
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
         <div style={{ padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
           <div style={{ marginBottom: 20 }}>
-            <h1 style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+            <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
               poznaj<span style={{ color: "var(--sage)" }}>.</span>
             </h1>
           </div>
           <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
-            <p style={{ fontSize: "var(--text-base)", fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>
-            <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "0 24px", borderRadius: 28, fontSize: "var(--text-base)", fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
+            <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>
+            <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "0 24px", borderRadius: 28, fontSize: 15, fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function ProfilPage() {
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Wordmark */}
       <div style={{ padding: "calc(24px + var(--safe-t)) 18px 12px" }}>
-        <h1 style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+        <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
           poznaj<span style={{ color: "var(--sage)" }}>.</span>
         </h1>
       </div>
@@ -163,8 +163,8 @@ export default function ProfilPage() {
             )}
           </div>
           <div style={{ paddingBottom: 4 }}>
-            <div className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>{name}</div>
-            <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)", marginTop: 1 }}>@{handle}{districtLabel ? ` · ${districtLabel}` : ""}</div>
+            <div className="pz-h" style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>{name}</div>
+            <div style={{ fontSize: 13, color: "var(--ink-3)", marginTop: 1 }}>@{handle}{districtLabel ? ` · ${districtLabel}` : ""}</div>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function ProfilPage() {
             { n: stats.attendance, l: "plany" }, { n: stats.savedEvents, l: "zapisane" }, { n: friendsList.length, l: "znajomi" },
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
-              <div className="pz-num" style={{ fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
+              <div className="pz-num" style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
               <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
             </div>
           ))}
@@ -207,8 +207,8 @@ export default function ProfilPage() {
       <div style={{ padding: "0 18px 14px" }}>
         <div className="pz-card" style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div><span style={{ fontSize: "var(--text-2xl)", marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
-            <span className="pz-num" style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
+            <div><span style={{ fontSize: 24, marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
+            <span className="pz-num" style={{ fontSize: 13, color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
             {monthlyCount.map((val, i) => {
@@ -251,18 +251,18 @@ export default function ProfilPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
                 <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 99, background: COLORS[req.senderId?.length % COLORS.length] ?? "#888", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "var(--text-base)", fontWeight: 800, flexShrink: 0 }}>{req.senderName?.[0]?.toUpperCase() ?? "?"}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{req.senderName}</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>chce być Twoim znajomym</div></div>
+                  <div style={{ width: 36, height: 36, borderRadius: 99, background: COLORS[req.senderId?.length % COLORS.length] ?? "#888", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{req.senderName?.[0]?.toUpperCase() ?? "?"}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{req.senderName}</div><div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>chce być Twoim znajomym</div></div>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer" }}>Akceptuj</button>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer" }}>Odrzuć</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer" }}>Akceptuj</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer" }}>Odrzuć</button>
                   </div>
                 </div>
               ))}
               {notifs.filter((n) => n.type !== "FRIEND_REQUEST").map((n) => (
                 <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
                   <span style={{ fontSize: 20 }}>🔔</span>
-                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>{n.body && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>{n.body}</div>}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>{n.body && <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{n.body}</div>}</div>
                 </div>
               ))}
             </div>
@@ -273,12 +273,12 @@ export default function ProfilPage() {
       {/* Vibe quiz + wrapped */}
       <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
         <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-2xl)", fontWeight: 800 }}>?</div>
-          <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: 22, fontWeight: 800 }}>?</div>
+          <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
           <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
         </button>
         <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
+          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
           <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
         </button>
       </div>
@@ -286,8 +286,8 @@ export default function ProfilPage() {
       {/* Friends */}
       <div style={{ padding: "0 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-          <h2 className="pz-h" style={{ margin: 0, fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.02em" }}>Znajomi</h2>
-          <button onClick={() => setInviteOpen(true)} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: "var(--text-xs)", fontWeight: 600, cursor: "pointer" }}>Zaproś +</button>
+          <h2 className="pz-h" style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Znajomi</h2>
+          <button onClick={() => setInviteOpen(true)} style={{ border: 0, background: "transparent", color: "var(--ink-3)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Zaproś +</button>
         </div>
       </div>
       {friendsList.length > 0 ? (
@@ -295,18 +295,18 @@ export default function ProfilPage() {
           {friendsList.map((f) => (
             <a key={f.id} href={`/user/${f.id}`} style={{ textAlign: "center", flex: "0 0 56px", textDecoration: "none" }}>
               <div style={{ width: 52, height: 52, borderRadius: 99, background: f.color, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, border: "2px solid var(--bg)", boxShadow: "0 4px 12px rgba(0,0,0,0.10)" }}>{f.name[0]}</div>
-              <div style={{ fontSize: "var(--text-xs)", fontWeight: 600, marginTop: 6, color: "var(--ink-2)" }}>{f.name}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, marginTop: 6, color: "var(--ink-2)" }}>{f.name}</div>
             </a>
           ))}
         </div>
       ) : (
-        <div style={{ padding: "0 18px 14px" }}><p style={{ fontSize: "var(--text-sm)", color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Zaproś znajomych!</p></div>
+        <div style={{ padding: "0 18px 14px" }}><p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Zaproś znajomych!</p></div>
       )}
 
       {/* Activity feed */}
       <div style={{ padding: "8px 18px 0" }}>
-        <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
+        <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
+        <p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
       </div>
 
       {/* Logout */}

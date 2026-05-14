@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "motion/react";
 import { EventData } from "@/lib/data";
 import { DISTRICT_SHAPES } from "@/lib/district-shapes";
 
@@ -51,15 +52,13 @@ export default function MapPage() {
   const selectDistrict = useCallback((id: string) => {
     setSelected(id);
     setExitPhase(true);
-    setTimeout(() => {
-      setMode("leaflet");
-    }, 420);
+    setTimeout(() => setMode("leaflet"), 250);
   }, []);
 
   const backToOverview = useCallback(() => {
     setMode("overview");
     setExitPhase(false);
-    setTimeout(() => setSelected(null), 50);
+    setSelected(null);
   }, []);
 
   const districtData = DISTRICT_SHAPES.find((s) => s.id === selected);
@@ -131,36 +130,45 @@ export default function MapPage() {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
-      {/* Overview SVG */}
-      {mode !== "leaflet" && (
-        <div
-          style={{
-            padding: "54px 16px 0",
-            opacity: exitPhase ? 0 : 1,
-            transition: "opacity 0.25s ease",
-          }}
-        >
-          <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Mapa</div>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 12 }}>
-            {selected ? selected : "Poznań · dzielnice"}
-          </h1>
+      <AnimatePresence mode="wait">
+        {mode !== "leaflet" ? (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: exitPhase ? 0.7 : 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+            style={{ padding: "calc(54px + var(--safe-t)) 16px 0" }}
+          >
+            <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Mapa</div>
+            <h1 className="pz-h" style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 12 }}>
+              {selected ? selected : "Poznań · dzielnice"}
+            </h1>
 
-          <svg viewBox="0 0 400 600" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 200px)" }}>
-            <path d="M160,600 Q180,450 200,350 Q220,250 200,150 Q180,80 200,0" fill="none" stroke="rgba(120,180,200,0.15)" strokeWidth="20" />
-            {shapeEls}
-          </svg>
-        </div>
-      )}
-
-      {/* Leaflet Map - dynamically imported to avoid SSR window error */}
-      {mode === "leaflet" && districtData && (
-        <LeafletMap
-          center={districtData.center}
-          events={events}
-          selectedDistrict={selected ?? ""}
-          onBack={backToOverview}
-        />
-      )}
+            <svg viewBox="0 0 400 600" style={{ width: "100%", height: "auto", maxHeight: "calc(100vh - 200px)" }}>
+              <path d="M160,600 Q180,450 200,350 Q220,250 200,150 Q180,80 200,0" fill="none" stroke="rgba(120,180,200,0.15)" strokeWidth="20" />
+              {shapeEls}
+            </svg>
+          </motion.div>
+        ) : (
+          districtData && (
+            <motion.div
+              key="leaflet"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+              style={{ position: "absolute", inset: 0 }}
+            >
+              <LeafletMap
+                center={districtData.center}
+                events={events}
+                selectedDistrict={selected ?? ""}
+                onBack={backToOverview}
+              />
+            </motion.div>
+          )
+        )}
+      </AnimatePresence>
     </div>
   );
 }
