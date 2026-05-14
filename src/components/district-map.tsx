@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import type { EventData } from "@/lib/data";
 import { categoryColors } from "@/lib/data";
 import districtGeojson from "@/lib/poznan-districts.json";
@@ -156,6 +156,11 @@ export default function DistrictMap({
   onSelect: (id: string) => void;
   onBack: () => void;
 }) {
+  const [tilesVisible, setTilesVisible] = useState(false);
+
+  const handleSelect = (id: string) => { onSelect(id); setTilesVisible(true); };
+  const handleBack = () => { onBack(); setTilesVisible(false); };
+
   const eventCounts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const e of events) {
@@ -174,7 +179,7 @@ export default function DistrictMap({
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const id = getId(feature);
     layer.on({
-      click: () => { if (id) onSelect(id); },
+      click: () => { if (id) handleSelect(id); },
       mouseover: (e) => { (e.target as L.Path).setStyle({ weight: 5, color: "white" }); },
       mouseout: (e) => {
         const isSelected = id === selectedDistrict;
@@ -191,7 +196,7 @@ export default function DistrictMap({
   return (
     <div style={{ position: "absolute", inset: 0 }}>
       {selectedDistrict && (
-        <button onClick={onBack} style={{
+        <button onClick={handleBack} style={{
           position: "absolute", top: 54, left: 16, zIndex: 1000,
           padding: "8px 16px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
@@ -210,10 +215,12 @@ export default function DistrictMap({
         preferCanvas={true}
       >
         <DistrictBoundary />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {tilesVisible && (
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        )}
         <MapController selected={selectedDistrict} eventCounts={eventCounts} />
         {districtGeojson && (
           <GeoJSON
