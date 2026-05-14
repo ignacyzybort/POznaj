@@ -74,7 +74,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
           {users.map((u) => {
             const sent = sentIds.includes(u.id);
             return (
-              <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "0.5px solid var(--line)" }}>
+              <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0" }}>
                 <div style={{ width: 38, height: 38, borderRadius: 99, background: "linear-gradient(135deg, #FF3D7F, #FFB627)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
                   {u.name?.[0]?.toUpperCase() ?? "?"}
                 </div>

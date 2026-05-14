@@ -120,7 +120,7 @@ export default function FiltersSheet({
 
         <div style={{
           padding: "10px 18px 24px", display: "flex", gap: 10,
-          borderTop: "0.5px solid var(--line)",
+          boxShadow: "0 -0.5px 0 var(--line)",
         }}>
           <button className="pz-btn ghost" onClick={onClear}>Wyczyść</button>
           <button className="pz-btn primary" style={{ flex: 1 }} onClick={close}>

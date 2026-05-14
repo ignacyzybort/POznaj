@@ -45,7 +45,7 @@ export default function PlanPage() {
               onClick={() => setSelectedDay(day)}
               className="pz-chip"
               data-active={active ? "true" : undefined}
-              style={{ flexDirection: "column", gap: 4, padding: "10px 14px", border: active ? "none" : "0.5px solid var(--line)" }}
+              style={{ flexDirection: "column", gap: 4, padding: "10px 14px" }}
             >
               <span className="pz-eyebrow" style={{ fontSize: 9, color: active ? "var(--bg)" : "var(--ink-4)" }}>{format(day, "EEEEE", { locale: pl })}</span>
               <span style={{ fontSize: 18, fontWeight: 700 }}>{format(day, "d")}</span>

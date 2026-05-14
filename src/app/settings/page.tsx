@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BackIcon } from "@/components/icons";
 import { districts, categories, vibes } from "@/lib/filters";
 import { categoryVisual } from "@/lib/visuals";
 import { useTheme } from "@/components/theme-provider";
@@ -18,7 +19,7 @@ export default function SettingsPage() {
           background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
         }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          <BackIcon size={20} />
         </button>
         <div>
           <div className="pz-eyebrow">Ustawienia</div>

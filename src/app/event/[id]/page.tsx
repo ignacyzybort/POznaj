@@ -133,13 +133,13 @@ export default function EventDetailPage() {
             width: 44, height: 44, borderRadius: 99, border: 0,
             background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "var(--line) 0 0 0 0.5px, 0 2px 10px rgba(0,0,0,0.08)",
+            boxShadow: "var(--shadow-sm)",
           }}><BackIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{
             width: 44, height: 44, borderRadius: 99, border: 0,
             background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "var(--line) 0 0 0 0.5px, 0 2px 10px rgba(0,0,0,0.08)",
+            boxShadow: "var(--shadow-sm)",
           }}><ShareIcon size={20} /></button>
         </div>
 
@@ -164,7 +164,7 @@ export default function EventDetailPage() {
 
           <div style={{
             marginTop: 16, padding: 14, borderRadius: 18,
-            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+            background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
           }}>
             <HeatMeter score={event.score} size="md" />
           </div>
@@ -195,7 +195,7 @@ export default function EventDetailPage() {
           {/* Notification row */}
           <div style={{
             marginTop: 18, padding: 14, borderRadius: 18,
-            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+            background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
             <div>
@@ -244,7 +244,7 @@ function StatCard({ icon, label, title, sub }: {
   return (
     <div style={{
       padding: 12, borderRadius: 16,
-      background: "var(--bg-elev)", border: "0.5px solid var(--line)",
+      background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 6,

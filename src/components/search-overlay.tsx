@@ -73,7 +73,6 @@ export default function SearchOverlay({
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 4px", border: 0, background: "transparent",
               cursor: "pointer", textAlign: "left",
-              borderBottom: "0.5px solid var(--line)",
             }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
                 <EventArt event={ev} height={44} />
