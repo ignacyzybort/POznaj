@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { HomeIcon, MapIcon, CalIcon, SavedIcon, ProfileIcon } from "@/components/icons";
 
 const tabs = [
@@ -42,7 +43,7 @@ export default function TabBar() {
       {tabs.map((t) => {
         const Icon = t.icon;
         return (
-          <a key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
+          <Link key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
              className="pz-tab" data-active={activeTab === t.id}
              style={{ position: "relative" }}>
             <Icon size={22} />
@@ -57,7 +58,7 @@ export default function TabBar() {
                 padding: "0 5px",
               }}>{notifCount > 9 ? "9+" : notifCount}</span>
             )}
-          </a>
+          </Link>
         );
       })}
     </div>

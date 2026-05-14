@@ -2,28 +2,15 @@
 
 import { useRef, useState } from "react";
 import type { EventData } from "@/lib/data";
+import { relDay } from "@/lib/date";
 import EventArt from "@/components/event-art";
 import { ChevronIcon } from "@/components/icons";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 
 const CAT_LABEL: Record<string, string> = {
   Kino: "Kino", Muzyka: "Muzyka", Sztuka: "Sztuka", Sport: "Sport",
   Teatr: "Teatr", Warsztaty: "Warsztaty", Konferencje: "Konferencje",
   Jedzenie: "Jedzenie", Inne: "Inne",
 };
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
-}
 
 export default function TonightHero({
   events, onOpen,
@@ -50,24 +37,23 @@ export default function TonightHero({
     <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{
       position: "relative", borderRadius: 26, overflow: "hidden",
       height: 420, margin: "0 16px 18px",
-      background: "var(--bg-elev)", border: "0.5px solid var(--line)",
+      background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
       <EventArt event={ev} height={420} style="gradient" forceArt />
       <div style={{
         position: "absolute", inset: 0, padding: 20,
         display: "flex", flexDirection: "column", justifyContent: "space-between",
-        background: "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.75) 100%)",
+        background: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.75) 100%)",
         color: "white",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             padding: "6px 12px", borderRadius: 99,
-            background: "rgba(255,255,255,0.18)", backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
+            background: "rgba(0,0,0,0.45)",
+            fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase",
           }}>
-            <span style={{ width: 6, height: 6, borderRadius: 99, background: "#FF3D7F", boxShadow: "0 0 8px #FF3D7F" }} />
+            <span style={{ width: 6, height: 6, borderRadius: 99, background: "var(--c-muzyka)", boxShadow: "0 0 8px var(--c-muzyka)" }} />
             Dziś wieczorem
           </div>
           <div style={{ display: "flex", gap: 4 }}>
@@ -75,7 +61,7 @@ export default function TonightHero({
               <span key={i} style={{
                 width: i === idx ? 18 : 5, height: 5, borderRadius: 99,
                 background: i === idx ? "white" : "rgba(255,255,255,0.4)",
-                transition: "width 0.25s",
+                transition: "width var(--dur-base) var(--ease-out-quart)",
               }} />
             ))}
           </div>
@@ -84,35 +70,32 @@ export default function TonightHero({
         <div onClick={() => onOpen(ev)} style={{ cursor: "pointer" }}>
           <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
             <span style={{
-              padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700,
-              background: "rgba(255,255,255,0.22)", backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              padding: "4px 10px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 700,
+              background: "rgba(0,0,0,0.45)",
             }}>{CAT_LABEL[ev.category] ?? ev.category}</span>
             <span style={{
-              padding: "4px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700,
-              background: "rgba(255,255,255,0.22)", backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              padding: "4px 10px", borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 700,
+              background: "rgba(0,0,0,0.45)",
             }}>{ev.time ?? relDay(new Date(ev.startDate))} · {ev.placeName}</span>
           </div>
           <h1 className="pz-h" style={{
             margin: 0, fontSize: 36, fontWeight: 800, letterSpacing: "-0.04em",
-            lineHeight: 0.96,
+            lineHeight: 1.05,
           }}>{ev.title}</h1>
           {ev.description && (
-            <p style={{ margin: "10px 0 14px", fontSize: 14, lineHeight: 1.4, opacity: 0.92 }}>
+            <p style={{ margin: "10px 0 14px", fontSize: "var(--text-base)", lineHeight: 1.4, opacity: 0.92 }}>
               {ev.description.length > 110 ? `${ev.description.slice(0, 110)}…` : ev.description}
             </p>
           )}
           <div style={{ display: "flex", gap: 8, marginTop: ev.description ? 0 : 14 }}>
             <button onClick={(e) => { e.stopPropagation(); onOpen(ev); }} style={{
               flex: 1, height: 46, border: 0, borderRadius: 14,
-              background: "white", color: "black",
-              fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em", cursor: "pointer",
+              background: "white", color: "var(--ink)",
+              fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", cursor: "pointer",
             }}>Sprawdź</button>
             <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Następny" style={{
               width: 46, height: 46, border: 0, borderRadius: 14,
-              background: "rgba(255,255,255,0.22)", color: "white",
-              backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
+              background: "rgba(0,0,0,0.35)", color: "white",
               display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
             }}>
               <ChevronIcon size={20} />

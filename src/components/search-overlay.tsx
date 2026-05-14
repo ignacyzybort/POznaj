@@ -2,23 +2,10 @@
 
 import { useState } from "react";
 import type { EventData } from "@/lib/data";
+import { relDay } from "@/lib/date";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import { SearchIcon } from "@/components/icons";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
-}
 
 export default function SearchOverlay({
   onClose, events, initial, onCommit, onOpen,
@@ -30,6 +17,12 @@ export default function SearchOverlay({
   onOpen: (ev: EventData) => void;
 }) {
   const [q, setQ] = useState(initial ?? "");
+  const [exiting, setExiting] = useState(false);
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
 
   const filtered = events.filter((e) => {
     if (!q) return true;
@@ -41,12 +34,10 @@ export default function SearchOverlay({
     );
   }).slice(0, 8);
 
-  const recents = ["Tama", "Croissant", "Kino Muza"];
-
   return (
     <div style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
-      animation: "pz-fade-in 0.22s ease both",
+      animation: exiting ? "pz-fade-out 0.2s ease both" : "pz-fade-in 0.22s ease both",
       display: "flex", flexDirection: "column",
     }}>
       <div style={{ padding: "54px 16px 10px", display: "flex", gap: 10, alignItems: "center" }}>
@@ -67,31 +58,21 @@ export default function SearchOverlay({
             }}
           />
         </div>
-        <button onClick={() => { onCommit(q); onClose(); }} style={{
+        <button onClick={() => { onCommit(q); close(); }} style={{
           border: 0, background: "transparent", color: "var(--ink-2)",
           fontSize: 15, fontWeight: 600, cursor: "pointer",
         }}>Anuluj</button>
       </div>
 
       <div className="pz-scroll" style={{ flex: 1, padding: "6px 18px 16px" }}>
-        {!q && (
-          <>
-            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Ostatnio szukane</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              {recents.map((r) => (
-                <button key={r} className="pz-chip" onClick={() => setQ(r)}>{r}</button>
-              ))}
-            </div>
-          </>
-        )}
+
         <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{q ? "Wyniki" : "Popularne dziś"}</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {filtered.map((ev) => (
-            <button key={ev.id} onClick={() => { onCommit(q); onOpen(ev); onClose(); }} style={{
+            <button key={ev.id} onClick={() => { onCommit(q); onOpen(ev); close(); }} style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 4px", border: 0, background: "transparent",
               cursor: "pointer", textAlign: "left",
-              borderBottom: "0.5px solid var(--line)",
             }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
                 <EventArt event={ev} height={44} />

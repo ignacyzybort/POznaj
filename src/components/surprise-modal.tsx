@@ -20,6 +20,7 @@ export default function SurpriseModal({
   const [spinning, setSpinning] = useState(true);
   const [results, setResults] = useState<EventData[]>([]);
   const [picked, setPicked] = useState<EventData | null>(null);
+  const [exiting, setExiting] = useState(false);
 
   const spin = useCallback(() => {
     setSpinning(true);
@@ -48,32 +49,39 @@ export default function SurpriseModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
-      <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
-        <div className="text-center mb-4">
-          <span className="text-3xl">🔀</span>
-          <h2 className="text-lg font-bold mt-2" style={{ color: "var(--ink)" }}>Zaskocz mnie</h2>
-          <p className="text-xs" style={{ color: "var(--ink-3)" }}>{spinning ? "Losowanie..." : "Wybierz jedno!"}</p>
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "var(--ink-3)",
+      animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
+    }}>
+      <div style={{ margin: "0 16px", maxWidth: 384, width: "100%", padding: 24, borderRadius: 28, background: "var(--bg-elev)" }}>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 28 }}>🔀</span>
+          <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Zaskocz mnie</h2>
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", margin: 0 }}>{spinning ? "Losowanie..." : "Wybierz jedno!"}</p>
         </div>
 
-        <div className="space-y-2 mb-4">
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
           {results.map((ev, i) => (
             <button
               key={ev.id + i}
               onClick={() => !spinning && select(ev)}
               disabled={spinning || !!picked}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl text-left border-0 cursor-pointer transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-default"
               style={{
+                width: "100%", display: "flex", alignItems: "center", gap: 12, padding: 12, borderRadius: 22,
+                textAlign: "left", border: 0, cursor: spinning || !!picked ? "default" : "pointer",
                 background: picked?.id === ev.id ? "var(--sage-soft)" : "var(--bg-soft)",
                 opacity: spinning ? 0.6 + Math.random() * 0.4 : 1,
+                transition: "transform var(--dur-fast) var(--ease-out-quart)",
               }}
             >
-              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-elev)]">
-                {ev.imageUrl && <img src={ev.imageUrl} alt="" className="w-full h-full object-cover" />}
+              <div style={{ width: 48, height: 48, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
+                {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold line-clamp-1" style={{ color: "var(--ink)" }}>{ev.title}</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--ink-3)" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</p>
+                <p style={{ fontSize: "var(--text-xs)", marginTop: 2, color: "var(--ink-3)" }}>
                   {categoryEmoji[ev.category]} {ev.placeName} · {ev.time ?? ""}
                 </p>
               </div>
@@ -81,13 +89,13 @@ export default function SurpriseModal({
           ))}
         </div>
 
-        <div className="flex gap-2">
+        <div style={{ display: "flex", gap: 8 }}>
           {!spinning && !picked && (
-            <button onClick={spin} className="flex-1 h-11 rounded-2xl text-sm font-bold border-0 cursor-pointer" style={{ background: "var(--bg-soft)", color: "var(--ink)" }}>
+            <button onClick={spin} className="pz-btn ghost" style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
               🔄 Jeszcze raz
             </button>
           )}
-          <button onClick={onClose} className="flex-1 h-11 rounded-2xl text-sm font-bold border-0 cursor-pointer" style={{ background: "var(--ink)", color: "var(--bg)" }}>
+          <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="pz-btn primary" style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
             {picked ? "🚀 Idę!" : "✕ Zamknij"}
           </button>
         </div>

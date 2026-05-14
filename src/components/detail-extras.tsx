@@ -74,7 +74,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
         <div style={{
           padding: "12px 14px", borderRadius: 14,
           background: "linear-gradient(135deg, rgba(255,107,44,0.14), rgba(255,61,127,0.10))",
-          border: "0.5px solid rgba(255,107,44,0.25)",
+          boxShadow: "inset 0 0 0 0.5px rgba(255,107,44,0.25)",
           display: "flex", alignItems: "center", gap: 10,
         }}>
           <span style={{ fontSize: 20 }}>🌧️</span>

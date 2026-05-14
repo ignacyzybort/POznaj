@@ -11,7 +11,17 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
+import { SettingsIcon, EditIcon, ChevronIcon } from "@/components/icons";
 
+const COVER_GRADIENTS = [
+  "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
+  "linear-gradient(135deg, var(--c-kino), var(--c-muzyka))",
+  "linear-gradient(135deg, var(--c-sztuka), #06B6D4)",
+  "linear-gradient(135deg, #C8FF2E, var(--sage))",
+  "linear-gradient(135deg, var(--c-teatr), var(--c-sztuka))",
+  "linear-gradient(135deg, var(--c-warsztaty), var(--c-teatr))",
+  "linear-gradient(135deg, var(--c-konferencje), var(--c-kino))",
+];
 const COLORS = ["#FF3D7F", "#6E3DFF", "#2860FF", "#C8FF2E", "#FF6B2C", "#E89A6B", "#FFB627"];
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
 
@@ -38,6 +48,7 @@ export default function ProfilPage() {
   const [notifs, setNotifs] = useState<any[]>([]);
   const [pendingReqs, setPendingReqs] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const fetchNotifs = () => {
     if (!session?.user) return;
@@ -49,23 +60,26 @@ export default function ProfilPage() {
 
   useEffect(() => {
     if (!session?.user) return;
+    setProfileLoading(true);
     fetchNotifs();
-    fetch("/api/friends").then((r) => r.json()).then((d) => {
-      setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
-        id: x.id, name: x.name ?? "Znajomy", color: COLORS[i % COLORS.length],
-      })));
-    }).catch(() => {});
-    fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
-      if (d.user) { setUserData(d.user); if (d.user._count) setStats(d.user._count); }
-    });
-    fetch("/api/attendance").then((r) => r.json()).then((d) => {
-      const items = d.attendance ?? [];
-      setAttendanceData(items);
-      const s: Record<string, number> = {};
-      for (const a of items) { const dist = a.event?.district; if (dist) s[dist] = (s[dist] || 0) + 1; }
-      for (const d of districts) { if (!s[d.value]) s[d.value] = 0; }
-      setStamps(s);
-    });
+    Promise.all([
+      fetch("/api/friends").then((r) => r.json()).then((d) => {
+        setFriendsList((d.friends ?? []).slice(0, 5).map((x: any, i: number) => ({
+          id: x.id, name: x.name ?? "Znajomy", color: COLORS[i % COLORS.length],
+        })));
+      }).catch(() => {}),
+      fetch("/api/user/preferences").then((r) => r.json()).then((d) => {
+        if (d.user) { setUserData(d.user); if (d.user._count) setStats(d.user._count); }
+      }).catch(() => {}),
+      fetch("/api/attendance").then((r) => r.json()).then((d) => {
+        const items = d.attendance ?? [];
+        setAttendanceData(items);
+        const s: Record<string, number> = {};
+        for (const a of items) { const dist = a.event?.district; if (dist) s[dist] = (s[dist] || 0) + 1; }
+        for (const d of districts) { if (!s[d.value]) s[d.value] = 0; }
+        setStamps(s);
+      }).catch(() => {}),
+    ]).finally(() => setProfileLoading(false));
   }, [session, refreshKey]);
 
   const weeksActive = Math.min(attendanceData.length, 8);
@@ -91,17 +105,17 @@ export default function ProfilPage() {
   const avatarUrl = userData?.image;
   const coverUrl = userData?.coverImage;
 
-  const hue1 = (name.length * 37) % 360;
-  const hue2 = (hue1 + 40) % 360;
+  const coverGradient = COVER_GRADIENTS[name.length % COVER_GRADIENTS.length];
 
   if (!session?.user) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
-        <div style={{ padding: "54px 18px 18px" }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Profil</div>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>Twoje konto.</h1>
-        </div>
-        <div style={{ padding: "0 18px" }}>
+        <div style={{ padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
+          <div style={{ marginBottom: 20 }}>
+            <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+              poznaj<span style={{ color: "var(--sage)" }}>.</span>
+            </h1>
+          </div>
           <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
             <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
             <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>
@@ -114,16 +128,23 @@ export default function ProfilPage() {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
+      {/* Wordmark */}
+      <div style={{ padding: "calc(24px + var(--safe-t)) 18px 12px" }}>
+        <h1 style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+          poznaj<span style={{ color: "var(--sage)" }}>.</span>
+        </h1>
+      </div>
+
       {/* Cover banner — 120px */}
-      <div style={{ height: 120, position: "relative", overflow: "hidden", background: coverUrl ? "none" : `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
-        {coverUrl && <img src={coverUrl} alt="" className="w-full h-full object-cover" />}
+      <div style={{ margin: "0 18px", height: 120, borderRadius: 22, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
+        {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         {/* Gear + Edit at top-right */}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
-          <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4.8a7 7 0 0 0-1.9-1.1L14 3h-4l-.6 2.6a7 7 0 0 0-1.9 1.1L5.1 6 3.1 9.5l2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-.8c.6.5 1.2.8 1.9 1.1L10 21h4l.6-2.6c.7-.2 1.3-.6 1.9-1.1l2.4.8 2-3.5-2-1.5c.1-.3.1-.7.1-1.1z"/></svg>
+          <Link href="/settings" style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", boxShadow: "var(--shadow-sm)" }}>
+            <SettingsIcon size={18} />
           </Link>
-          <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "rgba(255,255,255,0.4)", backdropFilter: "blur(8px)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          <button onClick={() => setEditOpen(true)} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}>
+            <EditIcon size={18} />
           </button>
         </div>
       </div>
@@ -131,9 +152,9 @@ export default function ProfilPage() {
       {/* Avatar — fully below the cover banner */}
       <div style={{ padding: "0 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
-          <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : `linear-gradient(135deg, hsl(${hue2},70%,55%), hsl(${hue1},80%,40%))` }}>
+          <div style={{ width: 72, height: 72, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: avatarUrl ? "none" : coverGradient }}>
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+              <img src={avatarUrl} alt="Zdjęcie profilowe" className="w-full h-full object-cover" />
             ) : (
               <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 28, fontWeight: 800 }}>
                 {name[0]?.toUpperCase() ?? "?"}
@@ -147,10 +168,26 @@ export default function ProfilPage() {
         </div>
       </div>
 
+      {/* Loading state */}
+      {profileLoading && (
+        <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="pz-skeleton" style={{ height: 16, width: "80%" }} />
+          <div className="pz-skeleton" style={{ height: 16, width: "60%" }} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            <div className="pz-skeleton" style={{ height: 60 }} />
+            <div className="pz-skeleton" style={{ height: 60 }} />
+            <div className="pz-skeleton" style={{ height: 60 }} />
+          </div>
+          <div className="pz-skeleton" style={{ height: 100 }} />
+          <div className="pz-skeleton" style={{ height: 100 }} />
+        </div>
+      )}
+
       {/* Bio */}
-      {bio && <div style={{ padding: "14px 18px 0" }}><p style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{bio}</p></div>}
+      {!profileLoading && bio && <div style={{ padding: "14px 18px 0" }}><p style={{ fontSize: "var(--text-sm)", lineHeight: 1.5, color: "var(--ink-2)" }}>{bio}</p></div>}
 
       {/* Stats grid */}
+      {!profileLoading && (
       <div style={{ padding: "14px 18px 14px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {[
@@ -158,11 +195,12 @@ export default function ProfilPage() {
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
               <div className="pz-num" style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>{s.l}</div>
             </div>
           ))}
         </div>
       </div>
+      )}
 
       {/* Badge + Monthly chart */}
       <div style={{ padding: "0 18px 14px" }}>
@@ -177,7 +215,7 @@ export default function ProfilPage() {
               return (
                 <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
                   <div style={{ width: "100%", borderRadius: "3px 3px 0 0", height: h, background: i === new Date().getMonth() ? "var(--sage)" : "var(--line-2)" }} />
-                  <span style={{ fontSize: 7, fontWeight: 600, color: "var(--ink-4)" }}>{MONTHS[i]}</span>
+                  <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--ink-4)" }}>{MONTHS[i]}</span>
                 </div>
               );
             })}
@@ -188,7 +226,7 @@ export default function ProfilPage() {
       {/* Activity stats */}
       <div style={{ padding: "0 18px 14px" }}>
         <div className="pz-card" style={{ padding: 14 }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 10 }}>📊 Aktywność</div>
+          <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Najczęstsza kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]} · {topCategory[1]}x</span></div>}
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}><span style={{ color: "var(--ink-2)" }}>Odwiedzone dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 10</span></div>
@@ -208,7 +246,7 @@ export default function ProfilPage() {
       {(pendingReqs.length > 0 || notifs.length > 0) && (
         <div style={{ padding: "0 18px 14px" }}>
           <div className="pz-card" style={{ padding: 16 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><span>📬</span><span>Powiadomienia ({pendingReqs.length + notifs.length})</span></div>
+            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Powiadomienia ({pendingReqs.length + notifs.length})</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
                 <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
@@ -236,11 +274,11 @@ export default function ProfilPage() {
         <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: 22, fontWeight: 800 }}>?</div>
           <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
-          <span style={{ color: "var(--ink-3)" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6"/></svg></span>
+          <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
         </button>
         <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: 12.5, opacity: 0.9, marginTop: 6 }}>{attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
-          <span style={{ marginLeft: "auto", opacity: 0.85 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 6 6 6-6 6"/></svg></span>
+          <div><div style={{ fontSize: 11, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{attendanceData.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
+          <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
         </button>
       </div>
 
@@ -267,23 +305,12 @@ export default function ProfilPage() {
       {/* Activity feed */}
       <div style={{ padding: "8px 18px 0" }}>
         <h2 className="pz-h" style={{ margin: "8px 0 12px", fontSize: 19, fontWeight: 700, letterSpacing: "-0.02em" }}>Co u znajomych</h2>
-        {friendsList.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {friendsList.slice(0, 5).map((f, i) => (
-              <div key={f.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "0.5px solid var(--line)" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 99, background: f.color, color: "white", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>{f.name[0]}</div>
-                <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.4 }}><b style={{ color: "var(--ink)" }}>{f.name}</b> {["idzie na", "zapisała", "idzie na", "zapisał", "idzie na"][i]} <b style={{ color: "var(--ink)" }}>wydarzenie</b></div><div style={{ fontSize: 11.5, color: "var(--ink-4)", marginTop: 2 }}>{["2h temu", "5h temu", "8h temu", "wczoraj", "wczoraj"][i]}</div></div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
-        )}
+        <p style={{ fontSize: 13, color: "var(--ink-4)", textAlign: "center", padding: "12px 0" }}>Kiedy znajomi dodadzą wydarzenia, zobaczysz je tutaj.</p>
       </div>
 
       {/* Logout */}
       <div style={{ padding: "18px 18px 0" }}>
-        <button onClick={() => signOut()} style={{ width: "100%", padding: "14px 18px", borderRadius: 18, border: "0.5px dashed var(--ink-5)", background: "transparent", color: "var(--ink-3)", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>Wyloguj się</button>
+        <button onClick={() => signOut()} className="pz-btn ghost" style={{ width: "100%", height: 50, fontSize: 14 }}>Wyloguj się</button>
       </div>
 
       {showQuiz && <VibeQuiz onClose={() => setShowQuiz(false)} />}

@@ -1,28 +1,14 @@
 "use client";
 
 import { EventData } from "@/lib/data";
+import { relDay } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
-import { deriveFriendsGoing } from "@/lib/mock-extras";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
-}
 
 export default function EventCard({
-  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient",
+  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "",
 }: {
   event: EventData;
   onOpen?: () => void;
@@ -30,15 +16,16 @@ export default function EventCard({
   saved?: boolean;
   dense?: boolean;
   cardStyle?: "collage" | "gradient" | "typographic";
+  className?: string;
 }) {
-  const friends = deriveFriendsGoing(event);
+  const friends = event.friendsGoing ?? [];
   const going_count = event.going ?? 0;
 
   return (
-    <div className="pz-card pz-fade-in" onClick={onOpen} style={{ cursor: "pointer" }}>
-      <a href={`/event/${event.id}`} tabIndex={-1} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
+    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card ${className}`} style={{ cursor: "pointer" }}>
+      <div style={{ pointerEvents: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
-      </a>
+      </div>
 
       <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
@@ -46,12 +33,10 @@ export default function EventCard({
           <HeatMeter score={event.score} />
         </div>
 
-        <a href={`/event/${event.id}`} style={{ color: "inherit", textDecoration: "none" }}>
-          <h3 className="pz-h" style={{
-            fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
-            margin: 0, lineHeight: 1.18,
-          }}>{event.title}</h3>
-        </a>
+        <h3 className="pz-h" style={{
+          fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
+          margin: 0, lineHeight: 1.18, cursor: "pointer",
+        }}>{event.title}</h3>
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 12 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
@@ -62,10 +47,7 @@ export default function EventCard({
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <AvStack people={friends} max={3} />
-            <span style={{ fontSize: 11.5, color: "var(--ink-3)", fontWeight: 500 }}>
-              🔥 {event.score}
-            </span>
+            {friends.length > 0 && <AvStack people={friends} max={3} />}
           </div>
           <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",

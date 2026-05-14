@@ -25,9 +25,7 @@ export function ShareIcon({ size }: { size?: number }) {
 }
 
 export function BookmarkIcon({ size, fill }: { size?: number; fill?: boolean }) {
-  return fill
-    ? <svg width={size ?? 20} height={size ?? 20} viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4z"/></svg>
-    : <Icon size={size}><path d="M6 4h12v17l-6-4-6 4z"/></Icon>;
+  return <Icon size={size}><path d="M6 4h12v17l-6-4-6 4z" fill={fill ? "currentColor" : "none"} /></Icon>;
 }
 
 export function PinIcon({ size }: { size?: number }) {
@@ -51,9 +49,7 @@ export function CheckIcon({ size }: { size?: number }) {
 }
 
 export function FireIcon({ size, fill }: { size?: number; fill?: boolean }) {
-  return fill
-    ? <svg width={size ?? 20} height={size ?? 20} viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z"/></svg>
-    : <Icon size={size}><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z"/></Icon>;
+  return <Icon size={size}><path d="M12 2c.7 3.4 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 2-4 0 2 1 3 2 3-1-3 0-6 0-8z" fill={fill ? "currentColor" : "none"} /></Icon>;
 }
 
 export function HomeIcon({ size }: { size?: number }) {
@@ -94,6 +90,10 @@ export function BellIcon({ size }: { size?: number }) {
 
 export function SettingsIcon({ size }: { size?: number }) {
   return <Icon size={size}><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.1l2-1.5-2-3.5-2.4.8a7 7 0 0 0-1.9-1.1L14 3h-4l-.6 2.6a7 7 0 0 0-1.9 1.1L5.1 6 3.1 9.5l2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.1l-2 1.5 2 3.5 2.4-.8c.6.5 1.2.8 1.9 1.1L10 21h4l.6-2.6c.7-.2 1.3-.6 1.9-1.1l2.4.8 2-3.5-2-1.5c.1-.3.1-.7.1-1.1z"/></Icon>;
+}
+
+export function EditIcon({ size }: { size?: number }) {
+  return <Icon size={size}><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></Icon>;
 }
 
 export function PlusIcon({ size }: { size?: number }) {

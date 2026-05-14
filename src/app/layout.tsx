@@ -4,6 +4,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import AuthProvider from "@/components/auth-provider";
 import ThemeProvider from "@/components/theme-provider";
 import TabBar from "@/components/tab-bar";
+import PageTransition from "@/components/page-transition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="pz-stage">
           <ThemeProvider>
             <AuthProvider>
-              {children}
+              <PageTransition>{children}</PageTransition>
               <TabBar />
               <Analytics />
               <SpeedInsights />

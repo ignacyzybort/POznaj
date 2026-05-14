@@ -49,7 +49,7 @@ export default function CropModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.85)" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--ink-3)" }}>
       <div className="rounded-3xl overflow-hidden mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
         <div className="p-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", textAlign: "center" }}>
@@ -57,7 +57,7 @@ export default function CropModal({
           </h2>
         </div>
 
-        <div style={{ position: "relative", width: "100%", height: 320, background: "#000" }}>
+        <div style={{ position: "relative", width: "100%", height: 320, background: "var(--ink)" }}>
           <Cropper
             image={imageUrl}
             crop={crop}

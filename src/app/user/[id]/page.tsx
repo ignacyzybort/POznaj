@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { districts, categoryEmoji } from "@/lib/data";
 import Link from "next/link";
+import { BackIcon } from "@/components/icons";
 
 export default function UserPage() {
   const params = useParams();
@@ -47,8 +48,14 @@ export default function UserPage() {
 
   const { user, activities } = data;
   const districtLabel = districts.find((d) => d.value === user.district)?.label ?? "";
-  const hue1 = ((user.name ?? "").length * 37) % 360;
-  const hue2 = (hue1 + 40) % 360;
+  const COVER_GRADIENTS = [
+    "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
+    "linear-gradient(135deg, var(--c-kino), var(--c-muzyka))",
+    "linear-gradient(135deg, var(--c-sztuka), #06B6D4)",
+    "linear-gradient(135deg, #C8FF2E, var(--sage))",
+    "linear-gradient(135deg, var(--c-teatr), var(--c-sztuka))",
+  ];
+  const coverGradient = COVER_GRADIENTS[((user.name ?? "").length * 7) % COVER_GRADIENTS.length];
   const createdAt = new Date(user.createdAt).toLocaleDateString("pl-PL", { month: "long", year: "numeric" });
 
   return (
@@ -56,19 +63,19 @@ export default function UserPage() {
       {/* Back button */}
       <div style={{ padding: "12px 16px 0" }}>
         <button onClick={() => router.back()} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 6l-6 6 6 6"/></svg>
+          <BackIcon size={18} />
         </button>
       </div>
 
       {/* Cover */}
-      <div style={{ height: 120, margin: "0 16px", borderRadius: 18, overflow: "hidden", background: `linear-gradient(135deg, hsl(${hue1},70%,55%), hsl(${hue2},80%,40%))` }}>
+      <div style={{ height: 120, margin: "0 16px", borderRadius: 18, overflow: "hidden", background: coverGradient }}>
         {user.coverImage && <img src={user.coverImage} alt="" className="w-full h-full object-cover" />}
       </div>
 
       {/* Avatar + name */}
       <div style={{ padding: "0 18px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: `linear-gradient(135deg, hsl(${hue2},70%,55%), hsl(${hue1},80%,40%))` }}>
+          <div style={{ width: 64, height: 64, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: coverGradient }}>
             {user.image ? (
               <img src={user.image} alt="" className="w-full h-full object-cover" />
             ) : (

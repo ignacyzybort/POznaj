@@ -1,32 +1,36 @@
 "use client";
 
-import { districts, categoryEmoji } from "@/lib/data";
+import { districts } from "@/lib/data";
 
 export default function PassportCard({ stamps }: { stamps: Record<string, number> }) {
   return (
-    <div className="p-4 rounded-2xl" style={{ background: "linear-gradient(135deg, #1F2D5A, #2A1F5A)", color: "white" }}>
-      <div className="flex items-center justify-between mb-3">
+    <div style={{
+      padding: 16, borderRadius: 22,
+      background: "linear-gradient(135deg, var(--c-konferencje), #2A1F5A)",
+      color: "white",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Pasztport</p>
-          <p className="text-sm font-bold">Dzielnice Poznania</p>
+          <p className="pz-eyebrow" style={{ fontSize: 10, opacity: 0.6 }}>Paszport</p>
+          <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, margin: 0 }}>Dzielnice Poznania</p>
         </div>
-        <span className="text-2xl">🛂</span>
+        <span style={{ fontSize: 24 }}>🛂</span>
       </div>
-      <div className="grid grid-cols-5 gap-1.5">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
         {districts.map((d) => {
           const count = stamps[d.value] ?? 0;
           const unlocked = count > 0;
           return (
-            <div
-              key={d.value}
-              className="aspect-square rounded-xl flex flex-col items-center justify-center gap-0.5 text-center transition-all"
+            <div key={d.value}
               style={{
+                aspectRatio: "1", borderRadius: 12,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                 background: unlocked ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
-                border: unlocked ? "1px solid rgba(255,255,255,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                boxShadow: unlocked ? "inset 0 0 0 1px rgba(255,255,255,0.3)" : "none",
               }}
             >
-              <span className="text-sm">{unlocked ? "✅" : "🔒"}</span>
-              <span className="text-[7px] font-semibold leading-tight opacity-80">
+              <span style={{ fontSize: "var(--text-sm)" }}>{unlocked ? "✅" : "🔒"}</span>
+              <span style={{ fontSize: 7, fontWeight: 600, opacity: 0.8, lineHeight: 1.1 }}>
                 {d.label.split(" ")[0]}
               </span>
             </div>

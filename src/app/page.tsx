@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
+import { PL_DAY_FULL, PL_MONTH_FULL, fmtFullDate, fmtShortDate, relDay } from "@/lib/date";
 import EventCard from "@/components/event-card";
 import EventArt from "@/components/event-art";
 import SurpriseModal from "@/components/surprise-modal";
@@ -13,23 +15,7 @@ import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
-
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
-const PL_MONTH = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
-
-function fmtFullDate(d: Date) { return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`; }
-function fmtShortDate(d: Date) { return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`; }
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return fmtShortDate(d);
-}
+import { DUR } from "@/lib/duration";
 
 function priceNum(p?: string): number {
   if (!p) return 0;
@@ -52,15 +38,28 @@ export default function HomePage() {
   const [budget, setBudget] = useState<Budget>(null);
   const [surpriseOpen, setSurpriseOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     category: [], district: [], vibe: [],
   });
 
-  useEffect(() => {
-    fetch("/api/events?limit=100").then((r) => r.json()).then((d) => {
+  const fetchEvents = () => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/events?limit=100").then((r) => {
+      if (!r.ok) throw new Error("Błąd ładowania");
+      return r.json();
+    }).then((d) => {
       if (d.events) setEvents(d.events);
+      setLoading(false);
+    }).catch(() => {
+      setError("Nie udało się załadować wydarzeń");
+      setLoading(false);
     });
-  }, []);
+  };
+
+  useEffect(() => { fetchEvents(); }, []);
 
   const today = new Date();
   const forYou = useMemo(
@@ -121,10 +120,11 @@ export default function HomePage() {
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
+  const router = useRouter();
   const { data: session } = useSession();
-  const openEvent = (ev: EventData) => { window.location.href = `/event/${ev.id}`; };
+  const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
   const toggleSave = async (id: string) => {
-    if (!session?.user) { window.location.href = "/login"; return; }
+    if (!session?.user) { router.push("/login"); return; }
     const isSaved = savedIds.includes(id);
     if (!isSaved) {
       await fetch("/api/attendance", {
@@ -133,7 +133,7 @@ export default function HomePage() {
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
       setToast("Zapisano ✅");
-      setTimeout(() => { window.location.href = "/lista"; }, 800);
+      setTimeout(() => { router.push("/lista"); }, DUR.reveal);
     }
     setSavedIds((prev) =>
       isSaved ? prev.filter((v) => v !== id) : [...prev, id]
@@ -156,8 +156,13 @@ export default function HomePage() {
       <div style={{ padding: "54px 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div className="pz-eyebrow" style={{ marginBottom: 6 }}>
-              {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+              <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
+                poznaj<span style={{ color: "var(--sage)" }}>.</span>
+              </span>
+              <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>
+                {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+              </span>
             </div>
             <h1 className="pz-h" style={{
               margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em",
@@ -168,12 +173,12 @@ export default function HomePage() {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => setSearchOpen(true)} aria-label="Szukaj" style={{
-              width: 40, height: 40, borderRadius: 99, border: 0,
+              width: 44, height: 44, borderRadius: 99, border: 0,
               background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
               display: "inline-flex", alignItems: "center", justifyContent: "center",
             }}><SearchIcon size={20} /></button>
             <button onClick={() => setFiltersOpen(true)} aria-label="Filtry" style={{
-              width: 40, height: 40, borderRadius: 99, border: 0,
+              width: 44, height: 44, borderRadius: 99, border: 0,
               background: activeCount ? "var(--ink)" : "var(--bg-soft)",
               color: activeCount ? "var(--bg)" : "var(--ink)",
               cursor: "pointer", position: "relative",
@@ -231,12 +236,9 @@ export default function HomePage() {
       {/* Surprise me CTA */}
       {cleanHome && (
         <div style={{ padding: "0 18px 14px" }}>
-          <button onClick={() => setSurpriseOpen(true)} style={{
-            width: "100%", padding: "14px 18px", borderRadius: 18,
-            border: "0.5px dashed var(--ink-5)", background: "transparent",
-            color: "var(--ink)", fontSize: 14, fontWeight: 600,
-            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-            cursor: "pointer", letterSpacing: "-0.01em",
+          <button onClick={() => setSurpriseOpen(true)} className="pz-btn ghost" style={{
+            width: "100%", height: 50, fontSize: "var(--text-sm)",
+            border: "0.5px solid var(--ink-4)", background: "var(--bg-soft)",
           }}>
             <ShuffleIcon size={16} />
             Zaskocz mnie — losowy plan
@@ -246,7 +248,7 @@ export default function HomePage() {
 
       {/* For You rail */}
       {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "6px 18px 0" }}>
+        <div className="pz-section-reveal" style={{ padding: "6px 18px 0" }}>
           <div style={{
             display: "flex", alignItems: "baseline",
             justifyContent: "space-between", marginBottom: 4,
@@ -262,7 +264,7 @@ export default function HomePage() {
               padding: "6px 18px 14px", overflowX: "auto",
             }}>
               {forYou.map((ev, i) => (
-                <div key={ev.id} onClick={() => openEvent(ev)} className="pz-pop" style={{
+                <div key={ev.id} onClick={() => openEvent(ev)} className="pz-pop" role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }} style={{
                   flex: "0 0 220px", borderRadius: 22, overflow: "hidden",
                   position: "relative", height: 280, cursor: "pointer",
                 }}>
@@ -309,14 +311,46 @@ export default function HomePage() {
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{filtered.length}</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          {filtered.map((ev) => (
-            <EventCard key={ev.id} event={ev}
-                       onOpen={() => openEvent(ev)}
-                       onSave={() => toggleSave(ev.id)}
-                       saved={savedIds.includes(ev.id)} />
-          ))}
-          {filtered.length === 0 && (
+        <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
+          {loading ? Array.from({ length: 6 }).map((_, i) => (
+            <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
+              <div className="pz-skeleton" style={{ height: 132 }} />
+              <div className="pz-skeleton" style={{ height: 14, width: "60%" }} />
+              <div className="pz-skeleton" style={{ height: 18, width: "90%" }} />
+              <div className="pz-skeleton" style={{ height: 14, width: "70%" }} />
+            </div>
+          )) : filtered.map((ev, i) => {
+            const isFeature = (i > 0 && i % 4 === 3);
+            return isFeature ? (
+              <React.Fragment key={ev.id}>
+                <div onClick={() => openEvent(ev)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
+                  className="pz-card-stagger pz-section-reveal"
+                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 200, cursor: "pointer" } as React.CSSProperties}>
+                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 60%)", padding: 20, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                    <span className="pz-pill solid" style={{ alignSelf: "flex-start", marginBottom: 8, fontSize: 11 }}>{ev.category}</span>
+                    <h3 style={{ margin: 0, color: "white", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1 }}>{ev.title}</h3>
+                    <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
+                  </div>
+                </div>
+              </React.Fragment>
+            ) : (
+              <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+                <EventCard event={ev}
+                           onOpen={() => openEvent(ev)}
+                           onSave={() => toggleSave(ev.id)}
+                           saved={savedIds.includes(ev.id)}
+                           className="pz-card-stagger" />
+              </div>
+            );
+          })}
+          {error && (
+            <div style={{ gridColumn: "1 / -1", padding: "40px 16px", textAlign: "center" }}>
+              <p style={{ color: "var(--ink-3)", fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>
+              <button onClick={fetchEvents} className="pz-btn primary" style={{ height: 44, fontSize: 13 }}>Spróbuj ponownie</button>
+            </div>
+          )}
+          {!loading && !error && filtered.length === 0 && (
             <div style={{ padding: "40px 16px", textAlign: "center" }}>
               <div className="pz-display" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
               <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
@@ -350,7 +384,7 @@ export default function HomePage() {
       {surpriseOpen && (
         <SurpriseModal
           events={events}
-          onPick={(ev) => { window.location.href = `/event/${ev.id}`; }}
+          onPick={(ev) => { router.push(`/event/${ev.id}`); }}
           onClose={() => setSurpriseOpen(false)}
         />
       )}

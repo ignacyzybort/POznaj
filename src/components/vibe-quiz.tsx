@@ -59,7 +59,13 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [recommendations, setRecommendations] = useState<EventData[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [exiting, setExiting] = useState(false);
   const router = useRouter();
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
 
   const q = questions[step];
   const isLast = step === questions.length - 1;
@@ -75,7 +81,6 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
     setAnswers(newAnswers);
 
     if (isLast) {
-      // Build vibe filters from answers
       const vibeParams: string[] = [];
       for (const [, val] of Object.entries(newAnswers)) {
         const mapped = vibeMap[val];
@@ -97,84 +102,88 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const overlay = (content: React.ReactNode) => (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "var(--ink-3)",
+      animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
+    }}>
+      {content}
+    </div>
+  );
+
   if (showResults) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
-        <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", overflow: "auto" }}>
-          <div className="text-center mb-4">
-            <span className="text-4xl">🎯</span>
-            <h2 className="text-lg font-bold mt-2" style={{ color: "var(--ink)" }}>Dopasowaliśmy dla Ciebie</h2>
-            <p className="text-sm" style={{ color: "var(--ink-3)" }}>Najlepsze wydarzenia na dziś</p>
-          </div>
-
-          {recommendations.length === 0 ? (
-            <div className="text-center py-6" style={{ color: "var(--ink-3)" }}>
-              <p className="text-sm">Nie znaleźliśmy dopasowań</p>
-              <p className="text-xs mt-1">Spróbuj zmienić odpowiedzi</p>
-            </div>
-          ) : (
-            <div className="space-y-3 mb-4">
-              {recommendations.map((ev) => (
-                <a key={ev.id} href={`/event/${ev.id}`}
-                  className="flex gap-3 p-3 rounded-2xl no-underline"
-                  style={{ background: "var(--bg-soft)", display: "flex" }}
-                >
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-[var(--bg-elev)]">
-                    {ev.imageUrl && <img src={ev.imageUrl} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold line-clamp-2" style={{ color: "var(--ink)" }}>{ev.title}</p>
-                    <p className="text-xs mt-1" style={{ color: "var(--ink-3)" }}>
-                      📍 {ev.placeName} · {ev.time ?? ""}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          )}
-
-          <button onClick={onClose} className="w-full py-3 rounded-2xl text-sm font-bold border-0 cursor-pointer"
-            style={{ background: "var(--ink)", color: "var(--bg)" }}>
-            Super!
-          </button>
+    return overlay(
+      <div style={{ margin: "0 16px", maxWidth: 384, width: "100%", padding: 24, borderRadius: 28, background: "var(--bg-elev)", maxHeight: "80%", overflow: "auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 32 }}>🎯</span>
+          <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Dopasowaliśmy dla Ciebie</h2>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>Najlepsze wydarzenia na dziś</p>
         </div>
+
+        {recommendations.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "24px 0", color: "var(--ink-3)" }}>
+            <p style={{ fontSize: "var(--text-sm)" }}>Nie znaleźliśmy dopasowań</p>
+            <p style={{ fontSize: "var(--text-xs)", marginTop: 4 }}>Spróbuj zmienić odpowiedzi</p>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
+            {recommendations.map((ev) => (
+              <a key={ev.id} href={`/event/${ev.id}`}
+                style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-soft)", textDecoration: "none", color: "inherit" }}
+              >
+                <div style={{ width: 64, height: 64, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
+                  {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink)", margin: 0, lineClamp: 2, WebkitLineClamp: 2, display: "-webkit-box", WebkitBoxOrient: "vertical", overflow: "hidden" }}>{ev.title}</p>
+                  <p style={{ fontSize: "var(--text-xs)", marginTop: 4, color: "var(--ink-3)" }}>
+                    📍 {ev.placeName} · {ev.time ?? ""}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <button onClick={close} className="pz-btn primary full" style={{ height: 44, fontSize: "var(--text-sm)" }}>
+          Super!
+        </button>
       </div>
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
-      <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
-        <div className="flex gap-1.5 mb-6">
-          {questions.map((_, i) => (
-            <div key={i} className="flex-1 h-1 rounded-full transition-all"
-              style={{ background: i <= step ? "var(--ink)" : "var(--line-2)" }} />
-          ))}
-        </div>
-
-        <p className="text-[11px] font-bold uppercase tracking-wider mb-1" style={{ color: "var(--ink-4)" }}>
-          Pytanie {step + 1} z {questions.length}
-        </p>
-        <h2 className="text-xl font-bold mb-4" style={{ color: "var(--ink)" }}>{q.question}</h2>
-
-        <div className="space-y-2 mb-4">
-          {q.options.map((opt) => (
-            <button key={opt.value} onClick={() => answer(opt.value)}
-              className="w-full flex items-center gap-3 p-3.5 rounded-2xl text-left border-0 cursor-pointer transition-all active:scale-[0.98]"
-              style={{
-                background: answers[q.id] === opt.value ? "var(--sage-soft)" : "var(--bg-soft)",
-                border: answers[q.id] === opt.value ? "1px solid var(--sage)" : "0.5px solid var(--line)",
-              }}>
-              <span className="text-sm font-semibold" style={{ color: "var(--ink)" }}>{opt.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <button onClick={onClose} className="w-full py-3 rounded-2xl text-sm font-semibold border-0 cursor-pointer"
-          style={{ background: "var(--bg-soft)", color: "var(--ink-3)" }}>
-          ✕ Zamknij
-        </button>
+  return overlay(
+    <div style={{ margin: "0 16px", maxWidth: 384, width: "100%", padding: 24, borderRadius: 28, background: "var(--bg-elev)" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 24 }}>
+        {questions.map((_, i) => (
+          <div key={i} style={{ flex: 1, height: 4, borderRadius: 99, background: i <= step ? "var(--ink)" : "var(--line-2)", transition: "background var(--dur-base) var(--ease-out-quart)" }} />
+        ))}
       </div>
+
+      <p className="pz-eyebrow" style={{ marginBottom: 4 }}>
+        Pytanie {step + 1} z {questions.length}
+      </p>
+      <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink)", margin: "0 0 16px" }}>{q.question}</h2>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+        {q.options.map((opt) => (
+          <button key={opt.value} onClick={() => answer(opt.value)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 22,
+              textAlign: "left", border: answers[q.id] === opt.value ? "1px solid var(--sage)" : "0.5px solid var(--line)",
+              cursor: "pointer", background: answers[q.id] === opt.value ? "var(--sage-soft)" : "var(--bg-soft)",
+              color: "var(--ink)", fontSize: "var(--text-sm)", fontWeight: 600, transition: "all var(--dur-fast) var(--ease-out-quart)",
+            }}>
+            <span>{opt.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <button onClick={close} className="pz-btn ghost full" style={{ height: 44, fontSize: "var(--text-sm)" }}>
+        ✕ Zamknij
+      </button>
     </div>
   );
 }

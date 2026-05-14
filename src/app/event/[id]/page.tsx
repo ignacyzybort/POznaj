@@ -3,28 +3,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EventData, districts } from "@/lib/data";
+import { PL_DAY_FULL, PL_MONTH_FULL, relDay, fmtFullDate } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import VibePill from "@/components/vibe-pill";
 import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
+import Confetti from "@/components/confetti";
+import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
-const PL_MONTH_FULL = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
-const PL_DAY_FULL = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
-
-function relDay(d: Date): string {
-  const now = new Date(); now.setHours(0, 0, 0, 0);
-  const dd = new Date(d); dd.setHours(0, 0, 0, 0);
-  const days = Math.round((dd.getTime() - now.getTime()) / 86400000);
-  if (days === 0) return "Dziś";
-  if (days === 1) return "Jutro";
-  if (days < 0) return "Było";
-  if (days < 7) return PL_DAY_FULL[dd.getDay()];
-  return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
-}
-function fmtFullDate(d: Date) { return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`; }
 function districtLabel(value: string) {
   return districts.find((d) => d.value === value)?.label ?? "Poznań";
 }
@@ -37,12 +26,21 @@ export default function EventDetailPage() {
   const [going, setGoing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [reminded, setReminded] = useState(false);
+  const [animatingSave, setAnimatingSave] = useState(false);
+  const [confetti, setConfetti] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch(`/api/events/${params.id}`).then((r) => r.json()).then((d) => {
+  const fetchEvent = () => {
+    setError(null);
+    fetch(`/api/events/${params.id}`).then((r) => {
+      if (!r.ok) throw new Error("Nie znaleziono");
+      return r.json();
+    }).then((d) => {
       if (d.event) setEvent(d.event);
-    });
-  }, [params.id]);
+    }).catch(() => setError("Nie udało się załadować wydarzenia"));
+  };
+
+  useEffect(() => { fetchEvent(); }, [params.id]);
 
   const onRemind = async () => {
     if (reminded) return;
@@ -62,15 +60,21 @@ export default function EventDetailPage() {
     }
   };
 
+  if (error) {
+    return (
+      <div style={{ padding: 40, textAlign: "center", color: "var(--ink-4)" }}>
+        <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>nic</div>
+        <p style={{ fontWeight: 700 }}>{error}</p>
+        <button onClick={() => { setError(null); fetchEvent(); }} className="pz-btn primary" style={{ height: 44, fontSize: 13, marginTop: 16 }}>Spróbuj ponownie</button>
+      </div>
+    );
+  }
+
   if (!event) {
     return (
       <div style={{ padding: 40, textAlign: "center", color: "var(--ink-4)" }}>
         <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>nic</div>
-        <p style={{ fontWeight: 700 }}>Nie znaleziono</p>
-        <button onClick={() => router.back()} style={{
-          fontSize: 13, marginTop: 8, cursor: "pointer", background: "none",
-          border: "none", color: "var(--ink-3)", textDecoration: "underline",
-        }}>Wróć</button>
+        <p style={{ fontWeight: 700 }}>Ładowanie...</p>
       </div>
     );
   }
@@ -113,9 +117,9 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div style={{
+    <div data-category={event.category} style={{
       position: "absolute", inset: 0, background: "var(--bg)",
-      zIndex: 30, animation: "pz-fade-in 0.32s ease both",
+      zIndex: 30,
     }}>
       {/* Scrollable content — ends above the action bar */}
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>
@@ -126,18 +130,16 @@ export default function EventDetailPage() {
           justifyContent: "space-between", gap: 8,
         }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{
-            width: 40, height: 40, borderRadius: 99, border: 0,
-            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-            color: "var(--ink)", cursor: "pointer",
+            width: 44, height: 44, borderRadius: 99, border: 0,
+            background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+            boxShadow: "var(--shadow-sm)",
           }}><BackIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{
-            width: 40, height: 40, borderRadius: 99, border: 0,
-            background: "rgba(255,255,255,0.85)", backdropFilter: "blur(20px)",
-            color: "var(--ink)", cursor: "pointer",
+            width: 44, height: 44, borderRadius: 99, border: 0,
+            background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.10)",
+            boxShadow: "var(--shadow-sm)",
           }}><ShareIcon size={20} /></button>
         </div>
 
@@ -146,8 +148,11 @@ export default function EventDetailPage() {
           <EventArt event={event} height={340} style="collage" />
         </div>
 
+        {/* Category glow */}
+        <div className="pz-detail-glow" style={{ position: "absolute", top: 300, left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1 }} />
+
         {/* Content */}
-        <div style={{ padding: "20px 18px 30px" }}>
+        <div style={{ padding: "20px 18px 30px", position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
             <CategoryTag cat={event.category} size="md" />
             {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
@@ -158,8 +163,8 @@ export default function EventDetailPage() {
           }}>{event.title}</h1>
 
           <div style={{
-            marginTop: 16, padding: 14, borderRadius: 18,
-            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+            marginTop: 16, padding: 14, borderRadius: 22,
+            background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
           }}>
             <HeatMeter score={event.score} size="md" />
           </div>
@@ -172,7 +177,8 @@ export default function EventDetailPage() {
               title={event.placeName}
               sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
             <StatCard icon={<UsersIcon size={14} />} label="Popularność"
-              title={`🔥 ${event.score}`} sub="na podstawie dopasowania" />
+              title={event.score >= 70 ? "Bardzo popularne" : event.score >= 40 ? "Rośnie" : "Nowość"}
+              sub={`${event.score} pkt · na podstawie dopasowania`} />
             <StatCard icon={<SparkIcon size={14} />} label="Bilet"
               title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"}
               sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
@@ -189,8 +195,8 @@ export default function EventDetailPage() {
 
           {/* Notification row */}
           <div style={{
-            marginTop: 18, padding: 14, borderRadius: 18,
-            background: "var(--bg-soft)", border: "0.5px solid var(--line)",
+            marginTop: 18, padding: 14, borderRadius: 22,
+            background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)",
             display: "flex", alignItems: "center", justifyContent: "space-between",
           }}>
             <div>
@@ -209,24 +215,25 @@ export default function EventDetailPage() {
       {/* Pinned action bar — outside scroll, at the very bottom */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0,
-        padding: "14px 16px 28px", display: "flex", gap: 10,
+        padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10,
         background: "linear-gradient(180deg, transparent, var(--bg) 30%)",
       }}>
-        <button onClick={toggleSave} style={{
+        <button onClick={() => { setAnimatingSave(true); toggleSave(); setTimeout(() => setAnimatingSave(false), 400); }} style={{
           width: 50, height: 50, borderRadius: 99, border: 0,
           background: saved ? "var(--ink)" : "var(--bg-soft)",
           color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
         }}>
-          {saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}
+          <span className={saved && animatingSave ? "pz-bookmark-draw" : ""}>{saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}</span>
         </button>
-        <button onClick={() => setGoing(!going)} className="pz-btn primary" style={{
+        <button onClick={() => { if (!going) setConfetti(true); setGoing(!going); }} className="pz-btn primary pz-btn-ripple" style={{
           flex: 1, background: going ? "var(--sage)" : "var(--ink)",
         }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
       </div>
 
+      <Confetti active={confetti} />
       <Toast msg={toast} onClear={() => setToast(null)} />
     </div>
   );
@@ -237,8 +244,8 @@ function StatCard({ icon, label, title, sub }: {
 }) {
   return (
     <div style={{
-      padding: 12, borderRadius: 16,
-      background: "var(--bg-elev)", border: "0.5px solid var(--line)",
+      padding: 12, borderRadius: 22,
+      background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
       <div style={{
         display: "flex", alignItems: "center", gap: 6,

@@ -23,8 +23,14 @@ export default function EditProfile({
   const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
   const [cropTarget, setCropTarget] = useState<"avatar" | "cover" | null>(null);
   const [cropFile, setCropFile] = useState<{ url: string; file: File; type: "avatar" | "cover" } | null>(null);
+  const [exiting, setExiting] = useState(false);
   const avatarRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+
+  const close = () => {
+    setExiting(true);
+    setTimeout(onClose, 200);
+  };
 
   const upload = async (blob: Blob, type: "avatar" | "cover") => {
     setUploading(type);
@@ -79,18 +85,21 @@ export default function EditProfile({
         }),
       });
       onSaved();
-      onClose();
+      close();
     } catch {}
     setSaving(false);
   };
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(20,19,15,0.5)" }}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+        background: "rgba(20,19,15,0.5)",
+        animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+      }}>
         <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            <button onClick={close} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Avatar upload */}
@@ -158,7 +167,7 @@ export default function EditProfile({
           </div>
 
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            <button onClick={onClose} className="pz-btn ghost" style={{ flex: 1 }}>Anuluj</button>
+            <button onClick={close} className="pz-btn ghost" style={{ flex: 1 }}>Anuluj</button>
             <button onClick={save} disabled={saving} className="pz-btn primary" style={{ flex: 1 }}>{saving ? "Zapisywanie..." : "Zapisz"}</button>
           </div>
         </div>
