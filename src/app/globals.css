@@ -335,6 +335,14 @@
 }
 .pz-skip-link:focus { left: 0; }
 
+/* Leaflet popup theming */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip { background: var(--bg-elev) !important; color: var(--ink); }
+.leaflet-popup-content { color: var(--ink); font-size: 13px; }
+.leaflet-popup-content a { color: var(--ink) !important; }
+.leaflet-popup-content-wrapper { border-radius: 14px !important; padding: 2px !important; }
+.leaflet-popup-close-button { color: var(--ink-3) !important; }
+
 /* Atmospheric noise overlay on stage */
 .pz-stage::after {
   content: '';

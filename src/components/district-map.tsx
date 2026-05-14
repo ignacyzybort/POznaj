@@ -89,7 +89,7 @@ function getStyle(id: string, isSelected: boolean, hasSelection: boolean, count:
   const hue = DISTRICT_HUES[id] ?? 0;
   const sat = isSelected ? 65 : 55 + Math.round(20 * ratio);
   const lit = isSelected ? 55 : 45 - Math.round(15 * ratio);
-  const opacity = isSelected ? 0.85 : hasSelection ? 0.15 : 0.35;
+  const opacity = isSelected ? 0.2 : hasSelection ? 0.15 : 0.35;
   return {
     fillColor: `hsl(${hue}, ${sat}%, ${lit}%)`,
     fillOpacity: opacity,
