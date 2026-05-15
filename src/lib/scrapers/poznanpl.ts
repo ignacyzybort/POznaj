@@ -100,9 +100,6 @@ export class PoznanPlScraper implements Scraper {
             const link = $(el).find("a").first().attr("href") || "";
             const fullLink = link.startsWith("http") ? link : `https://www.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
 
-            // Skip navigation/month pages
-            if (/\/mim\/kultura\/(wstep|styczen|luty|marzec|kwiecien|maj|czerwiec|lipiec|sierpien|wrzesien|pazdziernik|listopad|grudzien),p,/.test(fullLink)) return;
-
             const text = $(el).text();
             const img = $(el).find("img").first().attr("src") || "";
 
