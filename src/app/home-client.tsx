@@ -318,17 +318,20 @@ export default function HomeClient({
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
           )) : events.map((ev, i) => {
-            const isFeature = (i > 0 && i % 4 === 3);
+            const isFeature = (i % 5 === 0);
             return isFeature ? (
               <React.Fragment key={ev.id}>
                 <div onClick={() => openEvent(ev)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   className="pz-card-stagger pz-section-reveal"
-                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 200, cursor: "pointer" } as React.CSSProperties}>
-                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 60%)", padding: 20, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-                    <span className="pz-pill solid" style={{ alignSelf: "flex-start", marginBottom: 8, fontSize: 11 }}>{ev.category}</span>
-                    <h3 style={{ margin: 0, color: "white", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1 }}>{ev.title}</h3>
-                    <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
+                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 220, cursor: "pointer" } as React.CSSProperties}>
+                  <EventArt event={ev} height={220} forceArt={!ev.imageUrl} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 30%, rgba(20,19,15,0.85) 100%)" }}>
+                    <span className="pz-pill solid" style={{ position: "absolute", top: 14, left: 14, fontSize: 11 }}>{ev.category}</span>
+                    <span style={{ position: "absolute", top: 14, right: 14, background: "rgba(0,0,0,0.45)", borderRadius: 99, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center" }}><svg width="12" height="12" viewBox="0 0 24 24" fill="var(--hot)"><path d="M12 2l1.5 5h5l-4 3.2 1.5 5L12 12l-4 3.2 1.5-5-4-3.2h5z"/></svg></span>
+                    <div style={{ position: "absolute", left: 16, right: 16, bottom: 16 }}>
+                      <h3 style={{ margin: 0, color: "white", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{ev.title}</h3>
+                      <p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
+                    </div>
                   </div>
                 </div>
               </React.Fragment>
