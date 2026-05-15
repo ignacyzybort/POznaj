@@ -12,8 +12,8 @@ const TAPE_N = 50;
 const SLOT_EASE: [number, number, number, number] = [0, 0.92, 0.25, 1];
 
 function generateTapes(events: EventData[]): [EventData[], EventData[], EventData[]] {
-  const used = new Set<string>();
   const build = (): EventData[] => {
+    const used = new Set<string>();
     const reel: EventData[] = [];
     while (reel.length < TAPE_N) {
       const ev = events[Math.floor(Math.random() * events.length)];
@@ -186,7 +186,7 @@ export default function SurpriseModal({
             </button>
           )}
           {picked ? (
-            <button className="pz-btn primary" autoFocus style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
+            <button onClick={() => onPick(picked)} className="pz-btn primary" autoFocus style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
               <ShuffleIcon size={16} /> Idę!
             </button>
           ) : (
