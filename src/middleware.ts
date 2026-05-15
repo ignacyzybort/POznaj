@@ -47,6 +47,13 @@ function generateCsrfToken(): string {
 export function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const method = req.method ?? "GET";
+
+  // NextAuth handles its own CSRF, rate limiting, and cookies.
+  // Middleware must not interfere with auth routes.
+  if (path.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
 
   if (path.startsWith("/api/")) {
