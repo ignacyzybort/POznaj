@@ -170,6 +170,9 @@ export class PikPoznanScraper implements Scraper {
       const daysUntil = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       if (daysUntil < -1) return;
 
+      // Skip Twitter/X entries — usually broken duplicates with no real data
+      if (fullLink.startsWith("https://x.com/") || fullLink.startsWith("https://twitter.com/")) return;
+
       events.push({
         title,
         description: description || undefined,

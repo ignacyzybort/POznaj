@@ -95,9 +95,13 @@ export class PoznanPlScraper implements Scraper {
           $("[class*='event'], .calendar-event, .calendar-events-list > div, .events-list > div, .event-item, tr.event, .day-has-event, .day-has-events").each((_, el) => {
             const title = $(el).find("a, .title, .event-title, h3, h4").first().text().trim();
             if (!title || title.length < 3) return;
+            if (title === "2026 - wybrane wydarzenia") return;
 
             const link = $(el).find("a").first().attr("href") || "";
             const fullLink = link.startsWith("http") ? link : `https://www.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
+
+            // Skip navigation/month pages
+            if (/\/mim\/kultura\/(wstep|styczen|luty|marzec|kwiecien|maj|czerwiec|lipiec|sierpien|wrzesien|pazdziernik|listopad|grudzien),p,/.test(fullLink)) return;
 
             const text = $(el).text();
             const img = $(el).find("img").first().attr("src") || "";
