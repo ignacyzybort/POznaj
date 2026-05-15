@@ -50,7 +50,7 @@ export default function TabBar() {
             <Icon size={22} />
             <span>{t.label}</span>
             {t.id === "profile" && notifCount > 0 && (
-              <span style={{
+              <span aria-label={`${notifCount} powiadomień`} style={{
                 position: "absolute", top: 2, right: "50%", marginRight: -28,
                 minWidth: 18, height: 18, borderRadius: 99,
                 background: "var(--hot)", color: "white",

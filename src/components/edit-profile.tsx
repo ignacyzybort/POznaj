@@ -102,12 +102,12 @@ export default function EditProfile({
         <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
-            <button onClick={close} style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Avatar upload */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie profilowe</label>
+            <label htmlFor="avatar-upload" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie profilowe</label>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 56, height: 56, borderRadius: 99, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
                 {avatarPreview && <img src={avatarPreview} alt="" className="w-full h-full object-cover" />}
@@ -116,13 +116,13 @@ export default function EditProfile({
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "avatar" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "avatar" ? 0.5 : 1 }}>
                 {uploading === "avatar" ? "Przesyłanie..." : <><CameraIcon size={18} /> Zmień</>}
               </button>
-              <input ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "avatar"); }} />
+              <input id="avatar-upload" ref={avatarRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "avatar"); }} />
             </div>
           </div>
 
           {/* Cover upload */}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie w tle</label>
+            <label htmlFor="cover-upload" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie w tle</label>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 80, height: 48, borderRadius: 12, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
                 {coverPreview && <img src={coverPreview} alt="" className="w-full h-full object-cover" />}
@@ -131,7 +131,7 @@ export default function EditProfile({
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "cover" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "cover" ? 0.5 : 1 }}>
                 {uploading === "cover" ? "Przesyłanie..." : <><CoverIcon size={18} /> Zmień</>}
               </button>
-              <input ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "cover"); }} />
+              <input id="cover-upload" ref={coverRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) selectFile(f, "cover"); }} />
             </div>
           </div>
 

@@ -43,7 +43,7 @@ export default function YearInReview({
           <span key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: i <= card ? "white" : "rgba(255,255,255,0.3)" }} />
         ))}
       </div>
-      <button onClick={close} style={{ position: "absolute", top: 56, right: 16, background: "none", border: "none", color: "white", fontSize: 20, cursor: "pointer" }}>✕</button>
+      <button onClick={close} aria-label="Zamknij" style={{ position: "absolute", top: 56, right: 16, background: "none", border: "none", color: "white", fontSize: 20, cursor: "pointer" }}>✕</button>
       <div onClick={() => setCard((card + 1) % CARDS.length)} style={{ cursor: "pointer", textAlign: "center", color: "white", width: "100%", padding: 20, borderRadius: 32, background: c.bg, minHeight: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <div className="pz-num" style={{ fontSize: 72, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.04em" }}>{c.big}</div>
         <div className="pz-h" style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.025em", marginTop: 8 }}>{c.label}</div>

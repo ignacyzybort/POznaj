@@ -59,7 +59,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
       <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", display: "flex", flexDirection: "column" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Zaproś znajomych</h2>
-          <button onClick={close} style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
         </div>
 
         <label htmlFor="invite-search-input" className="sr-only">Szukaj znajomych</label>

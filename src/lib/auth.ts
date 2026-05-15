@@ -14,6 +14,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       from: "POznaj <noreply@poznaj.app>",
     }),
   ],
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,
+  },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+  trustHost: true,
   callbacks: {
     session({ session, user }) {
       if (session.user) {

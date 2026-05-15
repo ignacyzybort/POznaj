@@ -114,6 +114,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@index([identifier])
 }
 
 model Friendship {
@@ -158,6 +159,7 @@ model Activity {
   @@index([userId])
   @@index([eventId])
   @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model Notification {
@@ -221,6 +223,8 @@ model Event {
   @@index([startDate])
   @@index([endDate])
   @@index([endDate, score])
+  @@index([endDate, district, score])
+  @@index([startDate, score])
 }
 
 model EventVibe {

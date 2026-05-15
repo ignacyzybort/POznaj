@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ status: attendance.status });
-  } catch {
+  } catch (e) {
+    console.error("[attendance] error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -65,6 +66,7 @@ export async function GET(request: NextRequest) {
       where: { userId },
       include: { event: { include: { vibes: { select: { vibe: true } } } } },
       orderBy: { createdAt: "desc" },
+      take: 50,
     });
 
     const serialized = attendance.map((a) => ({
@@ -78,7 +80,8 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ attendance: serialized });
-  } catch {
+  } catch (e) {
+    console.error("[attendance] error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

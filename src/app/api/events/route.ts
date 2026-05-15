@@ -213,8 +213,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ events: serialized, total, recommended });
-  } catch {
+    return NextResponse.json(
+      { events: serialized, total, recommended },
+      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
+    );
+  } catch (e) {
+    console.error("[events] fetch error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

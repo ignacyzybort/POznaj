@@ -16,6 +16,7 @@ import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
+import { categoryGradient } from "@/lib/visuals";
 
 export default function HomeClient({
   initialEvents,
@@ -277,15 +278,7 @@ export default function HomeClient({
                   <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: `linear-gradient(180deg, transparent 40%, ${(() => {
-                      const c = ev.category?.toLowerCase?.() ?? "inne";
-                      return c === "muzyka" ? "rgba(255,61,127,0.85)" :
-                             c === "kino" ? "rgba(110,61,255,0.85)" :
-                             c === "sztuka" ? "rgba(40,96,255,0.85)" :
-                             c === "sport" ? "rgba(200,255,46,0.85)" :
-                             c === "teatr" ? "rgba(255,107,44,0.85)" :
-                             "rgba(20,19,15,0.75)";
-                    })()} 100%)`,
+                    background: `linear-gradient(180deg, transparent 40%, ${categoryGradient(ev.category)} 100%)`,
                   }}>
                     <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
                       <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white" }}>{ev.title}</h3>

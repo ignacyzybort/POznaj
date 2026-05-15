@@ -13,6 +13,7 @@ import Toast from "@/components/toast";
 import Confetti from "@/components/confetti";
 import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
+import { categoryGradient } from "@/lib/visuals";
 
 function districtLabel(value: string) {
   return districts.find((d) => d.value === value)?.label ?? "Poznań";
@@ -294,15 +295,7 @@ export default function EventDetailPage() {
                     <EventArt event={ev} height={200} />
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: `linear-gradient(180deg, transparent 40%, ${(() => {
-                        const c = ev.category?.toLowerCase?.() ?? "inne";
-                        return c === "muzyka" ? "rgba(255,61,127,0.85)" :
-                               c === "kino" ? "rgba(110,61,255,0.85)" :
-                               c === "sztuka" ? "rgba(40,96,255,0.85)" :
-                               c === "sport" ? "rgba(200,255,46,0.85)" :
-                               c === "teatr" ? "rgba(255,107,44,0.85)" :
-                               "rgba(20,19,15,0.75)";
-                      })()} 100%)`,
+                      background: `linear-gradient(180deg, transparent 40%, ${categoryGradient(ev.category)} 100%)`,
                     }}>
                       <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12 }}>
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "white" }}>{ev.title}</p>

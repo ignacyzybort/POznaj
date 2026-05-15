@@ -10,7 +10,6 @@
 @import "@fontsource/instrument-serif/400.css";
 @import "@fontsource/instrument-serif/400-italic.css";
 @import "@fontsource/jetbrains-mono/400.css";
-@import "leaflet/dist/leaflet.css";
 @import "@fontsource/jetbrains-mono/500.css";
 @import "@fontsource/jetbrains-mono/600.css";
 
@@ -22,7 +21,7 @@
   --bg-soft: #F6F2E8;
   --ink: #14130F;
   --ink-2: #2A2723;
-  --ink-3: rgba(20, 19, 15, 0.62);
+  --ink-3: rgba(20, 19, 15, 0.72);
   --ink-4: rgba(20, 19, 15, 0.55);
   --ink-5: rgba(20, 19, 15, 0.22);
   --line: rgba(20, 19, 15, 0.08);
@@ -121,8 +120,8 @@
   --bg-soft: #2E3037;
   --ink: #F4F4F6;
   --ink-2: #DCDCE0;
-  --ink-3: rgba(244, 244, 246, 0.68);
-  --ink-4: rgba(244, 244, 246, 0.55);
+  --ink-3: rgba(244, 244, 246, 0.78);
+  --ink-4: rgba(244, 244, 246, 0.58);
   --ink-5: rgba(244, 244, 246, 0.24);
   --line: rgba(244, 244, 246, 0.09);
   --line-2: rgba(244, 244, 246, 0.16);
