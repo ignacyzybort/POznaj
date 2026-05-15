@@ -14,6 +14,7 @@ import BudgetChips, { type Budget } from "@/components/budget-chips";
 import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
+import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 import { categoryGradient } from "@/lib/visuals";
@@ -261,8 +262,8 @@ export default function HomeClient({
           <div style={{ margin: "0 -18px" }}>
             <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto", paddingRight: 36 }}>
               {forYou.map((ev, i) => (
-                <div
-                  key={ev.id}
+                <TiltCard key={ev.id}>
+                  <div
                   onClick={() => openEvent(ev)}
                   role="button"
                   tabIndex={0}
@@ -285,7 +286,8 @@ export default function HomeClient({
                       <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
                     </div>
                   </div>
-                </div>
+                  </div>
+                </TiltCard>
               ))}
               <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: 200, background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 99, background: "var(--ink)", color: "var(--bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>→</div>
@@ -317,34 +319,17 @@ export default function HomeClient({
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 18, width: "90%" }} />
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
-          )) : events.map((ev, i) => {
-            const isFeature = (i % 5 === 0);
-            return isFeature ? (
-              <React.Fragment key={ev.id}>
-                <div onClick={() => openEvent(ev)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
-                  className="pz-card-stagger pz-section-reveal"
-                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 220, cursor: "pointer" } as React.CSSProperties}>
-                  <EventArt event={ev} height={220} forceArt={!ev.imageUrl} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 30%, rgba(20,19,15,0.85) 100%)" }}>
-                    <span className="pz-pill solid" style={{ position: "absolute", top: 14, left: 14, fontSize: 11 }}>{ev.category}</span>
-                    <span style={{ position: "absolute", top: 14, right: 14, background: "rgba(0,0,0,0.45)", borderRadius: 99, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center" }}><svg width="12" height="12" viewBox="0 0 24 24" fill="var(--hot)"><path d="M12 2l1.5 5h5l-4 3.2 1.5 5L12 12l-4 3.2 1.5-5-4-3.2h5z"/></svg></span>
-                    <div style={{ position: "absolute", left: 16, right: 16, bottom: 16 }}>
-                      <h3 style={{ margin: 0, color: "white", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15 }}>{ev.title}</h3>
-                      <p style={{ margin: "6px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
-                    </div>
-                  </div>
+          )) : events.map((ev, i) => (
+              <TiltCard key={ev.id}>
+                <div style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+                  <EventCard event={ev}
+                             onOpen={() => openEvent(ev)}
+                             onSave={() => toggleSave(ev.id)}
+                             saved={savedIds.includes(ev.id)}
+                             className="pz-card-stagger" />
                 </div>
-              </React.Fragment>
-            ) : (
-              <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
-                <EventCard event={ev}
-                           onOpen={() => openEvent(ev)}
-                           onSave={() => toggleSave(ev.id)}
-                           saved={savedIds.includes(ev.id)}
-                           className="pz-card-stagger" />
-              </div>
-            );
-          })}
+              </TiltCard>
+          ))}
           {error && (
             <div style={{ gridColumn: "1 / -1", padding: "40px 16px", textAlign: "center" }}>
               <p style={{ color: "var(--ink-3)", fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>

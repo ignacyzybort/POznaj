@@ -10,6 +10,7 @@ import CategoryTag from "@/components/category-tag";
 import VibePill from "@/components/vibe-pill";
 import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
+import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
 import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
@@ -170,7 +171,8 @@ export default function EventDetailClient({
             <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</div>
             <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
               {similar.map((ev) => (
-                <a key={ev.id} href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }} style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)" }}>
+                <TiltCard key={ev.id}>
+                  <a href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }} style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)", display: "block" }}>
                   <EventArt event={ev} height={200} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(20,19,15,0.85) 100%)" }}>
                     <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12 }}>
@@ -179,6 +181,7 @@ export default function EventDetailClient({
                     </div>
                   </div>
                 </a>
+                </TiltCard>
               ))}
             </div>
           </div>
