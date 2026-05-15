@@ -96,7 +96,7 @@ export default function TonightHero({
           <div style={{ display: "flex", gap: 8, marginTop: ev.description ? 0 : 14 }}>
             <button onClick={(e) => { e.stopPropagation(); onOpen(ev); }} style={{
               flex: 1, height: 46, border: 0, borderRadius: 14,
-              background: "white", color: "var(--ink)",
+              background: "var(--bg-elev)", color: "var(--ink)",
               fontSize: "var(--text-base)", fontWeight: 700, letterSpacing: "-0.01em", cursor: "pointer",
             }}>Sprawdź</button>
             <button onClick={(e) => { e.stopPropagation(); next(); }} aria-label="Następny" style={{

@@ -2,6 +2,7 @@ import { Scraper, ScrapedEvent } from "./base";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
+import { geocodeVenue, districtFallback } from "./geocode";
 
 function guessDistrict(text: string): string {
   const lower = text.toLowerCase();
@@ -160,55 +161,6 @@ export class PikPoznanScraper implements Scraper {
 
       const category = parseCategory(url, title, text);
 
-      // Assign coordinates based on category for map distribution
-      if (!coordsX) {
-        const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-        const categoryVenues: Record<string, { address: string; district: string; lat: number; lon: number }[]> = {
-          Muzyka: [
-            { address: "Kościuszki 79", district: "Jezyce", lat: 52.413, lon: 16.900 },
-            { address: "Bułgarska 17", district: "Jezyce", lat: 52.418, lon: 16.895 },
-            { address: "Nowowiejskiego 8", district: "Jezyce", lat: 52.415, lon: 16.898 },
-            { address: "Niepodległości 12", district: "Jezyce", lat: 52.410, lon: 16.895 },
-            { address: "Głogowska 14", district: "Grunwald", lat: 52.396, lon: 16.898 },
-            { address: "Święty Marcin 80/82", district: "StareMiasto", lat: 52.408, lon: 16.919 },
-            { address: "Wieniawskiego 1", district: "StareMiasto", lat: 52.406, lon: 16.927 },
-            { address: "Fredry 9", district: "StareMiasto", lat: 52.409, lon: 16.928 },
-            { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
-          ],
-          Teatr: [
-            { address: "27 Grudnia 8/10", district: "StareMiasto", lat: 52.407, lon: 16.935 },
-            { address: "Dąbrowskiego 5", district: "StareMiasto", lat: 52.407, lon: 16.930 },
-            { address: "Św. Marcin 80/82", district: "StareMiasto", lat: 52.407, lon: 16.918 },
-          ],
-          Kino: [
-            { address: "Święty Marcin 30", district: "StareMiasto", lat: 52.406, lon: 16.920 },
-            { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
-          ],
-          Sztuka: [
-            { address: "Stary Rynek 6", district: "StareMiasto", lat: 52.407, lon: 16.934 },
-            { address: "Wyspiańskiego 41", district: "StareMiasto", lat: 52.404, lon: 16.928 },
-            { address: "Wodna 27", district: "StareMiasto", lat: 52.409, lon: 16.941 },
-            { address: "Święty Marcin 38", district: "StareMiasto", lat: 52.407, lon: 16.921 },
-          ],
-          Inne: [
-            { address: "Plac Wolności", district: "StareMiasto", lat: 52.407, lon: 16.928 },
-            { address: "Stary Rynek", district: "StareMiasto", lat: 52.408, lon: 16.934 },
-            { address: "Park Cytadela", district: "StareMiasto", lat: 52.430, lon: 16.938 },
-            { address: "Malta", district: "NoweMiasto", lat: 52.398, lon: 16.960 },
-            { address: "Ostrów Tumski", district: "StareMiasto", lat: 52.411, lon: 16.948 },
-          ],
-        };
-        const catVenues = categoryVenues[category] ?? categoryVenues.Muzyka;
-        const idx = Math.abs(hash) % catVenues.length;
-        const v = catVenues[idx];
-        if (v) {
-          district = v.district;
-          finalAddress = finalAddress || v.address;
-          coordsX = v.lat;
-          coordsY = v.lon;
-        }
-      }
-
       const vibeList = guessVibes(title, description, category);
 
       const fullLink = link.startsWith("http") ? link : `https://pik.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
@@ -217,6 +169,9 @@ export class PikPoznanScraper implements Scraper {
       const now = new Date();
       const daysUntil = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       if (daysUntil < -1) return;
+
+      // Skip Twitter/X entries — usually broken duplicates with no real data
+      if (fullLink.startsWith("https://x.com/") || fullLink.startsWith("https://twitter.com/")) return;
 
       events.push({
         title,
@@ -282,6 +237,26 @@ export class PikPoznanScraper implements Scraper {
           } catch {}
         })
       );
+    }
+
+    // Post-loop: geocode any event without coordinates from venue match
+    for (const ev of events) {
+      if (ev.coordsX) continue;
+      const geo = await geocodeVenue(ev.placeName, ev.title, ev.address);
+      if (geo) {
+        ev.coordsX = geo.lat;
+        ev.coordsY = geo.lon;
+        ev.district = geo.district;
+      }
+    }
+
+    // Final fallback: events still without coords get district center
+    for (const ev of events) {
+      if (ev.coordsX) continue;
+      const d = ev.district !== "Inny" ? ev.district : guessDistrict(ev.placeName);
+      const center = districtFallback(d);
+      ev.coordsX = center.lat;
+      ev.coordsY = center.lon;
     }
 
     return events;

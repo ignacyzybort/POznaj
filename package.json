@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
-    "scrape": "tsx src/lib/scrapers/run.ts",
+    "scrape": "tsx --env-file=.env src/lib/scrapers/run.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -14,6 +14,7 @@ import BudgetChips, { type Budget } from "@/components/budget-chips";
 import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
+import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 import { categoryGradient } from "@/lib/visuals";
@@ -261,8 +262,8 @@ export default function HomeClient({
           <div style={{ margin: "0 -18px" }}>
             <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto", paddingRight: 36 }}>
               {forYou.map((ev, i) => (
-                <div
-                  key={ev.id}
+                <TiltCard key={ev.id}>
+                  <div
                   onClick={() => openEvent(ev)}
                   role="button"
                   tabIndex={0}
@@ -278,14 +279,15 @@ export default function HomeClient({
                   <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: `linear-gradient(180deg, transparent 40%, ${categoryGradient(ev.category)} 100%)`,
+                    background: categoryGradient(ev.category),
                   }}>
                     <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white" }}>{ev.title}</h3>
+                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
                       <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
                     </div>
                   </div>
-                </div>
+                  </div>
+                </TiltCard>
               ))}
               <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: 200, background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 99, background: "var(--ink)", color: "var(--bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>→</div>
@@ -317,31 +319,17 @@ export default function HomeClient({
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 18, width: "90%" }} />
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
-          )) : events.map((ev, i) => {
-            const isFeature = (i > 0 && i % 4 === 3);
-            return isFeature ? (
-              <React.Fragment key={ev.id}>
-                <div onClick={() => openEvent(ev)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
-                  className="pz-card-stagger pz-section-reveal"
-                  style={{ '--i': Math.min(i, 8) as number, gridColumn: "1 / -1", borderRadius: 22, overflow: "hidden", position: "relative", height: 200, cursor: "pointer" } as React.CSSProperties}>
-                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 60%)", padding: 20, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-                    <span className="pz-pill solid" style={{ alignSelf: "flex-start", marginBottom: 8, fontSize: 11 }}>{ev.category}</span>
-                    <h3 style={{ margin: 0, color: "white", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1 }}>{ev.title}</h3>
-                    <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.8)", fontSize: 13 }}>{ev.placeName} · {ev.time ?? ""}</p>
-                  </div>
+          )) : events.map((ev, i) => (
+              <TiltCard key={ev.id}>
+                <div style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+                  <EventCard event={ev}
+                             onOpen={() => openEvent(ev)}
+                             onSave={() => toggleSave(ev.id)}
+                             saved={savedIds.includes(ev.id)}
+                             className="pz-card-stagger" />
                 </div>
-              </React.Fragment>
-            ) : (
-              <div key={ev.id} style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
-                <EventCard event={ev}
-                           onOpen={() => openEvent(ev)}
-                           onSave={() => toggleSave(ev.id)}
-                           saved={savedIds.includes(ev.id)}
-                           className="pz-card-stagger" />
-              </div>
-            );
-          })}
+              </TiltCard>
+          ))}
           {error && (
             <div style={{ gridColumn: "1 / -1", padding: "40px 16px", textAlign: "center" }}>
               <p style={{ color: "var(--ink-3)", fontSize: 14, fontWeight: 600, margin: "0 0 12px" }}>{error}</p>

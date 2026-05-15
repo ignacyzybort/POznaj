@@ -4,6 +4,8 @@ import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect, useRef, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BackIcon } from "@/components/icons";
 import type { EventData } from "@/lib/data";
 import { categoryColors } from "@/lib/data";
 import districtGeojson from "@/lib/poznan-districts.json";
@@ -90,14 +92,14 @@ function createCategoryMarker(category: string, index: number) {
 function getStyle(id: string, isSelected: boolean, hasSelection: boolean, count: number, maxCount: number) {
   const ratio = maxCount > 0 ? count / maxCount : 0;
   const hue = DISTRICT_HUES[id] ?? 0;
-  const sat = isSelected ? 65 : 55 + Math.round(20 * ratio);
-  const lit = isSelected ? 55 : 45 - Math.round(15 * ratio);
-  const opacity = isSelected ? 0.2 : hasSelection ? 0.15 : 0.35;
+  const sat = isSelected ? 40 : 50 + Math.round(25 * ratio);
+  const lit = isSelected ? 50 : 48 - Math.round(18 * ratio);
+  const opacity = isSelected ? 0.06 : hasSelection ? 0.08 : 0.28;
   return {
     fillColor: `hsl(${hue}, ${sat}%, ${lit}%)`,
     fillOpacity: opacity,
-    color: isSelected ? "white" : "rgba(255,255,255,0.5)",
-    weight: isSelected ? 4 : 1.5,
+    color: isSelected ? "white" : "rgba(255,255,255,0.45)",
+    weight: isSelected ? 3 : 1.2,
   };
 }
 
@@ -176,7 +178,7 @@ function DistrictBoundary() {
   useEffect(() => {
     const dark = L.polygon(
       [[-90, -180], [-90, 180], [90, 180], [90, -180]],
-      { color: "#111", fillColor: "#111", fillOpacity: 1.0, weight: 0, interactive: false }
+      { color: "#111", fillColor: "#111", fillOpacity: 0.75, weight: 0, interactive: false }
     );
     if (CITY_BOUNDARY.length > 2) {
       // Add the city boundary as a hole
@@ -186,6 +188,14 @@ function DistrictBoundary() {
     return () => { dark.remove(); };
   }, [map]);
   return null;
+}
+
+function relDay(d: Date): string {
+  const now = new Date();
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
+  if (d.toDateString() === now.toDateString()) return "Dziś";
+  if (d.toDateString() === tomorrow.toDateString()) return "Jutro";
+  return d.toLocaleDateString("pl", { day: "numeric", month: "short" });
 }
 
 export default function DistrictMap({
@@ -198,6 +208,7 @@ export default function DistrictMap({
 }) {
   const [tilesVisible, setTilesVisible] = useState(false);
   const geoRef = useRef<L.GeoJSON | null>(null);
+  const router = useRouter();
 
   const handleSelect = (id: string) => { onSelect(id); setTilesVisible(true); };
   const handleBack = () => { onBack(); setTilesVisible(false); };
@@ -205,6 +216,7 @@ export default function DistrictMap({
   const eventCounts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const e of events) {
+      if (!e.coordsX) continue;
       const d = mapDistrict(e.district);
       c[d] = (c[d] ?? 0) + 1;
     }
@@ -219,40 +231,56 @@ export default function DistrictMap({
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const id = getId(feature);
+    const count = eventCounts[id] ?? 0;
+    const name = feature?.properties?.name ?? id;
+
     layer.on({
       click: () => { if (id) handleSelect(id); },
-      mouseover: (e) => { (e.target as L.Path).setStyle({ weight: 5, color: "white" }); },
+      mouseover: (e) => { (e.target as L.Path).setStyle({ weight: 4, color: "white" }); },
       mouseout: (e) => {
         const isSelected = id === selectedDistrict;
-        const count = filteredEvents.length;
         (e.target as L.Path).setStyle(getStyle(id, isSelected, !!selectedDistrict && !isSelected, count, maxCount));
       },
     });
-    if (id) {
-      const name = feature?.properties?.name ?? id;
-      layer.bindTooltip(`<b>${name}</b>`, { sticky: true, direction: "center", className: "pz-map-tooltip" });
+
+    // Permanent district label with event count, colored by district hue
+    if (id && !selectedDistrict) {
+      const hue = DISTRICT_HUES[id] ?? 0;
+      const labelColor = `hsl(${hue}, 50%, 35%)`;
+      const label = count > 0
+        ? `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: 10px; font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
+        : `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;
+      layer.bindTooltip(label, {
+        permanent: true, direction: "center", className: "pz-map-tooltip",
+        opacity: 0.85,
+      });
     }
   };
 
   return (
     <div style={{ position: "absolute", inset: 0 }}>
+      {/* Back button — glass pill, centered at top */}
       {selectedDistrict && (
         <button onClick={handleBack} style={{
-          position: "absolute", top: 54, left: 16, zIndex: 1000,
-          padding: "8px 16px", borderRadius: 99, border: 0,
+          position: "absolute", top: "calc(54px + var(--safe-t))", left: "50%", transform: "translateX(-50%)",
+          zIndex: 1000, gap: 6, alignItems: "center",
+          padding: "8px 18px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
           fontSize: "var(--text-sm)", fontWeight: 600,
-          boxShadow: "var(--shadow-md)", display: "flex", alignItems: "center", gap: 6,
+          boxShadow: "var(--shadow-md)", display: "inline-flex",
+          backdropFilter: "blur(12px)",
         }}>
-          ← Wszystkie dzielnice
+          <BackIcon size={16} /> Dzielnice
         </button>
       )}
 
       <MapContainer
         center={[52.408, 16.934]}
         zoom={11}
-        style={{ width: "100%", height: "100%" }}
-        zoomControl={false}
+        minZoom={10}
+        maxBounds={[[52.30, 16.75], [52.50, 17.10]]}
+        style={{ width: "100%", height: "100%", background: "#111" }}
+        zoomControl={true}
       >
         <DistrictBoundary />
         {tilesVisible && (
@@ -282,18 +310,68 @@ export default function DistrictMap({
             icon={createCategoryMarker(ev.category, i)}
           >
             <Popup>
-              <a href={`/event/${ev.id}`}
-                style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)", textDecoration: "none" }}>
+              <div
+                onClick={() => router.push(`/event/${ev.id}`)}
+                style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)", cursor: "pointer", textDecoration: "none" }}>
                 {ev.title}
-              </a>
-              <br />
-              <span style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>
+              </div>
+              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>
                 {ev.placeName} · {ev.time ?? ""}
-              </span>
+              </div>
             </Popup>
           </Marker>
         ))}
       </MapContainer>
+
+      {/* Empty district message */}
+      {selectedDistrict && filteredEvents.length === 0 && (
+        <div style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
+          <span style={{ padding: "8px 16px", borderRadius: 99, background: "var(--bg-elev)", color: "var(--ink-3)", fontSize: 13, fontWeight: 600, boxShadow: "var(--shadow-md)" }}>
+            Brak wydarzeń w tej dzielnicy
+          </span>
+        </div>
+      )}
+
+      {/* Floating event stack when district selected */}
+      {selectedDistrict && filteredEvents.length > 0 && (
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          zIndex: 1000, padding: "14px 18px calc(20px + var(--safe-b))",
+          background: "linear-gradient(180deg, transparent, var(--bg) 25%)",
+        }}>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36 }}>
+            {filteredEvents.slice(0, 8).map((ev) => (
+              <div
+                key={ev.id}
+                onClick={() => router.push(`/event/${ev.id}`)}
+                role="button" tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter") { router.push(`/event/${ev.id}`); } }}
+                style={{
+                  flex: "0 0 180px", borderRadius: 18, overflow: "hidden",
+                  position: "relative", height: 140, cursor: "pointer",
+                  boxShadow: "var(--shadow-md)",
+                  transition: "transform 0.2s var(--ease-out-quart)",
+                }}
+              >
+                {ev.imageUrl ? (
+                  <img src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <div style={{ width: "100%", height: "100%", background: "var(--stone)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--ink-4)" }}>{ev.category?.[0] ?? "?"}</div>
+                )}
+                <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "8px 10px 6px", background: "linear-gradient(180deg, transparent, rgba(20,19,15,0.8))" }}>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "white", lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.time ?? relDay(new Date(ev.startDate))} · {ev.placeName}</p>
+                </div>
+              </div>
+            ))}
+            {filteredEvents.length > 8 && (
+              <div style={{ flex: "0 0 100px", borderRadius: 18, height: 140, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-3)" }}>+{filteredEvents.length - 8} więcej</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

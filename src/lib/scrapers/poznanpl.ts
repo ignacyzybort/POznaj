@@ -2,6 +2,7 @@ import { Scraper, ScrapedEvent } from "./base";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
+import { districtFallback } from "./geocode";
 
 const CAT_MAP: Record<string, string> = {
   kino: "Kino", film: "Kino",
@@ -12,6 +13,42 @@ const CAT_MAP: Record<string, string> = {
   warsztaty: "Warsztaty", warsztat: "Warsztaty",
   konferencja: "Konferencje", wykład: "Konferencje",
   jedzenie: "Jedzenie", kulinaria: "Jedzenie",
+};
+
+// Category-based coordinate fallback — same approach as pikpoznan
+const categoryVenues: Record<string, { address: string; district: string; lat: number; lon: number }[]> = {
+  Muzyka: [
+    { address: "Kościuszki 79", district: "Jezyce", lat: 52.413, lon: 16.900 },
+    { address: "Bułgarska 17", district: "Jezyce", lat: 52.418, lon: 16.895 },
+    { address: "Nowowiejskiego 8", district: "Jezyce", lat: 52.415, lon: 16.898 },
+    { address: "Niepodległości 12", district: "Jezyce", lat: 52.410, lon: 16.895 },
+    { address: "Święty Marcin 30", district: "Centrum", lat: 52.406, lon: 16.920 },
+    { address: "Święty Marcin 80/82", district: "Centrum", lat: 52.408, lon: 16.919 },
+    { address: "Fredry 9", district: "Centrum", lat: 52.409, lon: 16.928 },
+    { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
+  ],
+  Teatr: [
+    { address: "27 Grudnia 8/10", district: "StareMiasto", lat: 52.407, lon: 16.935 },
+    { address: "Dąbrowskiego 5", district: "Centrum", lat: 52.407, lon: 16.930 },
+    { address: "Św. Marcin 80/82", district: "Centrum", lat: 52.407, lon: 16.918 },
+    { address: "Taczaka 8", district: "Centrum", lat: 52.405, lon: 16.925 },
+  ],
+  Kino: [
+    { address: "Święty Marcin 30", district: "Centrum", lat: 52.406, lon: 16.920 },
+    { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
+  ],
+  Sztuka: [
+    { address: "Stary Rynek 6", district: "Centrum", lat: 52.407, lon: 16.934 },
+    { address: "Wyspiańskiego 41", district: "Centrum", lat: 52.404, lon: 16.928 },
+    { address: "Święty Marcin 40", district: "Centrum", lat: 52.407, lon: 16.921 },
+    { address: "Wieniawskiego 1", district: "Centrum", lat: 52.406, lon: 16.927 },
+  ],
+  Inne: [
+    { address: "Plac Wolności", district: "StareMiasto", lat: 52.407, lon: 16.928 },
+    { address: "Stary Rynek", district: "StareMiasto", lat: 52.408, lon: 16.934 },
+    { address: "Park Cytadela", district: "StareMiasto", lat: 52.430, lon: 16.938 },
+    { address: "Malta", district: "NoweMiasto", lat: 52.398, lon: 16.960 },
+  ],
 };
 
 function guessCategory(title: string, text: string): string {
@@ -58,6 +95,7 @@ export class PoznanPlScraper implements Scraper {
           $("[class*='event'], .calendar-event, .calendar-events-list > div, .events-list > div, .event-item, tr.event, .day-has-event, .day-has-events").each((_, el) => {
             const title = $(el).find("a, .title, .event-title, h3, h4").first().text().trim();
             if (!title || title.length < 3) return;
+            if (title === "2026 - wybrane wydarzenia") return;
 
             const link = $(el).find("a").first().attr("href") || "";
             const fullLink = link.startsWith("http") ? link : `https://www.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
@@ -88,6 +126,19 @@ export class PoznanPlScraper implements Scraper {
             const venue = matchVenue(placeName);
             const category = guessCategory(title, text);
 
+            let district = venue?.district ?? "Inny";
+            let coordsX: number | undefined = venue?.lat;
+            let coordsY: number | undefined = venue?.lon;
+
+            // District center fallback for unknown venues
+            if (!coordsX) {
+              const guess = district !== "Inny" ? district : "Centrum";
+              const fallback = districtFallback(guess);
+              coordsX = fallback.lat;
+              coordsY = fallback.lon;
+              district = fallback.district;
+            }
+
             events.push({
               title,
               imageUrl: img.startsWith("http") ? img : undefined,
@@ -96,13 +147,13 @@ export class PoznanPlScraper implements Scraper {
               endDate,
               time,
               placeName,
-              district: venue?.district ?? "Inny",
+              district,
               category,
               vibes: ["Kulturalne"],
               source: "poznanpl",
               sourceId: `poznanpl-${Buffer.from(title).toString("base64").slice(0, 24)}-${dateStr}`,
-              coordsX: venue?.lat,
-              coordsY: venue?.lon,
+              coordsX,
+              coordsY,
             });
             found++;
             foundOnDay++;
