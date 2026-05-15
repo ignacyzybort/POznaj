@@ -281,7 +281,7 @@ export default function HomeClient({
                     background: categoryGradient(ev.category),
                   }}>
                     <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white" }}>{ev.title}</h3>
+                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
                       <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
                     </div>
                   </div>
