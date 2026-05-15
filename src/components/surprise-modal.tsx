@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { EventData, categoryEmoji } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { ShuffleIcon, RefreshIcon, ArrowIcon } from "@/components/icons";
 
 function getRandomEvents(events: EventData[], count: number): EventData[] {
@@ -24,6 +25,7 @@ export default function SurpriseModal({
   const [picked, setPicked] = useState<EventData | null>(null);
   const [exiting, setExiting] = useState(false);
   useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const spin = useCallback(() => {
     setSpinning(true);
@@ -52,7 +54,7 @@ export default function SurpriseModal({
   };
 
   return (
-    <div role="dialog" aria-modal="true" style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--scrim)",
@@ -99,7 +101,7 @@ export default function SurpriseModal({
               <RefreshIcon size={18} /> Jeszcze raz
             </button>
           )}
-          <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="pz-btn primary" style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
+          <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="pz-btn primary" autoFocus style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
             {picked ? <><ArrowIcon size={18} /> Idę!</> : "✕ Zamknij"}
           </button>
         </div>

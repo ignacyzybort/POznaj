@@ -7,6 +7,7 @@ import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import { SearchIcon } from "@/components/icons";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 export default function SearchOverlay({
   onClose, events, initial, onCommit, onOpen,
@@ -20,6 +21,7 @@ export default function SearchOverlay({
   const [q, setQ] = useState(initial ?? "");
   const [exiting, setExiting] = useState(false);
   useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const close = () => {
     setExiting(true);
@@ -38,7 +40,9 @@ export default function SearchOverlay({
 
   return (
     <div
+      ref={focusTrapRef}
       role="dialog"
+      aria-modal="true"
       aria-label="Szukaj wydarzeń"
       style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,

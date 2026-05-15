@@ -1,34 +1,35 @@
 import { prisma } from "@/lib/prisma";
 
 export async function getRecommendations(userId: string, limit = 10) {
-  // 1. Get user's past GOING events
-  const userEvents = await prisma.attendance.findMany({
+  // 1. Get category/district counts in a single query (no full includes)
+  const attended = await prisma.attendance.findMany({
     where: { userId, status: "GOING" },
-    include: { event: { select: { category: true, district: true, id: true } } },
+    select: { eventId: true, event: { select: { category: true, district: true } } },
   });
 
-  // 2. Build user profile: preferred categories + districts
+  const attendedIds = new Set(attended.map((a) => a.eventId));
   const catWeight: Record<string, number> = {};
   const districtWeight: Record<string, number> = {};
-  for (const a of userEvents) {
+  for (const a of attended) {
     catWeight[a.event.category] = (catWeight[a.event.category] || 0) + 1;
     districtWeight[a.event.district] = (districtWeight[a.event.district] || 0) + 1;
   }
 
-  // 3. Find upcoming events, score them based on user profile
+  // 2. Get upcoming events (top 100 by score), exclude already attended
   const upcoming = await prisma.event.findMany({
-    where: { endDate: { gte: new Date() } },
-    include: { vibes: { select: { vibe: true } } },
+    where: {
+      endDate: { gte: new Date() },
+      ...(attendedIds.size > 0 ? { id: { notIn: Array.from(attendedIds) } } : {}),
+    },
+    orderBy: { score: "desc" },
     take: 100,
   });
 
+  // 3. Score in JS (fast — max 100 items × ~10 categories)
   const scored = upcoming
-    .filter((e) => !userEvents.find((a) => a.event.id === e.id)) // exclude attended
     .map((e) => {
-      let score = e.score; // start with base score
-      // Boost by category match
+      let score = e.score;
       if (catWeight[e.category]) score += catWeight[e.category] * 15;
-      // Boost by district match
       if (districtWeight[e.district]) score += districtWeight[e.district] * 10;
       return { ...e, recommendationScore: score };
     })

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { PinIcon } from "@/components/icons";
 
 interface SearchUser {
@@ -15,6 +16,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [exiting, setExiting] = useState(false);
   useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const close = () => {
     setExiting(true);
@@ -52,7 +54,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
       background: "rgba(20,19,15,0.5)",
       animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
     }}>

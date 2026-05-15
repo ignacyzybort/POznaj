@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { EventData } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 const questions = [
   {
@@ -62,6 +63,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [showResults, setShowResults] = useState(false);
   const [exiting, setExiting] = useState(false);
   useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
   const router = useRouter();
 
   const close = () => {
@@ -105,7 +107,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   };
 
   const overlay = (content: React.ReactNode) => (
-    <div role="dialog" aria-modal="true" style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
       background: "var(--scrim)",
@@ -170,8 +172,8 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
       <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink)", margin: "0 0 16px" }}>{q.question}</h2>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-        {q.options.map((opt) => (
-          <button key={opt.value} onClick={() => answer(opt.value)}
+        {q.options.map((opt, i) => (
+          <button key={opt.value} onClick={() => answer(opt.value)} autoFocus={i === 0}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 22,
               textAlign: "left", border: answers[q.id] === opt.value ? "1px solid var(--sage)" : "0.5px solid var(--line)",

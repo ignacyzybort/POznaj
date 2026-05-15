@@ -5,6 +5,7 @@ import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 export type ActiveFilters = {
   category: string[];
@@ -38,6 +39,7 @@ export default function FiltersSheet({
     setTimeout(() => { setExiting(false); onClose(); }, DUR.slow);
   };
   useEscape(close);
+  const focusTrapRef = useFocusTrap(true);
 
   const startY = useRef(0);
   const startTime = useRef(0);
@@ -76,7 +78,7 @@ export default function FiltersSheet({
   return (
     <>
       <div className="pz-sheet-backdrop" data-open={open && !exiting} onClick={close} />
-      <div className="pz-sheet" role="dialog" aria-modal="true" data-open={open && !exiting}
+      <div ref={focusTrapRef} className="pz-sheet" role="dialog" aria-modal="true" data-open={open && !exiting}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
         style={{
           maxHeight: "86%",
@@ -91,7 +93,7 @@ export default function FiltersSheet({
           <h2 className="pz-h" style={{
             margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: "-0.025em",
           }}>Filtry</h2>
-          <button onClick={close} aria-label="Zamknij" style={{
+          <button onClick={close} aria-label="Zamknij" autoFocus style={{
             width: 44, height: 44, borderRadius: 99, border: 0,
             background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
             display: "inline-flex", alignItems: "center", justifyContent: "center",

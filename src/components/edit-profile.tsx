@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { districts } from "@/lib/data";
 import CropModal from "@/components/crop-modal";
 import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { CameraIcon, CoverIcon } from "@/components/icons";
 
 export default function EditProfile({
@@ -23,6 +24,7 @@ export default function EditProfile({
   const [coverPreview, setCoverPreview] = useState<string | null>(user.coverImage);
   const [saving, setSaving] = useState(false);
   useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
   const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
   const [cropTarget, setCropTarget] = useState<"avatar" | "cover" | null>(null);
   const [cropFile, setCropFile] = useState<{ url: string; file: File; type: "avatar" | "cover" } | null>(null);
@@ -95,14 +97,14 @@ export default function EditProfile({
 
   return (
     <>
-      <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      <div ref={focusTrapRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
         background: "rgba(20,19,15,0.5)",
         animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
       }}>
         <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
-            <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            <button onClick={close} aria-label="Zamknij" autoFocus style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
           </div>
 
           {/* Avatar upload */}
