@@ -163,6 +163,26 @@ export default function EventDetailClient({
             <button onClick={onRemind} style={{ border: 0, background: reminded ? "var(--sage)" : "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>{reminded ? "🔔 Ustawiono" : "Włącz"}</button>
           </div>
         </div>
+
+        {/* Similar events — at bottom of scroll, above action bar */}
+        {similar.length > 0 && (
+          <div style={{ padding: "0 18px 24px", transform: similarVisible ? "translateX(0)" : "translateX(40px)", opacity: similarVisible ? 1 : 0, transition: "transform 0.45s var(--ease-spring), opacity 0.35s var(--ease-out-quart)" }}>
+            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</div>
+            <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
+              {similar.map((ev) => (
+                <a key={ev.id} href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }} style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)" }}>
+                  <EventArt event={ev} height={200} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(20,19,15,0.85) 100%)" }}>
+                    <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12 }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "white" }}>{ev.title}</p>
+                      <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85, color: "white" }}>{ev.placeName}</p>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10, background: "linear-gradient(180deg, transparent, var(--bg) 30%)", transform: actionBarVisible ? "translateY(0)" : "translateY(80px)", opacity: actionBarVisible ? 1 : 0, transition: "transform 0.4s var(--ease-spring), opacity 0.3s var(--ease-out-quart)", transitionDelay: "0.3s" }}>
@@ -173,25 +193,6 @@ export default function EventDetailClient({
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
       </div>
-
-      {similar.length > 0 && (
-        <div style={{ padding: "0 18px 18px", transform: similarVisible ? "translateX(0)" : "translateX(40px)", opacity: similarVisible ? 1 : 0, transition: "transform 0.45s var(--ease-spring), opacity 0.35s var(--ease-out-quart)" }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</div>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
-            {similar.map((ev) => (
-              <a key={ev.id} href={`/event/${ev.id}`} onClick={(e) => { e.preventDefault(); router.push(`/event/${ev.id}`); }} style={{ flex: "0 0 200px", borderRadius: 22, overflow: "hidden", textDecoration: "none", color: "inherit", position: "relative", height: 200, boxShadow: "var(--shadow-sm)" }}>
-                <EventArt event={ev} height={200} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(20,19,15,0.85) 100%)" }}>
-                  <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: 12 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "white" }}>{ev.title}</p>
-                    <p style={{ margin: "4px 0 0", fontSize: 11, opacity: 0.85, color: "white" }}>{ev.placeName}</p>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
 
       <Confetti active={confetti} />
       <Toast msg={toast} onClear={() => setToast(null)} />
