@@ -161,14 +161,6 @@ export class PikPoznanScraper implements Scraper {
 
       const category = parseCategory(url, title, text);
 
-      // Sync fallback inside cheerio loop: district center only
-      if (!coordsX) {
-        const guess = districtFallback(district !== "Inny" ? district : guessDistrict(title + " " + placeName));
-        coordsX = guess.lat;
-        coordsY = guess.lon;
-        district = guess.district;
-      }
-
       const vibeList = guessVibes(title, description, category);
 
       const fullLink = link.startsWith("http") ? link : `https://pik.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
@@ -244,15 +236,24 @@ export class PikPoznanScraper implements Scraper {
       );
     }
 
-    // Post-loop geocoding: refine district-center placements with real coordinates
+    // Post-loop: geocode any event without coordinates from venue match
     for (const ev of events) {
-      if (ev.coordsX && ev.district !== "Inny") continue;
-      const geo = await geocodeVenue(ev.placeName, ev.title);
+      if (ev.coordsX) continue;
+      const geo = await geocodeVenue(ev.placeName, ev.title, ev.address);
       if (geo) {
         ev.coordsX = geo.lat;
         ev.coordsY = geo.lon;
         ev.district = geo.district;
       }
+    }
+
+    // Final fallback: events still without coords get district center
+    for (const ev of events) {
+      if (ev.coordsX) continue;
+      const d = ev.district !== "Inny" ? ev.district : guessDistrict(ev.placeName);
+      const center = districtFallback(d);
+      ev.coordsX = center.lat;
+      ev.coordsY = center.lon;
     }
 
     return events;

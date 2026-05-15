@@ -31,7 +31,7 @@ export const VENUES: Record<string, { address: string; district: string; lat: nu
   "Zamek Cesarski": { address: "Św. Marcin 80/82", district: "Centrum", lat: 52.408, lon: 16.922 },
   "POSiR Rataje": { address: "Piłsudskiego 30", district: "NoweMiasto", lat: 52.380, lon: 16.963 },
   "POSiR Malta": { address: "Wiankowa 2", district: "NoweMiasto", lat: 52.401, lon: 16.960 },
-  "Jezioro Strzeszyńskie": { address: "Kosowska", district: "StareMiasto", lat: 52.444, lon: 16.842 },
+  "Jezioro Strzeszyńskie": { address: "Kosowska", district: "Jezyce", lat: 52.444, lon: 16.842 },
 };
 
 // Keywords → venue fallback for when venue name doesn't appear verbatim

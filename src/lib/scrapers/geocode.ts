@@ -12,8 +12,16 @@ async function rateLimit() {
   lastRequest = Date.now();
 }
 
-// In-memory cache: venue name → coords
+// In-memory cache: query text → coords
 const cache = new Map<string, { lat: number; lon: number; district: string } | null>();
+
+// Poznań bounding box for result validation
+const POZNAN_BOUNDS = { minLat: 52.20, maxLat: 52.55, minLon: 16.65, maxLon: 17.20 };
+
+function inBounds(lat: number, lon: number): boolean {
+  return lat >= POZNAN_BOUNDS.minLat && lat <= POZNAN_BOUNDS.maxLat
+    && lon >= POZNAN_BOUNDS.minLon && lon <= POZNAN_BOUNDS.maxLon;
+}
 
 // District centers — fallback when geocoding fails
 const DISTRICT_CENTERS: Record<string, [number, number]> = {
@@ -37,15 +45,20 @@ function guessDistrictFromText(text: string): string {
 }
 
 /**
- * Geocode a venue name/address using Nominatim.
- * Returns { lat, lon, district } or null if not found.
- * District is guessed from the Nominatim display_name or fallback text.
+ * Geocode using Nominatim. Prefers street address when available.
+ * Validates result is within Poznań bounds — rejects if outside.
  */
-export async function geocodeVenue(name: string, fallbackText?: string): Promise<{ lat: number; lon: number; district: string } | null> {
-  const key = name.toLowerCase().trim();
-  if (cache.has(key)) return cache.get(key)!;
+export async function geocodeVenue(
+  name: string,
+  fallbackText?: string,
+  street?: string,
+): Promise<{ lat: number; lon: number; district: string } | null> {
+  const searchText = street
+    ? `${street}, Poznań, Polska`
+    : `${name}, Poznań, Polska`;
 
-  const searchText = `${name}, Poznań, Polska`;
+  const key = searchText.toLowerCase().trim();
+  if (cache.has(key)) return cache.get(key)!;
 
   try {
     await rateLimit();
@@ -69,7 +82,13 @@ export async function geocodeVenue(name: string, fallbackText?: string): Promise
       return null;
     }
 
-    // Try to extract district from Nominatim address
+    // Reject results outside Poznań
+    if (!inBounds(lat, lon)) {
+      cache.set(key, null);
+      console.log(`[Geocode] ${searchText} → ${lat.toFixed(4)},${lon.toFixed(4)} — OUTSIDE POZNAŃ BOUNDS, rejected`);
+      return null;
+    }
+
     const addr = r.address ?? {};
     const districtFromOSM = guessDistrictFromText(
       [addr.suburb, addr.neighbourhood, addr.quarter, addr.city_district, r.display_name]
@@ -80,7 +99,7 @@ export async function geocodeVenue(name: string, fallbackText?: string): Promise
 
     const result = { lat, lon, district };
     cache.set(key, result);
-    console.log(`[Geocode] ${name} → ${lat.toFixed(4)}, ${lon.toFixed(4)} (${district})`);
+    console.log(`[Geocode] ${searchText} → ${lat.toFixed(4)}, ${lon.toFixed(4)} (${district})`);
     return result;
 
   } catch {

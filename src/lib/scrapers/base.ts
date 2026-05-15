@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { pointInDistrict } from "@/lib/geo";
 
 export interface ScrapedEvent {
   title: string;
@@ -127,6 +128,12 @@ export async function saveEvents(
     for (const ev of dayEvents) {
       try {
         const { vibes } = ev;
+
+        // Recompute district from coordinates (point-in-polygon)
+        if (ev.coordsX) {
+          const geoDistrict = pointInDistrict(ev.coordsX, ev.coordsY!);
+          if (geoDistrict) ev.district = geoDistrict;
+        }
 
         // 1. Try exact match first (fast path)
         const exact = existing.find(

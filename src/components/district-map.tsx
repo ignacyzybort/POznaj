@@ -281,7 +281,6 @@ export default function DistrictMap({
         maxBounds={[[52.30, 16.75], [52.50, 17.10]]}
         style={{ width: "100%", height: "100%", background: "#111" }}
         zoomControl={true}
-        renderer={L.canvas()}
       >
         <DistrictBoundary />
         {tilesVisible && (
