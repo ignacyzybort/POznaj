@@ -216,6 +216,7 @@ export default function DistrictMap({
   const eventCounts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const e of events) {
+      if (!e.coordsX) continue;
       const d = mapDistrict(e.district);
       c[d] = (c[d] ?? 0) + 1;
     }
@@ -278,14 +279,16 @@ export default function DistrictMap({
         zoom={11}
         minZoom={10}
         maxBounds={[[52.30, 16.75], [52.50, 17.10]]}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100%", height: "100%", background: "#111" }}
         zoomControl={true}
+        renderer={L.canvas()}
       >
         <DistrictBoundary />
         {tilesVisible && (
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            fadeAnimation={true}
           />
         )}
         <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} />

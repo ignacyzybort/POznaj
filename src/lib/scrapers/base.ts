@@ -70,24 +70,31 @@ const createData = (event: ScrapedEvent, vibes: string[]) => ({
   vibes: { create: vibes.map((v) => ({ vibe: v as any })) },
 });
 
-const updateData = (event: ScrapedEvent, vibes: string[]) => ({
-  description: event.description,
-  imageUrl: event.imageUrl,
-  sourceUrl: event.sourceUrl,
-  endDate: event.endDate,
-  time: event.time,
-  address: event.address,
-  district: event.district as any,
-  category: event.category as any,
-  source: event.source,
-  score: 0,
-  coordsX: event.coordsX,
-  coordsY: event.coordsY,
-  vibes: {
-    deleteMany: {},
-    create: vibes.map((v) => ({ vibe: v as any })),
-  },
-});
+const updateData = (event: ScrapedEvent, vibes: string[]) => {
+  const d: Record<string, any> = {
+    description: event.description,
+    imageUrl: event.imageUrl,
+    sourceUrl: event.sourceUrl,
+    endDate: event.endDate,
+    time: event.time,
+    address: event.address,
+    category: event.category as any,
+    source: event.source,
+    score: 0,
+    vibes: {
+      deleteMany: {},
+      create: vibes.map((v) => ({ vibe: v as any })),
+    },
+  };
+
+  // Guard: don't overwrite valid district/coords with placeholder values.
+  // If the new data has no coordinates, keep what's already in the database.
+  if (event.district && event.district !== "Inny") d.district = event.district;
+  if (event.coordsX) d.coordsX = event.coordsX;
+  if (event.coordsY) d.coordsY = event.coordsY;
+
+  return d;
+};
 
 export async function saveEvents(
   prisma: PrismaClient,
