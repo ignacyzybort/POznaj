@@ -2,6 +2,7 @@ import { Scraper, ScrapedEvent } from "./base";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
+import { districtFallback } from "./geocode";
 
 const CAT_MAP: Record<string, string> = {
   kino: "Kino", film: "Kino",
@@ -128,17 +129,13 @@ export class PoznanPlScraper implements Scraper {
             let coordsX: number | undefined = venue?.lat;
             let coordsY: number | undefined = venue?.lon;
 
-            // Coordinate fallback — deterministic hash-based like pikpoznan
+            // District center fallback for unknown venues
             if (!coordsX) {
-              const hash = title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-              const catVenues = categoryVenues[category] ?? categoryVenues.Inne;
-              const idx = Math.abs(hash) % catVenues.length;
-              const v = catVenues[idx];
-              if (v) {
-                district = v.district;
-                coordsX = v.lat;
-                coordsY = v.lon;
-              }
+              const guess = district !== "Inny" ? district : "Centrum";
+              const fallback = districtFallback(guess);
+              coordsX = fallback.lat;
+              coordsY = fallback.lon;
+              district = fallback.district;
             }
 
             events.push({
