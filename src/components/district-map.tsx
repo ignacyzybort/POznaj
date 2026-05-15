@@ -178,7 +178,7 @@ function DistrictBoundary() {
   useEffect(() => {
     const dark = L.polygon(
       [[-90, -180], [-90, 180], [90, 180], [90, -180]],
-      { color: "#111", fillColor: "#111", fillOpacity: 1.0, weight: 0, interactive: false }
+      { color: "#111", fillColor: "#111", fillOpacity: 0.75, weight: 0, interactive: false }
     );
     if (CITY_BOUNDARY.length > 2) {
       // Add the city boundary as a hole
@@ -242,11 +242,13 @@ export default function DistrictMap({
       },
     });
 
-    // Permanent district label with event count
+    // Permanent district label with event count, colored by district hue
     if (id && !selectedDistrict) {
+      const hue = DISTRICT_HUES[id] ?? 0;
+      const labelColor = `hsl(${hue}, 50%, 35%)`;
       const label = count > 0
-        ? `<span style="font-size: 13px; font-weight: 700; color: var(--ink); text-shadow: 0 0 8px var(--bg);">${name}<span style="font-size: 10px; font-weight: 600; color: var(--ink-3); margin-left: 4px;">${count}</span></span>`
-        : `<span style="font-size: 13px; font-weight: 700; color: var(--ink); text-shadow: 0 0 8px var(--bg);">${name}</span>`;
+        ? `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: 10px; font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
+        : `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;
       layer.bindTooltip(label, {
         permanent: true, direction: "center", className: "pz-map-tooltip",
         opacity: 0.85,
