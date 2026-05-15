@@ -288,7 +288,6 @@ export default function DistrictMap({
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            fadeAnimation={true}
           />
         )}
         <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} />
