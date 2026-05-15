@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "motion/react";
 import { EventData } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
@@ -8,8 +8,8 @@ import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { ShuffleIcon, RefreshIcon } from "@/components/icons";
 
 const CARD_H = 140;
-const TAPE_N = 20;
-const SPEED_EASING: [number, number, number, number] = [0, 0.85, 0.2, 1];
+const TAPE_N = 50;
+const SLOT_EASE: [number, number, number, number] = [0, 0.92, 0.25, 1];
 
 function generateTapes(events: EventData[]): [EventData[], EventData[], EventData[]] {
   const used = new Set<string>();
@@ -49,31 +49,40 @@ export default function SurpriseModal({
   useEscape(onClose);
   const focusTrapRef = useFocusTrap(true);
 
-  // Each re-spin generates fresh unique tapes
   const tapes = useMemo(() => generateTapes(events), [events, spinKey]);
-  // Landing indices: where each reel stops
-  const stops = useMemo(() => [4 + Math.floor(Math.random() * 8), 5 + Math.floor(Math.random() * 8), 6 + Math.floor(Math.random() * 8)], [spinKey]);
+  const stops = useMemo(() => [
+    TAPE_N - 4 - Math.floor(Math.random() * 3),
+    TAPE_N - 5 - Math.floor(Math.random() * 3),
+    TAPE_N - 6 - Math.floor(Math.random() * 3),
+  ], [spinKey]);
+  const winEvents = useMemo(() => [
+    tapes[0][stops[0]],
+    tapes[1][stops[1]],
+    tapes[2][stops[2]],
+  ], [tapes, stops]);
 
-  const stoppedRef = useRef([false, false, false]);
-  const [ready, setReady] = useState([false, false, false]);
+  const [done, setDone] = useState([false, false, false]);
+  const allStopped = done.every(Boolean) && phase === "spinning";
 
-  const onReelDone = useCallback((i: number) => {
-    stoppedRef.current[i] = true;
-    setReady((prev) => { const n = [...prev]; n[i] = true; return n; });
+  const snap = useCallback(() => {
+    setPhase("stopped");
   }, []);
-
-  // Check if all stopped
-  const allStopped = ready.every(Boolean);
 
   const spin = () => {
     setPhase("spinning");
     setPicked(null);
-    setReady([false, false, false]);
-    stoppedRef.current = [false, false, false];
+    setDone([false, false, false]);
     setSpinKey((k) => k + 1);
   };
 
   useEffect(() => { spin(); }, []);
+
+  useEffect(() => {
+    if (allStopped) {
+      const t = setTimeout(snap, 400);
+      return () => clearTimeout(t);
+    }
+  }, [allStopped, snap]);
 
   const select = (ev: EventData) => {
     if (phase !== "stopped" || picked) return;
@@ -81,6 +90,8 @@ export default function SurpriseModal({
     setPhase("picked");
     setTimeout(() => onPick(ev), 800);
   };
+
+  const durations = [2.4, 2.9, 3.4];
 
   return (
     <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{
@@ -94,57 +105,65 @@ export default function SurpriseModal({
           <ShuffleIcon size={20} />
           <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Zaskocz mnie</h2>
           <p style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", margin: 0 }}>
-            {phase === "spinning" ? "Losowanie..." : picked ? "Świetny wybór!" : "Kliknij, aby wybrać"}
+            {phase === "spinning" ? (done.filter(Boolean).length ? "Zwalniamy..." : "Losowanie...") : picked ? "Świetny wybór!" : "Kliknij, aby wybrać"}
           </p>
         </div>
 
         {/* Three slot reels */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 20 }}>
-          {[0, 1, 2, 3].slice(0, 3).map((col) => (
+          {[0, 1, 2].map((col) => (
             <div key={col} style={{
               borderRadius: 18, overflow: "hidden", height: CARD_H, background: "var(--bg-soft)",
-              boxShadow: picked?.id === tapes[col]?.[stops[col]]?.id && phase !== "spinning" ? "0 0 0 2px var(--sage)" : undefined,
-              transition: "box-shadow 0.3s var(--ease-out-quart)",
+              position: "relative",
             }}>
               <motion.div
                 key={`tape-${col}-${spinKey}`}
-                initial={{ y: 0 }}
-                animate={phase === "spinning" ? { y: -(stops[col] * CARD_H) } : {}}
+                style={{
+                  position: "absolute", top: 0, left: 0, right: 0,
+                  boxShadow: done[col] || allStopped
+                    ? (picked?.id === winEvents[col]?.id ? "0 0 0 2px var(--sage) inset" : undefined)
+                    : undefined,
+                }}
+                initial={{ y: 0, filter: "blur(3px)" }}
+                animate={phase === "spinning" ? {
+                  y: -(stops[col] * CARD_H),
+                  filter: "blur(0px)",
+                } : { y: -(stops[col] * CARD_H), filter: "blur(0px)" }}
                 transition={{
-                  duration: 1.2 + col * 0.6,
-                  ease: SPEED_EASING,
+                  duration: durations[col],
+                  ease: SLOT_EASE,
+                  delay: 0,
                 }}
-                onAnimationComplete={() => {
-                  if (!picked) onReelDone(col);
-                }}
+                onAnimationComplete={() => setDone((prev) => { const n = [...prev]; n[col] = true; return n; })}
               >
                 {tapes[col].map((ev, i) => (
                   <div
                     key={ev.id}
                     onClick={() => select(ev)}
                     style={{
-                      height: CARD_H, cursor: phase === "stopped" ? "pointer" : "default",
-                      position: "relative",
+                      height: CARD_H, position: "relative",
+                      cursor: allStopped || phase === "stopped" ? "pointer" : "default",
+                      transition: "opacity 0.3s var(--ease-out-quart)",
                     }}
                   >
                     {ev.imageUrl ? (
                       <img
                         src={ev.imageUrl}
                         alt={ev.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        style={{ width: "100%", height:CARD_H, objectFit: "cover", display: "block" }}
                       />
                     ) : (
                       <div style={{
                         width: "100%", height: "100%", background: "var(--stone)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 32, fontWeight: 800, color: "var(--ink-4)",
+                        fontSize: 36, fontWeight: 800, color: "var(--ink-4)",
                       }}>
-                        {ev.category?.[0] ?? "?"}
+                        {(ev.category ?? "?")[0]}
                       </div>
                     )}
                     <div style={{
                       position: "absolute", left: 0, right: 0, bottom: 0,
-                      padding: "8px 10px 6px",
+                      padding: "10px 10px 8px",
                       background: "linear-gradient(180deg, transparent, rgba(20,19,15,0.8))",
                     }}>
                       <p style={{
