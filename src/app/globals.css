@@ -623,7 +623,6 @@ body {
 }
 
 /* Leaflet zoom buttons — reposition bottom-right, match pz-* design */
-.leaflet-top.leaflet-left { display: none; }
 .leaflet-control-zoom {
   position: fixed !important;
   bottom: calc(96px + var(--safe-b)) !important;

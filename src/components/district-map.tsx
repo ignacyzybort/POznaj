@@ -276,6 +276,8 @@ export default function DistrictMap({
       <MapContainer
         center={[52.408, 16.934]}
         zoom={11}
+        minZoom={10}
+        maxBounds={[[52.30, 16.75], [52.50, 17.10]]}
         style={{ width: "100%", height: "100%" }}
         zoomControl={true}
       >
