@@ -140,6 +140,8 @@ export class KulturaPoznanScraper implements Scraper {
 
           if (subEvents.length > 0 && !venueMatch) {
             for (const sub of subEvents) {
+              const subDaysUntil = (sub.date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+              if (subDaysUntil < -1) continue;
               const subVenue = matchVenue(sub.venue);
               events.push({
                 title: sub.title,
@@ -161,6 +163,10 @@ export class KulturaPoznanScraper implements Scraper {
             }
             return; // skip parent event if sub-events exist
           }
+
+          const now = new Date();
+          const daysUntil = (start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+          if (daysUntil < -1) return;
 
           events.push({
             title,
