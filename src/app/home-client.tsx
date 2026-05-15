@@ -278,7 +278,7 @@ export default function HomeClient({
                   <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
                   <div style={{
                     position: "absolute", inset: 0,
-                    background: `linear-gradient(180deg, transparent 40%, ${categoryGradient(ev.category)} 100%)`,
+                    background: categoryGradient(ev.category),
                   }}>
                     <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
                       <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white" }}>{ev.title}</h3>
