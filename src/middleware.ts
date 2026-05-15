@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const RL_WINDOW_MS = 60_000;
-const RL_AUTH_MAX = 5;
+const RL_AUTH_MAX = 30;
 const RL_EXPENSIVE_MAX = 15;
 const RL_DEFAULT_MAX = 100;
 
@@ -11,7 +11,11 @@ const rlStore = new Map<string, { count: number; resetAt: number }>();
 function getRateLimitKey(req: NextRequest, path: string): { key: string; max: number } {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "127.0.0.1";
 
-  if (path.startsWith("/api/auth")) return { key: `${ip}::auth`, max: RL_AUTH_MAX };
+  if (path.startsWith("/api/auth")) {
+    // OAuth callback routes must never be rate-limited (NextAuth handles its own CSRF)
+    if (path.startsWith("/api/auth/callback/")) return { key: "", max: Infinity };
+    return { key: `${ip}::auth`, max: RL_AUTH_MAX };
+  }
   if (path.startsWith("/api/upload") || path.startsWith("/api/weather") || path.startsWith("/api/events")) return { key: `${ip}::expensive`, max: RL_EXPENSIVE_MAX };
   if (path.startsWith("/api/")) return { key: `${ip}::api`, max: RL_DEFAULT_MAX };
 
