@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Cropper, { Area } from "react-easy-crop";
+import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { SearchIcon } from "@/components/icons";
 
 export default function CropModal({
   imageUrl,
@@ -18,6 +21,8 @@ export default function CropModal({
   const [zoom, setZoom] = useState(1);
   const [cropping, setCropping] = useState(false);
   const croppedAreaRef = useRef<Area | null>(null);
+  useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     croppedAreaRef.current = croppedAreaPixels;
@@ -49,7 +54,7 @@ export default function CropModal({
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--ink-3)" }}>
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--scrim)" }}>
       <div className="rounded-3xl overflow-hidden mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
         <div className="p-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", textAlign: "center" }}>
@@ -71,8 +76,10 @@ export default function CropModal({
 
         {/* Zoom slider */}
         <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>🔍</span>
+          <SearchIcon size={14} />
+          <label htmlFor="crop-zoom-range" style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-2)", marginBottom: 4 }}>Zoom</label>
           <input
+            id="crop-zoom-range"
             type="range"
             min={1}
             max={3}
@@ -81,11 +88,11 @@ export default function CropModal({
             onChange={(e) => setZoom(Number(e.target.value))}
             style={{ flex: 1, accentColor: "var(--ink)" }}
           />
-          <span style={{ fontSize: 14, color: "var(--ink-3)" }}>🔍</span>
+          <SearchIcon size={14} />
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "12px 16px 20px" }}>
-          <button onClick={onClose} className="pz-btn ghost" style={{ flex: 1 }}>
+          <button onClick={onClose} className="pz-btn ghost" autoFocus style={{ flex: 1 }}>
             Anuluj
           </button>
           <button onClick={applyCrop} disabled={cropping} className="pz-btn primary" style={{ flex: 1 }}>

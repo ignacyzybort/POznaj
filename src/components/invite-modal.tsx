@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { PinIcon } from "@/components/icons";
 
 interface SearchUser {
   id: string;
@@ -12,6 +15,8 @@ interface SearchUser {
 export default function InviteModal({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [exiting, setExiting] = useState(false);
+  useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const close = () => {
     setExiting(true);
@@ -49,17 +54,18 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
       background: "rgba(20,19,15,0.5)",
       animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
     }}>
       <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", display: "flex", flexDirection: "column" }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Zaproś znajomych</h2>
-          <button onClick={close} style={{ width: 32, height: 32, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
         </div>
 
-        <input autoFocus type="text" placeholder="Szukaj po nazwie lub emailu..." value={query}
+        <label htmlFor="invite-search-input" className="sr-only">Szukaj znajomych</label>
+        <input id="invite-search-input" autoFocus type="text" placeholder="Szukaj po nazwie lub emailu..." value={query}
           onChange={(e) => setQuery(e.target.value)}
           style={{ width: "100%", height: 44, padding: "0 14px", borderRadius: 14, border: "0.5px solid var(--line)", outline: "none", fontSize: 14, background: "var(--bg-soft)", color: "var(--ink)", marginBottom: 12 }} />
 
@@ -80,7 +86,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em", color: "var(--ink)" }}>{u.name ?? "Użytkownik"}</div>
-                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{u.district ? `📍 ${u.district}` : ""}</div>
+                  <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{u.district ? <><PinIcon size={14} /> {u.district}</> : ""}</div>
                 </div>
                 <button onClick={() => invite(u.id)} disabled={sent}
                   style={{ border: 0, padding: "6px 14px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: sent ? "default" : "pointer", background: sent ? "var(--bg-soft)" : "var(--ink)", color: sent ? "var(--ink-3)" : "var(--bg)" }}>

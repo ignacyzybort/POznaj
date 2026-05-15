@@ -89,15 +89,13 @@ export class FacebookScraper implements Scraper {
 
   private guessDistrict(text: string): string {
     const lower = text.toLowerCase();
-    if (lower.includes("stary rynek") || lower.includes("stare miasto") || lower.includes("śródmieście")) return "StareMiasto";
+    if (lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
+    if (lower.includes("stary rynek") || lower.includes("stare miasto")) return "StareMiasto";
     if (lower.includes("jeżyce") || lower.includes("jezyce")) return "Jezyce";
-    if (lower.includes("łazarz") || lower.includes("lazarz")) return "Lazarz";
-    if (lower.includes("grunwald")) return "Grunwald";
+    if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz")) return "Grunwald";
     if (lower.includes("wilda")) return "Wilda";
-    if (lower.includes("rataje")) return "Rataje";
-    if (lower.includes("piątkowo") || lower.includes("piatkowo")) return "Piatkowo";
-    if (lower.includes("winogrady")) return "Winogrady";
-    if (lower.includes("nowe miasto") || lower.includes("nowe miasto") || lower.includes("malta")) return "NoweMiasto";
+    if (lower.includes("piątkowo") || lower.includes("piatkowo") || lower.includes("winogrady")) return "StareMiasto";
+    if (lower.includes("rataje") || lower.includes("nowe miasto") || lower.includes("malta")) return "NoweMiasto";
     return "Inny";
   }
 }

@@ -39,17 +39,18 @@ export default function TabBar() {
   if (pathname.startsWith("/event/") || pathname === "/login" || pathname === "/onboarding") return null;
 
   return (
-    <div className="pz-tabbar">
+    <nav className="pz-tabbar" aria-label="Główna nawigacja">
       {tabs.map((t) => {
         const Icon = t.icon;
         return (
           <Link key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
              className="pz-tab" data-active={activeTab === t.id}
+             aria-current={activeTab === t.id ? "page" : undefined}
              style={{ position: "relative" }}>
             <Icon size={22} />
             <span>{t.label}</span>
             {t.id === "profile" && notifCount > 0 && (
-              <span style={{
+              <span aria-label={`${notifCount} powiadomień`} style={{
                 position: "absolute", top: 2, right: "50%", marginRight: -28,
                 minWidth: 18, height: 18, borderRadius: 99,
                 background: "var(--hot)", color: "white",
@@ -61,6 +62,6 @@ export default function TabBar() {
           </Link>
         );
       })}
-    </div>
+    </nav>
   );
 }

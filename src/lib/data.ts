@@ -23,16 +23,13 @@ export interface EventData {
 }
 
 export const districts = [
+  { value: "Centrum", label: "Centrum" },
   { value: "StareMiasto", label: "Stare Miasto" },
+  { value: "NoweMiasto", label: "Nowe Miasto" },
   { value: "Jezyce", label: "Jeżyce" },
-  { value: "Lazarz", label: "Łazarz" },
   { value: "Grunwald", label: "Grunwald" },
   { value: "Wilda", label: "Wilda" },
-  { value: "Rataje", label: "Rataje" },
-  { value: "Piatkowo", label: "Piątkowo" },
-  { value: "Winogrady", label: "Winogrady" },
-  { value: "NoweMiasto", label: "Nowe Miasto" },
-  { value: "Inny", label: "Inny" },
+  { value: "Inny", label: "Poznań" },
 ];
 
 export const categories = [
@@ -174,7 +171,7 @@ export const MOCK_EVENTS: EventData[] = [
     time: "17:00",
     placeName: "Szkoła Gotowania Kucharz",
     address: "Głogowska 45",
-    district: "Lazarz",
+    district: "Grunwald",
     category: "Jedzenie",
     vibes: ["WyjscieZeZnajomymi", "Impreza"],
     source: "pikpoznan",
@@ -258,7 +255,7 @@ export const MOCK_EVENTS: EventData[] = [
     time: "08:00",
     placeName: "Park Cytadela",
     address: "Aleja Armii Poznań",
-    district: "Winogrady",
+    district: "StareMiasto",
     category: "Sport",
     vibes: ["Spokojne"],
     source: "pikpoznan",

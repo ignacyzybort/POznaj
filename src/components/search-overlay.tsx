@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
 import { relDay } from "@/lib/date";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import { SearchIcon } from "@/components/icons";
+import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 export default function SearchOverlay({
   onClose, events, initial, onCommit, onOpen,
@@ -18,6 +20,8 @@ export default function SearchOverlay({
 }) {
   const [q, setQ] = useState(initial ?? "");
   const [exiting, setExiting] = useState(false);
+  useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
 
   const close = () => {
     setExiting(true);
@@ -35,7 +39,12 @@ export default function SearchOverlay({
   }).slice(0, 8);
 
   return (
-    <div style={{
+    <div
+      ref={focusTrapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Szukaj wydarzeń"
+      style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
       animation: exiting ? "pz-fade-out 0.2s ease both" : "pz-fade-in 0.22s ease both",
       display: "flex", flexDirection: "column",
@@ -47,8 +56,9 @@ export default function SearchOverlay({
           display: "flex", alignItems: "center", padding: "0 14px", gap: 8,
         }}>
           <span style={{ color: "var(--ink-3)" }}><SearchIcon size={18} /></span>
+          <label htmlFor="search-overlay-input" className="sr-only">Szukaj wydarzeń</label>
           <input
-            autoFocus value={q}
+            id="search-overlay-input" autoFocus value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Szukaj wydarzeń, miejsc, dzielnic…"
             style={{

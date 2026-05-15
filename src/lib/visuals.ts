@@ -44,3 +44,7 @@ export const categoryColors: Record<string, string> = {
   Jedzenie: "bg-orange-100 text-orange-700 border-orange-200",
   Inne: "bg-zinc-100 text-zinc-700 border-zinc-200",
 };
+
+export function categoryGradient(category: string | undefined): string {
+  return "linear-gradient(180deg, transparent 40%, rgba(20,19,15,0.85) 100%)";
+}

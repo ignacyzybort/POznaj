@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
+import { SunIcon, RainIcon, TramIcon } from "@/components/icons";
 
 const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
-  StareMiasto: { lat: 52.408, lon: 16.934 },
+  Centrum: { lat: 52.406, lon: 16.918 },
+  StareMiasto: { lat: 52.430, lon: 16.940 },
+  NoweMiasto: { lat: 52.380, lon: 16.970 },
   Jezyce: { lat: 52.418, lon: 16.895 },
-  Lazarz: { lat: 52.393, lon: 16.882 },
-  Grunwald: { lat: 52.396, lon: 16.898 },
+  Grunwald: { lat: 52.390, lon: 16.870 },
   Wilda: { lat: 52.381, lon: 16.923 },
-  Rataje: { lat: 52.380, lon: 16.970 },
-  Piatkowo: { lat: 52.458, lon: 16.920 },
-  Winogrady: { lat: 52.430, lon: 16.935 },
-  NoweMiasto: { lat: 52.395, lon: 16.965 },
   Inny: { lat: 52.408, lon: 16.934 },
 };
 
@@ -40,7 +38,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <div className="pz-card" style={{ padding: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 18 }}>🌤️</span>
+            <SunIcon size={16} />
             <span className="pz-eyebrow">Pogoda</span>
           </div>
           {weather ? (
@@ -49,7 +47,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
                 {weather.temp}°C · {weather.condition}
               </div>
               <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 2 }}>
-                {weather.rain ? "Możliwy deszcz ☔" : "Bez opadów"}
+                {weather.rain ? <>Możliwy deszcz <RainIcon size={16} /></> : "Bez opadów"}
               </div>
             </>
           ) : (
@@ -59,7 +57,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
         <a href={`https://maps.google.com/?daddr=${encodeURIComponent(fullAddress)}&dir_action=transit`}
           target="_blank" rel="noopener noreferrer" className="pz-card" style={{ padding: 12, display: "block", textDecoration: "none", color: "inherit" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <span style={{ fontSize: 18 }}>🚋</span>
+            <TramIcon size={16} />
             <span className="pz-eyebrow">Dojazd</span>
           </div>
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.015em" }}>
@@ -77,7 +75,7 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
           boxShadow: "inset 0 0 0 0.5px rgba(255,107,44,0.25)",
           display: "flex", alignItems: "center", gap: 10,
         }}>
-          <span style={{ fontSize: 20 }}>🌧️</span>
+          <RainIcon size={16} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>Deszcz w prognozie</div>
             <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>Wydarzenie na zewnątrz — kurtkę bierz.</div>
@@ -110,6 +108,12 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
             </div>
           )}
         </div>
+        <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(fullAddress)}&travelmode=transit`}
+          target="_blank" rel="noopener noreferrer"
+          className="pz-chip" style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6 }}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          Transit
+        </a>
         <a href={`https://maps.apple.com/?q=${encodeURIComponent(fullAddress)}`}
           target="_blank" rel="noopener noreferrer"
           className="pz-chip" style={{ flex: 1, justifyContent: "center", textDecoration: "none" }}>

@@ -5,7 +5,7 @@ export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number;
   return (
     <div className="pz-card" style={{
       padding: 16,
-      background: "linear-gradient(135deg, var(--c-teatr) 0%, var(--c-muzyka) 100%)",
+      background: "linear-gradient(135deg, var(--hot-2) 0%, var(--hot) 100%)",
       color: "white", border: "none",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
@@ -18,7 +18,10 @@ export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number;
         </div>
         <div>
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Streak</div>
-          <div className="pz-h pz-num" style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{weeks} tygodnie</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+            <span className="pz-num" style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{weeks}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.9 }}>tygodnie</span>
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", gap: 4 }}>

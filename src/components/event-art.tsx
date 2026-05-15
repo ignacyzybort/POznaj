@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { EventData, categoryColors } from "@/lib/data";
 
 const CAT_GLYPH: Record<string, string> = {
@@ -35,6 +35,7 @@ export default function EventArt({
   className?: string;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   if (!forceArt && event.imageUrl && !imgFailed) {
     return (
@@ -42,6 +43,9 @@ export default function EventArt({
         <img
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
+          loading="lazy"
+          className={`pz-img-reveal${imgLoaded ? ' loaded' : ''}`}
+          onLoad={() => setImgLoaded(true)}
           onError={() => setImgFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
@@ -53,6 +57,15 @@ export default function EventArt({
   const seed = hashStr(event.id);
   const glyph = CAT_GLYPH[event.category] ?? "✶";
   const label = CATEGORY_LABEL[event.category] ?? event.category;
+  const gradientBg = useMemo(
+    () => `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`,
+    [seed, tone.bg],
+  );
+  const gradientOverlay = useMemo(
+    () => `radial-gradient(circle at ${rnd(seed, 3) * 100}% ${rnd(seed, 4) * 100}%, white, transparent 40%)`,
+    [seed],
+  );
+
 
   if (style === "typographic") {
     return (
@@ -76,13 +89,13 @@ export default function EventArt({
     return (
       <div className={`pz-art ${className}`} style={{
         height,
-        background: `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`,
+        background: gradientBg,
         color: tone.fg,
         position: "relative",
       }}>
         <div style={{
           position: "absolute", inset: 0, opacity: 0.18,
-          background: `radial-gradient(circle at ${rnd(seed, 3) * 100}% ${rnd(seed, 4) * 100}%, white, transparent 40%)`,
+          background: gradientOverlay,
         }} />
         <div style={{
           position: "absolute", right: 14, top: 12, fontSize: 50, opacity: 0.5,
@@ -97,13 +110,13 @@ export default function EventArt({
   }
 
   // collage (default)
-  const shapes = Array.from({ length: 4 }, (_, i) => ({
+  const shapes = useMemo(() => Array.from({ length: 4 }, (_, i) => ({
     x: rnd(seed, i * 7 + 1) * 100,
     y: rnd(seed, i * 7 + 2) * 100,
     r: 20 + rnd(seed, i * 7 + 3) * 30,
     shape: (["circle", "square", "tri", "half"] as const)[i % 4],
     rot: rnd(seed, i * 7 + 4) * 90,
-  }));
+  })), [event.id, seed]);
 
   return (
     <div className={`pz-art pz-art-noise ${className}`} style={{

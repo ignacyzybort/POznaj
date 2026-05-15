@@ -7,15 +7,12 @@ datasource db {
 }
 
 enum District {
+  Centrum
   StareMiasto
+  NoweMiasto
   Jezyce
-  Lazarz
   Grunwald
   Wilda
-  Rataje
-  Piatkowo
-  Winogrady
-  NoweMiasto
   Inny
 }
 
@@ -56,7 +53,6 @@ enum AttendStatus {
 enum ActivityType {
   GOING
   SAVED
-  REVIEWED
 }
 
 model User {
@@ -69,6 +65,7 @@ model User {
   district      District?
   handle        String?  @unique
   bio           String?
+  pushSubscription String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -117,6 +114,7 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@index([identifier])
 }
 
 model Friendship {
@@ -161,6 +159,7 @@ model Activity {
   @@index([userId])
   @@index([eventId])
   @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model Notification {
@@ -222,6 +221,10 @@ model Event {
   @@index([category])
   @@index([score])
   @@index([startDate])
+  @@index([endDate])
+  @@index([endDate, score])
+  @@index([endDate, district, score])
+  @@index([startDate, score])
 }
 
 model EventVibe {

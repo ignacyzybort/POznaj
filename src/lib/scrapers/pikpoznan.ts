@@ -5,14 +5,12 @@ import { matchVenue } from "@/lib/venues";
 
 function guessDistrict(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes("stary rynek") || lower.includes("śródmieście") || lower.includes("centrum")) return "StareMiasto";
+  if (lower.includes("stary rynek") || lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
   if (lower.includes("jeżyce") || lower.includes("jezyce") || lower.includes("rynek jeżycki")) return "Jezyce";
-  if (lower.includes("łazarz") || lower.includes("lazarz") || lower.includes("rynek łazarski")) return "Lazarz";
-  if (lower.includes("grunwald")) return "Grunwald";
+  if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz") || lower.includes("rynek łazarski")) return "Grunwald";
   if (lower.includes("wilda")) return "Wilda";
-  if (lower.includes("rataje")) return "Rataje";
-  if (lower.includes("piątkowo") || lower.includes("piatkowo")) return "Piatkowo";
-  if (lower.includes("winogrady") || lower.includes("cytadela")) return "Winogrady";
+  if (lower.includes("rataje") || lower.includes("malta")) return "NoweMiasto";
+  if (lower.includes("piątkowo") || lower.includes("piatkowo") || lower.includes("winogrady") || lower.includes("cytadela")) return "StareMiasto";
   if (lower.includes("malta") || lower.includes("nowe miasto") || lower.includes("śródka") || lower.includes("ostrów tumski")) return "NoweMiasto";
   return "Inny";
 }
@@ -195,7 +193,7 @@ export class PikPoznanScraper implements Scraper {
           Inne: [
             { address: "Plac Wolności", district: "StareMiasto", lat: 52.407, lon: 16.928 },
             { address: "Stary Rynek", district: "StareMiasto", lat: 52.408, lon: 16.934 },
-            { address: "Park Cytadela", district: "Winogrady", lat: 52.430, lon: 16.938 },
+            { address: "Park Cytadela", district: "StareMiasto", lat: 52.430, lon: 16.938 },
             { address: "Malta", district: "NoweMiasto", lat: 52.398, lon: 16.960 },
             { address: "Ostrów Tumski", district: "StareMiasto", lat: 52.411, lon: 16.948 },
           ],

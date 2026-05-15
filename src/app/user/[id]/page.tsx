@@ -61,8 +61,8 @@ export default function UserPage() {
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)", paddingBottom: 96 }}>
       {/* Back button */}
-      <div style={{ padding: "12px 16px 0" }}>
-        <button onClick={() => router.back()} style={{ width: 36, height: 36, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ padding: "calc(54px + var(--safe-t)) 16px 0" }}>
+        <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <BackIcon size={18} />
         </button>
       </div>

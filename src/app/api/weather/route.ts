@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_KEY = "6b2e1f8e66fb1d5b4d737fbeab84ef9c";
 const CACHE = new Map<string, { data: any; expires: number }>();
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const lat = searchParams.get("lat");
-  const lon = searchParams.get("lon");
-  const eventTime = searchParams.get("time"); // optional: event start time (epoch ms)
+  const apiKey = process.env.WEATHER_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "Weather unavailable" }, { status: 503 });
+  }
 
-  if (!lat || !lon) {
+  const { searchParams } = new URL(request.url);
+  const lat = parseFloat(searchParams.get("lat") ?? "");
+  const lon = parseFloat(searchParams.get("lon") ?? "");
+  const eventTime = searchParams.get("time");
+
+  if (isNaN(lat) || isNaN(lon)) {
     return NextResponse.json({ error: "Missing lat/lon" }, { status: 400 });
   }
 
@@ -22,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const res = await fetch(
-      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${API_KEY}`,
+      `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&lang=pl&appid=${apiKey}`,
       { next: { revalidate: 600 } }
     );
 

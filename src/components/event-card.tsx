@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { EventData } from "@/lib/data";
 import { relDay } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
@@ -21,8 +22,15 @@ export default function EventCard({
   const friends = event.friendsGoing ?? [];
   const going_count = event.going ?? 0;
 
+  const [bouncing, setBouncing] = useState(false);
+  useEffect(() => {
+    setBouncing(true);
+    const t = setTimeout(() => setBouncing(false), 350);
+    return () => clearTimeout(t);
+  }, [saved]);
+
   return (
-    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card ${className}`} style={{ cursor: "pointer" }}>
+    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card pz-card-lift ${className}`} style={{ cursor: "pointer" }}>
       <div style={{ pointerEvents: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
       </div>
@@ -49,10 +57,10 @@ export default function EventCard({
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {friends.length > 0 && <AvStack people={friends} max={3} />}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} style={{
+          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",
-            cursor: "pointer", padding: 4, display: "inline-flex",
-          }} aria-label="Save">
+            cursor: "pointer", padding: 0, display: "inline-flex", width: 44, height: 44, alignItems: "center", justifyContent: "center",
+          }}>
             <BookmarkIcon size={18} fill={saved} />
           </button>
         </div>

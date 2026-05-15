@@ -12,3 +12,20 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// Push notifications
+self.addEventListener("push", (event: any) => {
+  const data = event.data?.json() ?? {};
+  self.registration.showNotification(data.title ?? "POznaj", {
+    body: data.body ?? "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    data: { url: data.url ?? "/" },
+  });
+});
+
+self.addEventListener("notificationclick", (event: any) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/";
+  event.waitUntil(self.clients.openWindow(url));
+});

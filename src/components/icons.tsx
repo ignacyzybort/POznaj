@@ -135,3 +135,23 @@ export function MoonIcon({ size }: { size?: number }) {
 export function ArrowIcon({ size }: { size?: number }) {
   return <Icon size={size}><path d="M5 12h14M13 6l6 6-6 6"/></Icon>;
 }
+
+export function RefreshIcon({ size }: { size?: number }) {
+  return <Icon size={size}><path d="M21 12a9 9 0 1 1-2.2-6" strokeLinecap="round" /><path d="M21 3v5h-5" strokeLinecap="round" strokeLinejoin="round" /></Icon>;
+}
+
+export function CameraIcon({ size }: { size?: number }) {
+  return <Icon size={size}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></Icon>;
+}
+
+export function CoverIcon({ size }: { size?: number }) {
+  return <Icon size={size}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 16l5-5 3 3 4-4 6 6" /><circle cx="9" cy="9" r="1" /></Icon>;
+}
+
+export function LockIcon({ size }: { size?: number }) {
+  return <Icon size={size}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></Icon>;
+}
+
+export function PassportIcon({ size }: { size?: number }) {
+  return <Icon size={size}><rect x="3" y="3" width="18" height="20" rx="2" /><line x1="9" y1="7" x2="15" y2="7" /><line x1="9" y1="11" x2="15" y2="11" /><line x1="9" y1="15" x2="11" y2="15" /></Icon>;
+}

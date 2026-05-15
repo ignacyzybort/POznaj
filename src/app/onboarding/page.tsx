@@ -79,7 +79,7 @@ export default function OnboardingPage() {
               {categories.map((c) => {
                 const active = selectedCategories.includes(c.value);
                 return (
-                  <button key={c.value} className="pz-chip" data-active={active ? "true" : undefined}
+                  <button key={c.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedCategories(toggle(selectedCategories, c.value))}>
                     {categoryEmoji[c.value]} {c.label}
                   </button>
@@ -102,7 +102,7 @@ export default function OnboardingPage() {
               {vibeOpts.map((v) => {
                 const active = selectedVibes.includes(v.value);
                 return (
-                  <button key={v.value} className="pz-chip" data-active={active ? "true" : undefined}
+                  <button key={v.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedVibes(toggle(selectedVibes, v.value))}>
                     {vibeEmoji[v.value]} {v.label}
                   </button>
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
               {districts.map((d) => {
                 const active = selectedDistrict === d.value;
                 return (
-                  <button key={d.value} className="pz-chip" data-active={active ? "true" : undefined}
+                  <button key={d.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedDistrict(active ? "" : d.value)}>
                     📍 {d.label}
                   </button>

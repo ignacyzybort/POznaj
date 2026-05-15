@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { EventData } from "@/lib/data";
+import { useEscape } from "@/hooks/use-escape";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 const questions = [
   {
@@ -60,6 +62,8 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [recommendations, setRecommendations] = useState<EventData[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [exiting, setExiting] = useState(false);
+  useEscape(onClose);
+  const focusTrapRef = useFocusTrap(true);
   const router = useRouter();
 
   const close = () => {
@@ -103,10 +107,10 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   };
 
   const overlay = (content: React.ReactNode) => (
-    <div style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{
       position: "fixed", inset: 0, zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center",
-      background: "var(--ink-3)",
+      background: "var(--scrim)",
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
     }}>
       {content}
@@ -134,7 +138,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
                 style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-soft)", textDecoration: "none", color: "inherit" }}
               >
                 <div style={{ width: 64, height: 64, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
-                  {ev.imageUrl && <img src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+                  {ev.imageUrl && <img loading="lazy" src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink)", margin: 0, lineClamp: 2, WebkitLineClamp: 2, display: "-webkit-box", WebkitBoxOrient: "vertical", overflow: "hidden" }}>{ev.title}</p>
@@ -168,8 +172,8 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
       <h2 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--ink)", margin: "0 0 16px" }}>{q.question}</h2>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-        {q.options.map((opt) => (
-          <button key={opt.value} onClick={() => answer(opt.value)}
+        {q.options.map((opt, i) => (
+          <button key={opt.value} onClick={() => answer(opt.value)} autoFocus={i === 0}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 12, padding: 14, borderRadius: 22,
               textAlign: "left", border: answers[q.id] === opt.value ? "1px solid var(--sage)" : "0.5px solid var(--line)",

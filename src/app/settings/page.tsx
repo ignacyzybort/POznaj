@@ -18,6 +18,10 @@ export default function SettingsPage() {
     if (typeof window === "undefined") return "";
     return localStorage.getItem("poznaj-district") ?? "";
   });
+  const [notificationsOn, setNotificationsOn] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("poznaj-notifications") === "true";
+  });
 
   useEffect(() => {
     localStorage.setItem("poznaj-notify-minutes", String(notifyBefore));
@@ -28,6 +32,20 @@ export default function SettingsPage() {
     else localStorage.removeItem("poznaj-district");
   }, [savedDistrict]);
 
+  const toggleNotifications = () => {
+    if (!notificationsOn) {
+      Notification.requestPermission().then((perm) => {
+        if (perm === "granted" || perm === "denied") {
+          setNotificationsOn(perm === "granted");
+          localStorage.setItem("poznaj-notifications", perm === "granted" ? "true" : "false");
+        }
+      });
+    } else {
+      setNotificationsOn(false);
+      localStorage.setItem("poznaj-notifications", "false");
+    }
+  };
+
   const toggleRow = (label: string, sub: string, active: boolean, onToggle: () => void, accent?: string) => (
     <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -35,7 +53,7 @@ export default function SettingsPage() {
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em" }}>{label}</div>
           <div style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 2 }}>{sub}</div>
         </div>
-        <button onClick={onToggle} style={{
+        <button role="switch" aria-checked={active} onClick={onToggle} style={{
           position: "relative", width: 48, height: 28, borderRadius: 99, border: 0, cursor: "pointer",
           background: active ? (accent ?? "var(--sage)") : "var(--line-2)",
           transition: `background ${DUR.fast}ms var(--ease-out-quart)`,
@@ -54,7 +72,7 @@ export default function SettingsPage() {
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
       <div style={{ padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
-        <button onClick={() => router.back()} style={{
+        <button onClick={() => router.back()} aria-label="Wróć" style={{
           width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -70,7 +88,7 @@ export default function SettingsPage() {
       <div style={{ padding: "6px 18px 96px" }}>
         {toggleRow("Wygląd", theme === "dark" ? "Tryb ciemny" : "Tryb jasny", theme === "dark", toggleTheme, "var(--c-kino)")}
 
-        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, true, () => {})}
+        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, notificationsOn, toggleNotifications)}
 
         {/* Domyślna dzielnica */}
         <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
@@ -93,7 +111,7 @@ export default function SettingsPage() {
           <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 8 }}>O POznaj</div>
           <div style={{ fontSize: 12, color: "var(--ink-3)", lineHeight: 1.6 }}>
             POznaj pomaga odkrywać najlepsze wydarzenia w Poznaniu.
-            Wersja 0.1 · Dane z PIK Poznań i Facebooka.
+            Wersja 0.2 · Dane z PIK Poznań i poznan.pl.
           </div>
         </div>
       </div>

@@ -3,9 +3,9 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
   let color: string, label: string;
   if (pct >= 85)      { color = "var(--hot)";     label = "Gorące"; }
   else if (pct >= 70) { color = "var(--hot-2)";   label = "Rozkręca się"; }
-  else if (pct >= 50) { color = "var(--c-jedzenie)"; label = "Trending"; }
+  else if (pct >= 50) { color = "var(--hot-3)"; label = "Trending"; }
   else if (pct >= 30) { color = "var(--sage-2)";  label = "Świeże"; }
-  else                { color = "var(--ink-4)";    label = "Nowość"; }
+  else                { color = "var(--ink-3)";    label = "Nowość"; }
 
   const bars = 5;
   const heights = Array.from({ length: bars }, (_, i) => {

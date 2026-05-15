@@ -30,6 +30,6 @@ export async function GET(
 
     return NextResponse.json({ event: serialized });
   } catch {
-    return NextResponse.json({ error: "Nie znaleziono" }, { status: 404 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
