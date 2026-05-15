@@ -34,14 +34,14 @@ export default function SurpriseModal({
 
     const interval = setInterval(() => {
       setResults(getRandomEvents(events, 3));
-    }, 70);
+    }, 150);
 
     setTimeout(() => {
       clearInterval(interval);
       const final = getRandomEvents(events, 3);
       setResults(final);
       setSpinning(false);
-    }, 1800);
+    }, 2800);
   }, [events]);
 
   useEffect(() => {
@@ -79,7 +79,6 @@ export default function SurpriseModal({
                 background: picked?.id === ev.id ? "var(--sage-soft)" : "var(--bg-soft)",
                 opacity: spinning ? 0.65 : 1,
                 transition: "transform var(--dur-fast) var(--ease-out-quart)",
-                animation: spinning ? "pz-pulse 0.15s var(--ease-out-quart) infinite alternate" : undefined,
               }}
             >
               <div style={{ width: 48, height: 48, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
