@@ -114,6 +114,15 @@ export class KulturaPoznanScraper implements Scraper {
           const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|$)/m);
           let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
 
+          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|$)/m);
+          let price: string | undefined;
+          if (ticketMatch) {
+            const raw = ticketMatch[1].trim();
+            const p = raw.match(/(?:(?:od|od)\s*[\-\u2013]?\s*)?(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
+            if (p) price = `${p[1].replace(/\s/g, "")} zł`;
+            else if (raw.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) price = "0 zł";
+          }
+
           // Description: text before first <br>
           let description = "";
           const brIdx = pText.indexOf("\n");
@@ -125,6 +134,14 @@ export class KulturaPoznanScraper implements Scraper {
 
           const urlMatch = pHtml.match(/href="([^"]+)"/);
           const sourceUrl = urlMatch ? urlMatch[1] : url;
+
+          // Fallback: extract price from description if Bilety field wasn't found
+          if (!price) {
+            const combined = description + " " + pText;
+            const pMatch = combined.match(/(?:bilety?\s*(?:od\s*[\-\u2013]?\s*)?|cena\s*(?:od\s*[\-\u2013]?\s*)?)\s*(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
+            if (pMatch) price = `${pMatch[1].replace(/\s/g, "")} zł`;
+            else if (combined.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) price = "0 zł";
+          }
 
           const category = guessCategory(title, description);
 
@@ -159,6 +176,7 @@ export class KulturaPoznanScraper implements Scraper {
                 sourceId: `kp-${Buffer.from(sub.title).toString("base64").slice(0, 24)}`,
                 coordsX: subVenue?.lat,
                 coordsY: subVenue?.lon,
+                price,
               });
             }
             return; // skip parent event if sub-events exist
@@ -184,6 +202,7 @@ export class KulturaPoznanScraper implements Scraper {
             sourceId: `kp-${Buffer.from(title).toString("base64").slice(0, 24)}`,
             coordsX,
             coordsY,
+            price,
           });
         });
       } catch (e) {

@@ -24,19 +24,20 @@ export default function FiltersSheet({
 }) {
   const count = active.category.length + active.district.length + active.vibe.length;
   const [exiting, setExiting] = useState(false);
-  const [show, setShow] = useState(open);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (open) setShow(true);
-    else {
-      setExiting(true);
-      setTimeout(() => { setExiting(false); setShow(false); }, DUR.slow);
+    if (open) {
+      setShow(true);
+      setExiting(false);
+      document.body.style.overflow = "hidden";
     }
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
   const close = () => {
     setExiting(true);
-    setTimeout(() => { setExiting(false); onClose(); }, DUR.slow);
+    setTimeout(() => { setExiting(false); setShow(false); onClose(); }, DUR.slow);
   };
   useEscape(close);
   const focusTrapRef = useFocusTrap(true);

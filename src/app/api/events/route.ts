@@ -5,6 +5,35 @@ import { auth } from "@/lib/auth";
 import { getRecommendations } from "@/lib/recommendations";
 
 const SEARCH_MAX = 100;
+const PL_TZ = "Europe/Warsaw";
+
+function plMidnight(baseDate: Date, daysOffset = 0): Date {
+  const d = new Date(baseDate);
+  d.setUTCDate(d.getUTCDate() + daysOffset);
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: PL_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d).split("-");
+  const [y, m, day] = parts.map(Number);
+
+  const noonUTC = Date.UTC(y, m - 1, day, 12);
+  const polandHour = +new Intl.DateTimeFormat("en-US", {
+    timeZone: PL_TZ,
+    hour: "2-digit",
+    hour12: false,
+  }).format(noonUTC);
+  const offsetMs = (polandHour - 12) * 3_600_000;
+
+  return new Date(Date.UTC(y, m - 1, day) - offsetMs);
+}
+
+function plEndOfDay(baseDate: Date, daysOffset = 0): Date {
+  const start = plMidnight(baseDate, daysOffset);
+  return new Date(start.getTime() + 86_399_999);
+}
 
 function parseEnumArray<T extends Record<string, string>>(
   raw: string[],
@@ -77,9 +106,9 @@ export async function GET(request: NextRequest) {
     const offset = offsetParsed;
     const sort = searchParams.get("sort") || "date";
 
-    const now = new Date();
+    const now = plMidnight(new Date());
     const where: Prisma.EventWhereInput = {
-      endDate: { gte: now },
+      endDate: { gte: new Date() },
     };
 
     if (districts.length > 0) {
@@ -100,23 +129,20 @@ export async function GET(request: NextRequest) {
     }
 
     if (quick === "today") {
-      const end = new Date(now); end.setHours(23, 59, 59, 999);
-      where.startDate = { gte: new Date(now.setHours(0, 0, 0, 0)), lte: end };
+      where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date()) };
     } else if (quick === "tonight") {
-      const end = new Date(now); end.setHours(23, 59, 59, 999);
-      where.startDate = { gte: new Date(now.setHours(0, 0, 0, 0)), lte: end };
+      where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date()) };
       where.time = { gte: "18:00" };
     } else if (quick === "tomorrow") {
-      const t = new Date(now); t.setDate(t.getDate() + 1);
-      const end = new Date(t); end.setHours(23, 59, 59, 999);
-      where.startDate = { gte: new Date(t.setHours(0, 0, 0, 0)), lte: end };
+      where.startDate = { gte: plMidnight(new Date(), 1), lte: plEndOfDay(new Date(), 1) };
     } else if (quick === "weekend") {
-      const fri = new Date(now); fri.setDate(fri.getDate() + ((5 - fri.getDay() + 7) % 7));
-      const sun = new Date(fri); sun.setDate(sun.getDate() + 2); sun.setHours(23, 59, 59, 999);
-      where.startDate = { gte: fri, lte: sun };
+      const fri = plMidnight(new Date());
+      const dayOfWeek = fri.getUTCDay();
+      const daysToFri = (5 - dayOfWeek + 7) % 7;
+      fri.setUTCDate(fri.getUTCDate() + daysToFri);
+      where.startDate = { gte: fri, lte: plEndOfDay(fri, 2) };
     } else if (quick === "week") {
-      const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
-      where.startDate = { gte: now, lte: weekEnd };
+      where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date(), 7) };
     }
 
     if (dateFromRaw) {
@@ -155,6 +181,10 @@ export async function GET(request: NextRequest) {
         ...((where.OR as any[]) || []),
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
+        { price: { contains: "bezpł", mode: "insensitive" as any } },
+        { price: { contains: "studen", mode: "insensitive" as any } },
+        { price: { contains: "ulgow", mode: "insensitive" as any } },
+        { price: { contains: "ulga", mode: "insensitive" as any } },
       ];
     }
 

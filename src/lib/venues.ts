@@ -32,6 +32,17 @@ export const VENUES: Record<string, { address: string; district: string; lat: nu
   "POSiR Rataje": { address: "Piłsudskiego 30", district: "NoweMiasto", lat: 52.380, lon: 16.963 },
   "POSiR Malta": { address: "Wiankowa 2", district: "NoweMiasto", lat: 52.401, lon: 16.960 },
   "Jezioro Strzeszyńskie": { address: "Kosowska", district: "Jezyce", lat: 52.444, lon: 16.842 },
+  "Enea Stadion": { address: "Bułgarska 17", district: "Jezyce", lat: 52.398, lon: 16.858 },
+  "Kino Apollo": { address: "Ratajczaka 18", district: "Centrum", lat: 52.405, lon: 16.927 },
+  "Port Lotniczy Poznań Ławica": { address: "Bukowska 285", district: "Grunwald", lat: 52.415, lon: 16.829 },
+  "Malta": { address: "Malta", district: "NoweMiasto", lat: 52.401, lon: 16.960 },
+  "Termy Maltańskie": { address: "Termalna 1", district: "NoweMiasto", lat: 52.394, lon: 16.969 },
+  "Arena": { address: "Wyspiańskiego 33", district: "Jezyce", lat: 52.406, lon: 16.895 },
+  "Stary Rynek": { address: "Stary Rynek", district: "Centrum", lat: 52.408, lon: 16.934 },
+  "Rynek Łazarski": { address: "Rynek Łazarski", district: "Grunwald", lat: 52.393, lon: 16.901 },
+  "Plac Wolności": { address: "Plac Wolności", district: "Centrum", lat: 52.408, lon: 16.928 },
+  "Ostrów Tumski": { address: "Ostrów Tumski", district: "NoweMiasto", lat: 52.411, lon: 16.949 },
+  "Barak Kultury": { address: "Św. Marcin 75", district: "Centrum", lat: 52.408, lon: 16.918 },
 };
 
 // Keywords → venue fallback for when venue name doesn't appear verbatim
@@ -95,6 +106,14 @@ const KEYWORD_VENUES: [string, string][] = [
   ["letnia strefa", "Klub B17"],
   ["klub pod minogą", "Klub Pod Minogą"],
   ["blue note poznań", "Blue Note"],
+  ["port lotniczy", "Port Lotniczy Poznań Ławica"],
+  ["port ławica", "Port Lotniczy Poznań Ławica"],
+  ["ławica", "Port Lotniczy Poznań Ławica"],
+  ["lotnisko", "Port Lotniczy Poznań Ławica"],
+  ["enea", "Enea Stadion"],
+  ["stadion główny", "Enea Stadion"],
+  ["kino apollo", "Kino Apollo"],
+  ["apollo", "Kino Apollo"],
 ];
 
 export function matchVenue(text: string): { address: string; district: string; lat: number; lon: number } | null {
