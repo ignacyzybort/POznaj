@@ -53,8 +53,9 @@ export async function geocodeVenue(
   fallbackText?: string,
   street?: string,
 ): Promise<{ lat: number; lon: number; district: string } | null> {
-  const searchText = street
-    ? `${street}, Poznań, Polska`
+  const cleanStreet = street?.replace(/^ul\.\s*/i, '');
+  const searchText = cleanStreet
+    ? `${cleanStreet}, Poznań, Polska`
     : `${name}, Poznań, Polska`;
 
   const key = searchText.toLowerCase().trim();

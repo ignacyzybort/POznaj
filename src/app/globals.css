@@ -255,34 +255,45 @@ button:not(:disabled):active,
 .dark .pz-tabbar { background: rgba(36,38,44,0.82); }
 .pz-tab {
   flex: 1; min-height: 48px; border-radius: 20px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 2px;
-  color: var(--ink-3); background: transparent; border: 0; cursor: pointer;
-  font-size: 10px; font-weight: 600; letter-spacing: -0.01em;
-  transition: color var(--dur-fast), background var(--dur-fast);
-  padding: 6px 4px;
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  color: var(--ink-3); text-decoration: none; background: transparent; font-size: 10px; font-weight: 600;
+  position: relative; z-index: 1;
+  transition: color var(--dur-fast), font-weight var(--dur-fast);
 }
-.pz-tab[data-active="true"] { color: var(--ink); }
+.pz-tab:hover { color: var(--ink-2); }
+.pz-tab[data-active="true"] { color: var(--ink); font-weight: 700; }
 .pz-tab svg { width: 22px; height: 22px; }
 .pz-tab:active { transform: scale(0.94); }
+
+.pz-tab-pill {
+  position: absolute;
+  top: 6px;
+  height: 52px;
+  border-radius: 22px;
+  background: var(--bg-soft);
+  z-index: 0;
+  pointer-events: none;
+  transition: transform var(--dur-slow) var(--ease-spring),
+              width var(--dur-slow) var(--ease-spring);
+}
+.dark .pz-tab-pill { background: rgba(244,244,246,0.08); }
 
 /* Sheet */
 .pz-sheet-backdrop {
   position: absolute; inset: 0; background: rgba(20,19,15,0.32);
-  z-index: 60; opacity: 0; pointer-events: none;
-  transition: opacity var(--dur-slow) var(--ease-out-quart);
+  z-index: 60; opacity: 1; pointer-events: auto;
+  animation: pz-sheet-backdrop-in var(--dur-slow) var(--ease-out-quart) both;
 }
-.pz-sheet-backdrop[data-open="true"] { opacity: 1; pointer-events: auto; }
+@keyframes pz-sheet-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
 .pz-sheet {
   position: absolute; left: 0; right: 0; bottom: 0;
   background: var(--bg-elev); border-radius: 28px 28px 0 0;
   z-index: 61;
-  transform: translateY(100%);
-  transition: transform var(--dur-slow) var(--ease-spring);
   box-shadow: 0 -20px 60px rgba(0,0,0,0.15);
   max-height: 78%; display: flex; flex-direction: column;
+  animation: pz-sheet-enter var(--dur-slow) var(--ease-spring) both;
 }
-.pz-sheet[data-open="true"] { transform: translateY(0); }
+@keyframes pz-sheet-enter { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .pz-sheet-grabber {
   width: 36px; height: 5px; border-radius: 99px;
   background: var(--line-2); margin: 8px auto 0;

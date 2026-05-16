@@ -114,6 +114,9 @@ export class KulturaPoznanScraper implements Scraper {
           const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|$)/m);
           let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
 
+          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|$)/m);
+          const price = ticketMatch ? ticketMatch[1].trim() : undefined;
+
           // Description: text before first <br>
           let description = "";
           const brIdx = pText.indexOf("\n");
@@ -159,6 +162,7 @@ export class KulturaPoznanScraper implements Scraper {
                 sourceId: `kp-${Buffer.from(sub.title).toString("base64").slice(0, 24)}`,
                 coordsX: subVenue?.lat,
                 coordsY: subVenue?.lon,
+                price,
               });
             }
             return; // skip parent event if sub-events exist
@@ -184,6 +188,7 @@ export class KulturaPoznanScraper implements Scraper {
             sourceId: `kp-${Buffer.from(title).toString("base64").slice(0, 24)}`,
             coordsX,
             coordsY,
+            price,
           });
         });
       } catch (e) {

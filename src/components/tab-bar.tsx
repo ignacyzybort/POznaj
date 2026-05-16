@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -27,6 +27,8 @@ export default function TabBar() {
   const { data: session } = useSession();
   const activeTab = pathMap[pathname] ?? "";
   const [notifCount, setNotifCount] = useState(0);
+  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
 
   useEffect(() => {
     if (!session?.user) return;
@@ -36,17 +38,39 @@ export default function TabBar() {
       .catch(() => {});
   }, [session]);
 
+  useLayoutEffect(() => {
+    const idx = tabs.findIndex((t) => t.id === activeTab);
+    const el = tabRefs.current[idx];
+    if (!el) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    const parentRect = parent.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setPillStyle({
+      left: elRect.left - parentRect.left,
+      width: elRect.width,
+    });
+  }, [activeTab]);
+
   if (pathname.startsWith("/event/") || pathname === "/login" || pathname === "/onboarding") return null;
 
   return (
     <nav className="pz-tabbar" aria-label="Główna nawigacja">
-      {tabs.map((t) => {
+      <span
+        className="pz-tab-pill"
+        aria-hidden="true"
+        style={{
+          transform: `translateX(${pillStyle.left}px)`,
+          width: pillStyle.width || 0,
+        }}
+      />
+      {tabs.map((t, i) => {
         const Icon = t.icon;
         return (
           <Link key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
              className="pz-tab" data-active={activeTab === t.id}
              aria-current={activeTab === t.id ? "page" : undefined}
-             style={{ position: "relative" }}>
+             ref={(el) => { tabRefs.current[i] = el; }}>
             <Icon size={22} />
             <span>{t.label}</span>
             {t.id === "profile" && notifCount > 0 && (

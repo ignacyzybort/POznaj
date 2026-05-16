@@ -92,7 +92,10 @@ export class PikPoznanScraper implements Scraper {
 
     $("article, .post, .entry, .event-item, .card, [class*='post'], .lista-wpisow > div, .grid > div, main > div > div").each((_, el) => {
       const titleEl = $(el).find("h2 a, h3 a, h2, h3, .title a, .entry-title a");
-      const title = titleEl.first().text().trim();
+      const title = titleEl.first().text().trim()
+        .replace(/\s*[–\u2013\-]\s*Bilety\s*$/i, "")
+        .replace(/&#8211;\s*Bilety/gi, "")
+        .trim();
       if (!title) return;
 
       const link = titleEl.attr("href") || $(el).find("a").first().attr("href") || "";
@@ -209,12 +212,17 @@ export class PikPoznanScraper implements Scraper {
             // Extract venue from JSON-LD (do this BEFORE removing scripts!)
             let venueFromLd: string | null = null;
             let addrFromLd: string | null = null;
+            let priceFromLd: string | null = null;
             $$('script[type="application/ld+json"]').each((_, el) => {
               try {
                 const data = JSON.parse($$(el).html() || "{}");
                 if (data.location?.name) {
                   venueFromLd = data.location.name;
                   addrFromLd = data.location.address?.streetAddress || null;
+                }
+                if (data.offers?.price) {
+                  const p = parseFloat(data.offers.price);
+                  priceFromLd = isNaN(p) ? null : `${Math.round(p)} zł`;
                 }
               } catch {}
             });
@@ -234,6 +242,7 @@ export class PikPoznanScraper implements Scraper {
                 ev.coordsY = matched.lon;
               }
             }
+            if (priceFromLd) ev.price = priceFromLd;
           } catch {}
         })
       );
