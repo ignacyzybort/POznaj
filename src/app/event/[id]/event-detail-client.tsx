@@ -123,7 +123,7 @@ export default function EventDetailClient({
   return (
     <div data-category={event.category} style={{ position: "absolute", inset: 0, background: "var(--bg)", zIndex: 30 }}>
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><BackIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>

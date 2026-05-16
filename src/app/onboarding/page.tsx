@@ -38,7 +38,7 @@ export default function OnboardingPage() {
   return (
     <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
       {/* Progress */}
-      <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "calc(54px + var(--safe-t)) 24px 16px" }}>
+      <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "calc(16px + var(--safe-t)) 24px 16px" }}>
         {steps.map((s, i) => (
           <div key={s}
             style={{

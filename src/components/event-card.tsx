@@ -46,7 +46,7 @@ export default function EventCard({
           margin: 0, lineHeight: 1.18, cursor: "pointer",
         }}>{event.title}</h3>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
           <span style={{ fontWeight: 500 }}>{event.placeName}</span>
           <span style={{ opacity: 0.5 }}>·</span>

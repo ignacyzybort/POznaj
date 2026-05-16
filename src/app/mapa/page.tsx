@@ -13,7 +13,7 @@ export default async function MapaPage() {
       {/* Header */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
-        padding: "calc(54px + var(--safe-t)) 18px 10px",
+        padding: "calc(16px + var(--safe-t)) 18px 10px",
         zIndex: 1000, pointerEvents: "none",
       }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>

@@ -56,7 +56,10 @@ export default function FiltersSheet({
   const onTouchMove = (e: React.TouchEvent) => {
     if (!dragging.current) return;
     const dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setDragY(dy);
+    if (dy < 0) { setDragY(0); return; }
+    const scroller = focusTrapRef.current;
+    if (scroller && scroller.scrollTop > 0) return;
+    setDragY(dy);
   };
   const onTouchEnd = (e: React.TouchEvent) => {
     if (!dragging.current) return;

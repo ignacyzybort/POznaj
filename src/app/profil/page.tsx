@@ -9,7 +9,7 @@ export default async function ProfilPage() {
   if (!session?.user?.id) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
-        <div style={{ padding: "calc(54px + var(--safe-t)) 18px 96px" }}>
+        <div style={{ padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
           <div style={{ marginBottom: 20 }}>
             <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
               poznaj<span style={{ color: "var(--sage)" }}>.</span>

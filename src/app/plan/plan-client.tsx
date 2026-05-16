@@ -24,7 +24,7 @@ export default function PlanClient({ events }: { events: EventData[] }) {
   );
 
   return (
-    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(54px + var(--safe-t)) 18px 100px" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 100px" }}>
       <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Kalendarz</div>
       <h1 className="pz-h" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em" }}>
         Następne dwa tygodnie.

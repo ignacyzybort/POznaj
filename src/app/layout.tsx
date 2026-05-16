@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
       </head>
-      <body className="h-full overflow-hidden">
+      <body className="h-full">
         <a href="#main-content" className="pz-skip-link">Przejdź do treści</a>
         <div className="pz-stage">
           <ThemeProvider>

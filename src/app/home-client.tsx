@@ -159,7 +159,7 @@ export default function HomeClient({
     <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       <div className="pz-scroll-progress" ref={progressRef} />
       {/* Header */}
-      <div style={{ padding: "calc(54px + var(--safe-t)) 18px 6px" }}>
+      <div style={{ padding: "calc(16px + var(--safe-t)) 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>

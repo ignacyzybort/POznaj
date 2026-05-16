@@ -64,7 +64,7 @@ export default function SearchOverlay({
             style={{
               flex: 1, border: 0, background: "transparent",
               outline: "none", font: "inherit",
-              fontSize: 15, color: "var(--ink)",
+              fontSize: 16, color: "var(--ink)",
             }}
           />
         </div>

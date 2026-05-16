@@ -75,9 +75,9 @@ const CITY_BOUNDARY = computeCityBoundary();
 function createCategoryMarker(category: string, index: number) {
   const colors = categoryColors[category] ?? categoryColors.Inne;
   return L.divIcon({
-    html: `<span style="
+    html: `<span role="img" aria-label="Wydarzenie: ${category}" style="
       display: inline-flex; align-items: center; justify-content: center;
-      width: 36px; height: 36px; border-radius: 99px;
+      width: 44px; height: 44px; border-radius: 99px;
       background: ${colors.bg}; color: ${colors.fg};
       box-shadow: 0 2px 8px rgba(0,0,0,0.25);
       font-size: 13px; font-weight: 800; line-height: 1;
@@ -262,7 +262,7 @@ export default function DistrictMap({
       {/* Back button — glass pill, centered at top */}
       {selectedDistrict && (
         <button onClick={handleBack} style={{
-          position: "absolute", top: "calc(54px + var(--safe-t))", left: "50%", transform: "translateX(-50%)",
+          position: "absolute", top: "calc(16px + var(--safe-t))", left: "50%", transform: "translateX(-50%)",
           zIndex: 1000, gap: 6, alignItems: "center",
           padding: "8px 18px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
