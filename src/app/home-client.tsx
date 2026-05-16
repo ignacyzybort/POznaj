@@ -261,7 +261,7 @@ export default function HomeClient({
             </h2>
           </div>
           <div style={{ margin: "0 -18px" }}>
-            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto", paddingRight: 36 }}>
+            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto" }}>
               {forYou.map((ev, i) => (
                 <TiltCard key={ev.id}>
                   <div
@@ -270,7 +270,7 @@ export default function HomeClient({
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   style={{
-                    flex: "0 0 min(200px, 52vw)", borderRadius: 22, overflow: "hidden",
+                    width: "min(200px, 52vw)", flexShrink: 0, borderRadius: 22, overflow: "hidden",
                     position: "relative", height: "min(200px, 52vw)", cursor: "pointer",
                     transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
                     boxShadow: "var(--shadow-sm)",
