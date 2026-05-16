@@ -149,7 +149,7 @@ export default function EventDetailClient({
             <StatCard icon={<CalIcon size={14} />} label="Kiedy" title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`} sub={fmtFullDate(new Date(event.startDate))} />
             <StatCard icon={<PinIcon size={14} />} label="Gdzie" title={event.placeName} sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
             <StatCard icon={<UsersIcon size={14} />} label="Popularność" title={event.score >= 70 ? "Bardzo popularne" : event.score >= 40 ? "Rośnie" : "Nowość"} sub={`${event.score} pkt · na podstawie dopasowania`} />
-            <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price && event.price !== "0 zł" ? event.price : "Sprawdź"} sub={event.price && event.price !== "0 zł" ? "Kup u źródła" : "Skontaktuj się z organizatorem"} />
+             <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />
           </div>
 
           {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)" }}>{event.description}</p>}
