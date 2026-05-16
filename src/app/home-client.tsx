@@ -14,6 +14,7 @@ import BudgetChips, { type Budget } from "@/components/budget-chips";
 import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
+import EmptyState from "@/components/empty-state";
 import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
@@ -337,12 +338,7 @@ export default function HomeClient({
             </div>
           )}
           {!loading && !error && events.length === 0 && (
-            <div style={{ padding: "40px 16px", textAlign: "center" }}>
-              <div className="pz-display pz-empty-pulse" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
-              <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
-                Spróbuj zluzować filtry, w mieście jest więcej życia.
-              </p>
-            </div>
+            <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
           )}
         </div>
       </div>
