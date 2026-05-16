@@ -271,7 +271,7 @@ export default function HomeClient({
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   style={{
                     flex: "0 0 min(200px, 52vw)", borderRadius: 22, overflow: "hidden",
-                    position: "relative", height: 200, cursor: "pointer",
+                    position: "relative", height: "min(200px, 52vw)", cursor: "pointer",
                     transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
                     boxShadow: "var(--shadow-sm)",
                   }}
@@ -290,7 +290,7 @@ export default function HomeClient({
                   </div>
                 </TiltCard>
               ))}
-              <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: 200, background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
+              <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: "min(200px, 52vw)", background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 99, background: "var(--ink)", color: "var(--bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>→</div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>Zobacz<br />wszystko</span>
               </div>
