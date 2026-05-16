@@ -122,24 +122,24 @@ export default function EventDetailClient({
 
   return (
     <div data-category={event.category} style={{ position: "absolute", inset: 0, background: "var(--bg)", zIndex: 30 }}>
-      <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: 90 }}>
+      <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: "calc(92px + var(--safe-b))" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><BackIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 
-        <div style={{ height: 340, overflow: "hidden" }}>
+        <div style={{ height: "min(340px, 45dvh)", overflow: "hidden" }}>
           <EventArt event={event} height={340} style="collage" />
         </div>
 
-        <div className="pz-detail-glow" style={{ position: "absolute", top: 300, left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1, "--glow-color": `var(--c-${event.category.toLowerCase()})`, opacity: glowVisible ? 1 : 0, transition: "opacity 0.6s" } as React.CSSProperties} />
+        <div className="pz-detail-glow" style={{ position: "absolute", top: "min(300px, 40dvh)", left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1, "--glow-color": `var(--c-${event.category.toLowerCase()})`, opacity: glowVisible ? 1 : 0, transition: "opacity 0.6s" } as React.CSSProperties} />
 
         <div style={{ padding: "20px 18px 30px", position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
             <CategoryTag cat={event.category} size="md" />
             {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
           </div>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.05 }}>{event.title}</h1>
+          <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 6.4vw, 30px)", fontWeight: 700, letterSpacing: "-0.015em", lineHeight: 1.12 }}>{event.title}</h1>
 
           <div style={{ marginTop: 16, padding: 14, borderRadius: 22, background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)" }}>
             <HeatMeter score={event.score} size="md" />
@@ -152,7 +152,7 @@ export default function EventDetailClient({
              <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />
           </div>
 
-          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)" }}>{event.description}</p>}
+          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description}</p>}
 
           <div style={{ marginTop: 18 }}><DetailExtras event={event} onToast={setToast} /></div>
 

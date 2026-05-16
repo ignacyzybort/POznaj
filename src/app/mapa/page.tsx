@@ -24,7 +24,7 @@ export default async function MapaPage() {
             {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
           </span>
         </div>
-        <h1 className="pz-h" style={{ margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 0.95, color: "var(--ink)" }}>
+        <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 7vw, 36px)", fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 0.95, color: "var(--ink)" }}>
           Dzielnice Poznania.
         </h1>
       </div>

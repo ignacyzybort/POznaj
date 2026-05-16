@@ -259,10 +259,10 @@ export default function DistrictMap({
 
   return (
     <div style={{ position: "absolute", inset: 0 }}>
-      {/* Back button — glass pill, centered at top */}
+      {/* Back button — bottom-left, thumb-reachable */}
       {selectedDistrict && (
         <button onClick={handleBack} style={{
-          position: "absolute", top: "calc(16px + var(--safe-t))", left: "50%", transform: "translateX(-50%)",
+          position: "absolute",           bottom: "calc(170px + var(--safe-b))", left: 14,
           zIndex: 1000, gap: 6, alignItems: "center",
           padding: "8px 18px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
@@ -347,8 +347,8 @@ export default function DistrictMap({
                 role="button" tabIndex={0}
                 onKeyDown={(e) => { if (e.key === "Enter") { router.push(`/event/${ev.id}`); } }}
                 style={{
-                  flex: "0 0 180px", borderRadius: 18, overflow: "hidden",
-                  position: "relative", height: 140, cursor: "pointer",
+                  flex: "0 0 160px", borderRadius: 18, overflow: "hidden",
+                  position: "relative", height: 120, cursor: "pointer",
                   boxShadow: "var(--shadow-md)",
                   transition: "transform 0.2s var(--ease-out-quart)",
                 }}
@@ -365,7 +365,7 @@ export default function DistrictMap({
               </div>
             ))}
             {filteredEvents.length > 8 && (
-              <div style={{ flex: "0 0 100px", borderRadius: 18, height: 140, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ flex: "0 0 100px", borderRadius: 18, height: 120, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-3)" }}>+{filteredEvents.length - 8} więcej</span>
               </div>
             )}

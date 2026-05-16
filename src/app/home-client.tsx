@@ -270,7 +270,7 @@ export default function HomeClient({
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   style={{
-                    flex: "0 0 200px", borderRadius: 22, overflow: "hidden",
+                    flex: "0 0 min(200px, 48vw)", borderRadius: 22, overflow: "hidden",
                     position: "relative", height: 200, cursor: "pointer",
                     transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
                     boxShadow: "var(--shadow-sm)",

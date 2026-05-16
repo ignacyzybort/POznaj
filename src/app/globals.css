@@ -666,7 +666,7 @@ body {
 }
 
 /* Mobile optimizations */
-@media (max-width: 370px) {
+@media (max-width: 440px) {
   .pz-event-grid { grid-template-columns: 1fr; }
   .pz-detail-stats { grid-template-columns: 1fr; }
 }
