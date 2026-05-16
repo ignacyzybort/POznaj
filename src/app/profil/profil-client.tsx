@@ -274,7 +274,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       </div>
 
       {/* Streak + Passport */}
-      <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr", gap: 10 }} className="pz-streak-passport-grid">
         <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
         <PassportCard stamps={stamps} />
       </div>

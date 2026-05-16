@@ -666,9 +666,14 @@ body {
 }
 
 /* Mobile optimizations */
+.pz-event-grid { grid-template-columns: 1fr 1fr; }
 @media (max-width: 440px) {
   .pz-event-grid { grid-template-columns: 1fr; }
   .pz-detail-stats { grid-template-columns: 1fr; }
+}
+.pz-streak-passport-grid { grid-template-columns: 1fr; }
+@media (min-width: 440px) {
+  .pz-streak-passport-grid { grid-template-columns: 1fr 1fr; }
 }
 
 /* Slow devices — drop expensive blur from animations */

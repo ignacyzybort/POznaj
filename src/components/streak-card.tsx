@@ -19,7 +19,7 @@ export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number;
         <div>
           <div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Streak</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span className="pz-num" style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{weeks}</span>
+            <span className="pz-num" style={{ fontSize: "var(--text-2xl)", fontWeight: 800, letterSpacing: "-0.03em", lineHeight: 1 }}>{weeks}</span>
             <span style={{ fontSize: 14, fontWeight: 600, opacity: 0.9 }}>tygodnie</span>
           </div>
         </div>

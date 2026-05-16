@@ -270,7 +270,7 @@ export default function HomeClient({
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   style={{
-                    flex: "0 0 min(200px, 48vw)", borderRadius: 22, overflow: "hidden",
+                    flex: "0 0 min(200px, 52vw)", borderRadius: 22, overflow: "hidden",
                     position: "relative", height: 200, cursor: "pointer",
                     transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
                     boxShadow: "var(--shadow-sm)",
@@ -312,7 +312,7 @@ export default function HomeClient({
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{total}</span>
         </div>
-        <div className="pz-feed-grid pz-event-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
+        <div className="pz-feed-grid pz-event-grid" style={{ display: "grid", gap: 14, containerType: "inline-size" }}>
           {loading ? Array.from({ length: 6 }).map((_, i) => (
             <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 132 }} />
