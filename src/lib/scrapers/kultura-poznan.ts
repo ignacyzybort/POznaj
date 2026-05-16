@@ -115,7 +115,7 @@ export class KulturaPoznanScraper implements Scraper {
           let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
 
           const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|$)/m);
-          const price = ticketMatch ? ticketMatch[1].trim() : undefined;
+          let price = ticketMatch ? ticketMatch[1].trim() : undefined;
 
           // Description: text before first <br>
           let description = "";
@@ -128,6 +128,13 @@ export class KulturaPoznanScraper implements Scraper {
 
           const urlMatch = pHtml.match(/href="([^"]+)"/);
           const sourceUrl = urlMatch ? urlMatch[1] : url;
+
+          // Fallback: extract price from description if Bilety field wasn't found
+          if (!price) {
+            const pMatch = (description + " " + pText).match(/(?:bilet[ya]\s*(?:od\s*)?|wstęp\s*(?:od\s*)?|cena\s*(?:od\s*)?)[\d\s]+\s*(?:zł|PLN)/i);
+            if (pMatch) price = pMatch[0].trim();
+            else if ((description + " " + pText).match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) price = "0 zł";
+          }
 
           const category = guessCategory(title, description);
 

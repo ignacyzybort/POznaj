@@ -29,7 +29,7 @@ export interface Scraper {
 const STOPWORDS = new Set(["w", "i", "na", "z", "do", "się", "po", "od", "za", "przed", "pod", "nad", "przy", "dla", "bez", "oraz", "ale", "lub", "the", "a", "an", "of", "to", "is", "it", "dla", "nie", "że", "jak", "co"]);
 
 function cleanTitle(t: string): string {
-  return t.replace(/\s*[–\u2013\-]\s*Bilety\s*$/i, "").replace(/&#8211;\s*Bilety/gi, "").trim();
+  return t.replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "").replace(/\s*\|\s*[Bb]ilety\s*$/g, "").replace(/&#8211;\s*Bilety/gi, "").trim();
 }
 
 function normalize(s: string): string {
@@ -87,6 +87,7 @@ const createData = (event: ScrapedEvent, vibes: string[]) => ({
 
 const updateData = (event: ScrapedEvent, vibes: string[]) => {
   const d: Record<string, any> = {
+    title: event.title,
     description: event.description,
     imageUrl: event.imageUrl,
     sourceUrl: event.sourceUrl,

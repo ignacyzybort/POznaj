@@ -93,7 +93,8 @@ export class PikPoznanScraper implements Scraper {
     $("article, .post, .entry, .event-item, .card, [class*='post'], .lista-wpisow > div, .grid > div, main > div > div").each((_, el) => {
       const titleEl = $(el).find("h2 a, h3 a, h2, h3, .title a, .entry-title a");
       const title = titleEl.first().text().trim()
-        .replace(/\s*[–\u2013\-]\s*Bilety\s*$/i, "")
+        .replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "")
+        .replace(/\s*\|\s*[Bb]ilety\s*$/g, "")
         .replace(/&#8211;\s*Bilety/gi, "")
         .trim();
       if (!title) return;
@@ -243,6 +244,12 @@ export class PikPoznanScraper implements Scraper {
               }
             }
             if (priceFromLd) ev.price = priceFromLd;
+            // Fallback: extract price from description text
+            if (!ev.price && ev.description) {
+              const pMatch = ev.description.match(/(?:bilet[ya]\s*(?:od\s*)?|wstęp\s*(?:od\s*)?|cena\s*(?:od\s*)?)[\d\s]+\s*(?:zł|PLN)/i);
+              if (pMatch) ev.price = pMatch[0].trim();
+              else if (ev.description.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) ev.price = "0 zł";
+            }
           } catch {}
         })
       );
