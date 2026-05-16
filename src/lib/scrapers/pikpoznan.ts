@@ -246,8 +246,8 @@ export class PikPoznanScraper implements Scraper {
             if (priceFromLd) ev.price = priceFromLd;
             // Fallback: extract price from description text
             if (!ev.price && ev.description) {
-              const pMatch = ev.description.match(/(?:bilet[ya]\s*(?:od\s*)?|wstęp\s*(?:od\s*)?|cena\s*(?:od\s*)?)[\d\s]+\s*(?:zł|PLN)/i);
-              if (pMatch) ev.price = pMatch[0].trim();
+              const pMatch = ev.description.match(/(?:bilety?\s*(?:od\s*[\-\u2013]?\s*)?|cena\s*(?:od\s*[\-\u2013]?\s*)?)\s*(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
+              if (pMatch) ev.price = `${pMatch[1].replace(/\s/g, "")} zł`;
               else if (ev.description.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) ev.price = "0 zł";
             }
           } catch {}
