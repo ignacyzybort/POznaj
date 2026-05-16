@@ -134,7 +134,7 @@ export default function HomeClient({
     if (!isSaved) {
       await fetch("/api/attendance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split("; ").find(r => r.startsWith("csrf-token="))?.split("=")[1] ?? "" },
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
       setToast("Zapisano ✅");
