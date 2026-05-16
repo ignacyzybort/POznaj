@@ -311,7 +311,7 @@ export default function HomeClient({
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{total}</span>
         </div>
-        <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
+        <div className="pz-feed-grid pz-event-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
           {loading ? Array.from({ length: 6 }).map((_, i) => (
             <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 132 }} />

@@ -145,7 +145,7 @@ export default function EventDetailClient({
             <HeatMeter score={event.score} size="md" />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+          <div className="pz-detail-stats" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
             <StatCard icon={<CalIcon size={14} />} label="Kiedy" title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`} sub={fmtFullDate(new Date(event.startDate))} />
             <StatCard icon={<PinIcon size={14} />} label="Gdzie" title={event.placeName} sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
             <StatCard icon={<UsersIcon size={14} />} label="Popularność" title={event.score >= 70 ? "Bardzo popularne" : event.score >= 40 ? "Rośnie" : "Nowość"} sub={`${event.score} pkt · na podstawie dopasowania`} />
