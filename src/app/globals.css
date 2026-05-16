@@ -250,7 +250,7 @@ button:not(:disabled):active,
   background: var(--bg-elev);
   box-shadow: var(--shadow-inset), var(--shadow-lg);
   display: flex; align-items: center; justify-content: space-around;
-  padding: 0 8px; z-index: 50;
+  padding: 0 8px; z-index: 50; position: relative;
 }
 .dark .pz-tabbar { background: rgba(36,38,44,0.82); }
 .pz-tab {
@@ -266,7 +266,7 @@ button:not(:disabled):active,
 .pz-tab:active { transform: scale(0.94); }
 
 .pz-tab-pill {
-  position: absolute;
+  position: absolute; left: 0;
   top: 6px;
   height: 52px;
   border-radius: 22px;
