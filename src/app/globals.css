@@ -5,13 +5,9 @@
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
 @import "@fontsource/inter/700.css";
-@import "@fontsource/inter/800.css";
-@import "@fontsource/inter/900.css";
 @import "@fontsource/instrument-serif/400.css";
 @import "@fontsource/instrument-serif/400-italic.css";
 @import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
-@import "@fontsource/jetbrains-mono/600.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -98,14 +94,14 @@
   --space-lg: 24px;
   --space-xl: 32px;
 
-  /* Typography scale */
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 15px;
-  --text-lg: 18px;
-  --text-xl: 22px;
-  --text-2xl: 30px;
-  --text-3xl: 36px;
+  /* Typography scale — fluid for mobile, capped at desktop values */
+  --text-xs: clamp(10px, 2.8vw, 11px);
+  --text-sm: clamp(12px, 3.2vw, 13px);
+  --text-base: clamp(14px, 3.7vw, 15px);
+  --text-lg: clamp(16px, 4.2vw, 18px);
+  --text-xl: clamp(18px, 4.8vw, 22px);
+  --text-2xl: clamp(24px, 6.4vw, 30px);
+  --text-3xl: clamp(28px, 7.5vw, 36px);
 
   /* Multi-layer shadow tokens */
   --shadow-sm: 0 0 0 1px rgba(20,19,15,0.04), 0 1px 2px -1px rgba(20,19,15,0.08), 0 1px 3px rgba(20,19,15,0.04);
@@ -181,7 +177,6 @@ button:not(:disabled):active,
   width: 100%;
   position: relative;
   overflow: hidden;
-  letter-spacing: -0.005em;
 }
 .pz-stage * { box-sizing: border-box; }
 .pz-stage button { font-family: inherit; color: inherit; }
@@ -199,7 +194,7 @@ button:not(:disabled):active,
 .pz-density-compact { --feed-gap: 8px; --card-pad: 10px; --feed-pad-x: 14px; --feed-pad-y: 10px; }
 
 /* Scroll */
-.pz-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: none; touch-action: pan-y; }
+.pz-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .pz-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
 .pz-scroll::-webkit-scrollbar-track { background: transparent; }
 .pz-scroll::-webkit-scrollbar-thumb { background: var(--ink-5); border-radius: 99px; }
@@ -370,7 +365,7 @@ button:not(:disabled):active,
 /* Atmospheric noise overlay on stage */
 .pz-stage::after {
   content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   mix-blend-mode: overlay; opacity: 0.035;
 }
@@ -649,9 +644,9 @@ body {
   border: 0 !important;
   border-radius: 14px !important;
   box-shadow: var(--shadow-md) !important;
-  width: 40px !important;
-  height: 40px !important;
-  line-height: 40px !important;
+  width: 44px !important;
+  height: 44px !important;
+  line-height: 44px !important;
   font-size: 20px !important;
   font-weight: 500 !important;
   margin-bottom: 6px !important;
@@ -668,4 +663,26 @@ body {
   box-shadow: none !important;
   padding: 0 !important;
   font-family: var(--font-sans) !important;
+}
+
+/* Mobile optimizations */
+.pz-event-grid { grid-template-columns: 1fr 1fr; }
+@media (max-width: 440px) {
+  .pz-event-grid { grid-template-columns: 1fr; }
+  .pz-detail-stats { grid-template-columns: 1fr; }
+}
+.pz-streak-passport-grid { grid-template-columns: 1fr; }
+@media (min-width: 440px) {
+  .pz-streak-passport-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Slow devices — drop expensive blur from animations */
+@media (prefers-reduced-power), (max-width: 400px) {
+  .pz-fade-in, .pz-card-stagger {
+    animation-name: none;
+  }
+  @keyframes pz-fade-in-mobile {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 }

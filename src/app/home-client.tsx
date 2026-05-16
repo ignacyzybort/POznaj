@@ -14,6 +14,7 @@ import BudgetChips, { type Budget } from "@/components/budget-chips";
 import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
+import EmptyState from "@/components/empty-state";
 import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
@@ -159,7 +160,7 @@ export default function HomeClient({
     <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       <div className="pz-scroll-progress" ref={progressRef} />
       {/* Header */}
-      <div style={{ padding: "calc(54px + var(--safe-t)) 18px 6px" }}>
+      <div style={{ padding: "calc(16px + var(--safe-t)) 18px 6px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
@@ -260,7 +261,7 @@ export default function HomeClient({
             </h2>
           </div>
           <div style={{ margin: "0 -18px" }}>
-            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto", paddingRight: 36 }}>
+            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto" }}>
               {forYou.map((ev, i) => (
                 <TiltCard key={ev.id}>
                   <div
@@ -269,8 +270,8 @@ export default function HomeClient({
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
                   style={{
-                    flex: "0 0 200px", borderRadius: 22, overflow: "hidden",
-                    position: "relative", height: 200, cursor: "pointer",
+                    width: "min(200px, 52vw)", flexShrink: 0, borderRadius: 22, overflow: "hidden",
+                    position: "relative", height: "min(200px, 52vw)", cursor: "pointer",
                     transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
                     boxShadow: "var(--shadow-sm)",
                   }}
@@ -289,7 +290,7 @@ export default function HomeClient({
                   </div>
                 </TiltCard>
               ))}
-              <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: 200, background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
+              <div onClick={() => { setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); }} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setQuick(null); setSearch(""); setBudget(null); setActiveFilters({ category: [], district: [], vibe: [] }); } }} style={{ flex: "0 0 120px", borderRadius: 22, height: "min(200px, 52vw)", background: "var(--bg-soft)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, transition: "transform 0.2s var(--ease-out-quart)" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 99, background: "var(--ink)", color: "var(--bg)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700 }}>→</div>
                 <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)" }}>Zobacz<br />wszystko</span>
               </div>
@@ -311,7 +312,7 @@ export default function HomeClient({
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{total}</span>
         </div>
-        <div className="pz-feed-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, containerType: "inline-size" }}>
+        <div className="pz-feed-grid pz-event-grid" style={{ display: "grid", gap: 14, containerType: "inline-size" }}>
           {loading ? Array.from({ length: 6 }).map((_, i) => (
             <div key={`skel-${i}`} style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)" }}>
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 132 }} />
@@ -337,12 +338,7 @@ export default function HomeClient({
             </div>
           )}
           {!loading && !error && events.length === 0 && (
-            <div style={{ padding: "40px 16px", textAlign: "center" }}>
-              <div className="pz-display pz-empty-pulse" style={{ fontSize: 38, lineHeight: 1, marginBottom: 10 }}>nic</div>
-              <p style={{ color: "var(--ink-3)", fontSize: 14, margin: 0 }}>
-                Spróbuj zluzować filtry, w mieście jest więcej życia.
-              </p>
-            </div>
+            <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
           )}
         </div>
       </div>

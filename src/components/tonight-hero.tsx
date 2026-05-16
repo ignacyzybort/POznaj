@@ -36,7 +36,7 @@ export default function TonightHero({
   return (
     <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{
       position: "relative", borderRadius: 26, overflow: "hidden",
-      height: 420, margin: "0 16px 18px",
+      height: "min(420px, 55dvh)", margin: "0 16px 18px",
       background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
       <EventArt event={ev} height={420} style="gradient" forceArt />

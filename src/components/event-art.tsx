@@ -44,6 +44,10 @@ export default function EventArt({
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
           loading="lazy"
+          decoding="async"
+          sizes="(max-width: 420px) 100vw, 420px"
+          width={420}
+          height={Math.round(420 * (height / (height > 200 ? 16 : 9)))}
           className={`pz-img-reveal${imgLoaded ? ' loaded' : ''}`}
           onLoad={() => setImgLoaded(true)}
           onError={() => setImgFailed(true)}

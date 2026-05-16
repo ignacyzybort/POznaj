@@ -17,14 +17,14 @@ export default function PassportCard({ stamps }: { stamps: Record<string, number
         </div>
         <PassportIcon size={16} />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
         {districts.map((d) => {
           const count = stamps[d.value] ?? 0;
           const unlocked = count > 0;
           return (
             <div key={d.value}
               style={{
-                aspectRatio: "1", borderRadius: 12,
+                aspectRatio: "1", borderRadius: 12, overflow: "hidden",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                 background: unlocked ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
                 boxShadow: unlocked ? "inset 0 0 0 1px rgba(255,255,255,0.3)" : "none",

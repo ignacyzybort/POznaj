@@ -13,7 +13,7 @@ export default async function MapaPage() {
       {/* Header */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
-        padding: "calc(54px + var(--safe-t)) 18px 10px",
+        padding: "calc(16px + var(--safe-t)) 18px 10px",
         zIndex: 1000, pointerEvents: "none",
       }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>
@@ -24,7 +24,7 @@ export default async function MapaPage() {
             {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
           </span>
         </div>
-        <h1 className="pz-h" style={{ margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 0.95, color: "var(--ink)" }}>
+        <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 7vw, 36px)", fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 0.95, color: "var(--ink)" }}>
           Dzielnice Poznania.
         </h1>
       </div>

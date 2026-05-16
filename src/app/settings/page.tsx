@@ -71,7 +71,7 @@ export default function SettingsPage() {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
-      <div style={{ padding: "calc(54px + var(--safe-t)) 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", alignItems: "center", gap: 10 }}>
         <button onClick={() => router.back()} aria-label="Wróć" style={{
           width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer",

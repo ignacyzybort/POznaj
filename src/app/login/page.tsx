@@ -14,7 +14,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
       {/* Back button */}
-      <div style={{ position: "absolute", top: "calc(54px + var(--safe-t))", left: 14, zIndex: 10 }}>
+      <div style={{ position: "absolute", top: "calc(16px + var(--safe-t))", left: 14, zIndex: 10 }}>
         <button onClick={() => router.back()} aria-label="Wróć" style={{
           width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",

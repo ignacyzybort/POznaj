@@ -12,9 +12,9 @@ export default function CategoryTag({ cat, size = "sm" }: { cat: string; size?: 
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 4,
       background: tone.bg, color: tone.fg,
-      padding: size === "sm" ? "3px 8px" : "5px 11px",
-      borderRadius: 999, fontSize: size === "sm" ? 11 : 12,
-      fontWeight: 700, letterSpacing: "-0.005em",
+      padding: size === "sm" ? "6px 10px" : "8px 14px",
+      borderRadius: 999, fontSize: size === "sm" ? 12 : 13,
+      fontWeight: 700, letterSpacing: "-0.005em", minHeight: 32,
     }}>
       {CATEGORY_LABEL[cat] ?? cat}
     </span>
