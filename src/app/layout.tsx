@@ -8,8 +8,8 @@ import PageTransition from "@/components/page-transition";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "POznaj — Co dziś w Poznaniu",
-  description: "Najciekawsze wydarzenia w Poznaniu",
+  title: "POznaj — Nudisz się? Nie dziś.",
+  description: "Wydarzenia w Poznaniu, które warto przeżyć. Nie śmietnik — kuratorowane.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "POznaj" },
 };

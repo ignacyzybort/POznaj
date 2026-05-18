@@ -162,7 +162,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       </div>
 
       {/* Cover banner — 120px */}
-      <div style={{ margin: "0 18px", height: 120, borderRadius: 22, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
+      <div style={{ margin: "0 18px", height: "min(240px, 35dvh)", borderRadius: 28, position: "relative", overflow: "hidden", background: coverUrl ? "none" : coverGradient }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {coverUrl && <img src={coverUrl} alt="Zdjęcie w tle profilu" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
         <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>

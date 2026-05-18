@@ -1,0 +1,633 @@
+[
+  {
+    "domain": "wmn.poznan.pl",
+    "count": 14,
+    "sampleUrls": [
+      "https://www.wmn.poznan.pl/"
+    ],
+    "eventTitles": [
+      "Weekend z historią - Poznań 1945",
+      "Śpiewanki Patriotyczne",
+      "Wystawa rodzinna \"Mela i szczun na historycznej ścieżce\"",
+      "Tydzień Przedszkolaka w Wielkopolskim Muzeum Niepodległości",
+      "Wjazd gen. J.H. Dąbrowskiego",
+      "Wspólne Świętowanie Niepodległości w Wielkopolskim Muzeum Niepodległości",
+      "\"Czas Apokalipsy\" w Muzeum Uzbrojenia w 45. rocznicę wprowadzenia stanu wojennego",
+      "Inscenizacja historyczna przyjazdu Ignacego Jana Paderewskiego do Poznania",
+      "Obchody 108. Rocznicy wybuchu Powstania Wielkopolskiego 1918-1919 w Muzeum Powstania Wielkopolskiego 1918-1919"
+    ]
+  },
+  {
+    "domain": "zamek.poznan.pl",
+    "count": 13,
+    "sampleUrls": [
+      "http://zamek.poznan.pl"
+    ],
+    "eventTitles": [
+      "Wystawa \"AI Algorytmy Iluzji\"",
+      "Festiwal Fabuły",
+      "Festiwal OPERA",
+      "Wystawa \"Świat jak zielnik. Natura w sztuce od XVII do XXI wieku\"",
+      "Imieniny Ulicy Święty Marcin",
+      "Festiwal Pięć Smaków"
+    ]
+  },
+  {
+    "domain": "galeriasluza.pl",
+    "count": 7,
+    "sampleUrls": [
+      "https://galeriasluza.pl/trudna-codziennosc-zycie-w-powojennym-poznaniu/",
+      "https://galeriasluza.pl/uapoteka-o-kolekcji-uniwersytetu-artystycznego-im-magdaleny-abakanowicz-w-poznaniu/",
+      "https://galeriasluza.pl/"
+    ],
+    "eventTitles": [
+      "Wystawa \"Trudna codzienność. Życie w powojennym Poznaniu\"",
+      "Wystawa - UAPoteka...o Kolekcji Uniwersytetu Artystycznego im. Magdaleny Abakanowicz w Poznaniu",
+      "Wystawa w Galerii Śluza"
+    ]
+  },
+  {
+    "domain": "filharmoniapoznanska.pl",
+    "count": 6,
+    "sampleUrls": [
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/styczen-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/luty-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/marzec-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/kwiecien-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/maj-2026/"
+    ],
+    "eventTitles": [
+      "Koncerty Filharmonii Poznańskiej",
+      "Koncerty Filharmonii Poznańskiej:"
+    ]
+  },
+  {
+    "domain": "amadeus.pl",
+    "count": 6,
+    "sampleUrls": [
+      "https://amadeus.pl/pl/"
+    ],
+    "eventTitles": [
+      "Koncert urodzinowy Maestry Agnieszki Duczmal",
+      "Koncert Mistrzowie z Amadeusem",
+      "Koncert Orkiestry Kameralnej Polskiego Radia Amadeus \"Broadway i kino\"",
+      "Koncert Orkiestry Kameralnej Polskiego Radia Amadeus \"Barok vs romantyzm\"",
+      "Koncert Orkiestry Kameralnej Polskiego Radia Amadeus"
+    ]
+  },
+  {
+    "domain": "lib.amu.edu.pl",
+    "count": 6,
+    "sampleUrls": [
+      "https://lib.amu.edu.pl/spotkanie-z-koleda-2026/",
+      "https://lib.amu.edu.pl/"
+    ],
+    "eventTitles": [
+      "Spotkanie z kolędą w Bibliotece Uniwersyteckiej",
+      "Wystawa \"W stronę góry Ararat. Badania armenistyczne Eugeniusza L. Słuszkiewicza\"",
+      "Poznański Festiwal Sztuki Komiksowej",
+      "Tydzień Bibliotek",
+      "30. Poznański Przegląd Książki Naukowej",
+      "Wystawa z okazji 105 rocznicy urodzin Henryka Derwicha"
+    ]
+  },
+  {
+    "domain": "mnp.art.pl",
+    "count": 6,
+    "sampleUrls": [
+      "https://mnp.art.pl/event/poznanska-boznanska-pokaz-prac-artystki-z-kolekcji-mnp",
+      "http://www.mnp.art.pl",
+      "https://mnp.art.pl/"
+    ],
+    "eventTitles": [
+      "Wystawa - Poznańska Boznańska - pokaz prac artystki z kolekcji MNP",
+      "Wystawa \"Ukryte znaczenia. Motyw wnętrz w sztuce polskiej od XIX do XXI wieku\"",
+      "Wystawa \"Moda na papierze\" - Graphic Concept",
+      "Wystawa \"Wielkopolska plastyka gotycka 1936/2026\""
+    ]
+  },
+  {
+    "domain": "titanic.pl",
+    "count": 6,
+    "sampleUrls": [
+      "https://titanic.pl/"
+    ],
+    "eventTitles": [
+      "Wystawa \"Titanic: The Artifact Exhibition\"",
+      "Wystawa - Titanic: The Artifact Exhibition"
+    ]
+  },
+  {
+    "domain": "bramapoznania.pl",
+    "count": 5,
+    "sampleUrls": [
+      "https://bramapoznania.pl/article/473/majowka-w-bramie-poznania-i-na-trakcie-krolewsko-cesarskim",
+      "https://bramapoznania.pl/kalendarium"
+    ],
+    "eventTitles": [
+      "Majówka w Bramie Poznania",
+      "Noc Dziecka. Plemiona",
+      "Rzeka żywa",
+      "Wieczór Małej Grozy w Bramie Poznania"
+    ]
+  },
+  {
+    "domain": "2025.poznandesignfestiwal.pl",
+    "count": 5,
+    "sampleUrls": [
+      "https://2025.poznandesignfestiwal.pl/"
+    ],
+    "eventTitles": [
+      "Poznań Design Festiwal"
+    ]
+  },
+  {
+    "domain": "csenigma.pl",
+    "count": 4,
+    "sampleUrls": [
+      "https://csenigma.pl/rizomatyczna-pamiec-7-12-2025-31-03-2025/",
+      "https://csenigma.pl/"
+    ],
+    "eventTitles": [
+      "Wystawa \"Rizomatyczna pamięć\"",
+      "5-lecie Centrum Szyfrów Enigma"
+    ]
+  },
+  {
+    "domain": "estrada.poznan.pl",
+    "count": 4,
+    "sampleUrls": [
+      "https://www.estrada.poznan.pl/"
+    ],
+    "eventTitles": [
+      "Lato z Estradą",
+      "Estrada w Centrum"
+    ]
+  },
+  {
+    "domain": "facebook.com",
+    "count": 3,
+    "sampleUrls": [
+      "https://www.facebook.com/events/1164440402567975",
+      "https://www.facebook.com/finalwospautomobilklubwielkopolski/",
+      "https://www.facebook.com/events/1077329847801920/?locale=pl_PL"
+    ],
+    "eventTitles": [
+      "34. Finał Wielkiej Orkiestry Świątecznej Pomocy",
+      "IX Zlot Czerwonych Samochodów"
+    ]
+  },
+  {
+    "domain": "teatr-polski.pl",
+    "count": 3,
+    "sampleUrls": [
+      "https://teatr-polski.pl/spektakle/dom-lalek/",
+      "https://teatr-polski.pl/"
+    ],
+    "eventTitles": [
+      "Premiera spektaklu \"Dom lalek\" w Teatrze Polskim",
+      "Premiera spektaklu \"Very Hamlet\" w Teatrze Polskim",
+      "Premiery spektakli w Teatrze Polskim"
+    ]
+  },
+  {
+    "domain": "teatranimacji.pl",
+    "count": 3,
+    "sampleUrls": [
+      "https://teatranimacji.pl/pl"
+    ],
+    "eventTitles": [
+      "Prapremiera spektaklu Teatru Animacji \"Weź to zrozum\"",
+      "Premiera spektaklu Teatru Animacji Arabela",
+      "Gala 80-lecia Teatru Animacji"
+    ]
+  },
+  {
+    "domain": "betlejempoznanskie.pl",
+    "count": 2,
+    "sampleUrls": [
+      "https://betlejempoznanskie.pl/"
+    ],
+    "eventTitles": [
+      "Betlejem Poznańskie - Jarmark Świąteczny",
+      "Jarmark Świąteczny na Targach"
+    ]
+  },
+  {
+    "domain": "opera.poznan.pl",
+    "count": 2,
+    "sampleUrls": [
+      "https://opera.poznan.pl/pl/koncert-noworoczny#select-date",
+      "https://opera.poznan.pl/pl/krol-roger"
+    ],
+    "eventTitles": [
+      "Koncerty Noworoczne w Teatrze Wielkim",
+      "Premiera opery \"Król Roger\" Karola Szymanowskiego"
+    ]
+  },
+  {
+    "domain": "wilniuki.pl",
+    "count": 2,
+    "sampleUrls": [
+      "http://www.wilniuki.pl/",
+      "http://www.wilniuki.pl"
+    ],
+    "eventTitles": [
+      "Kaziuk Wileński 2026",
+      "Obchody rocznicy Powstania Wileńskiego - Akcji Burza i Operacji \"Ostra Brama\""
+    ]
+  },
+  {
+    "domain": "entereneafestival.pl",
+    "count": 2,
+    "sampleUrls": [
+      "https://entereneafestival.pl/"
+    ],
+    "eventTitles": [
+      "Enter Enea Festival prezentuje: Dave Holland & Lionel Loueke, Leszek Możdżer & Lars Danielss",
+      "Enter Enea Festival prezentuje: Kurt Elling & Charlie Hunter - koncert"
+    ]
+  },
+  {
+    "domain": "wieniawski.pl",
+    "count": 2,
+    "sampleUrls": [
+      "https://www.wieniawski.pl/bezsennosc.html",
+      "https://www.wieniawski.pl/mks.html"
+    ],
+    "eventTitles": [
+      "10. Festiwal Bezsenność",
+      "17. Międzynarodowy Konkurs Skrzypcowy im. Henryka Wieniawskiego"
+    ]
+  },
+  {
+    "domain": "enterfestival.pl",
+    "count": 2,
+    "sampleUrls": [
+      "http://enterfestival.pl"
+    ],
+    "eventTitles": [
+      "16. Enter Enea Festival"
+    ]
+  },
+  {
+    "domain": "poznanskiekoledowanie.com",
+    "count": 1,
+    "sampleUrls": [
+      "https://poznanskiekoledowanie.com/"
+    ],
+    "eventTitles": [
+      "XVIII Poznańskie Kolędowanie - Bożonarodzeniowy Festiwal Muzyczny"
+    ]
+  },
+  {
+    "domain": "wosp.org.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://www.wosp.org.pl/"
+    ],
+    "eventTitles": [
+      "34. Finał Wielkiej Orkiestry Świątecznej Pomocy"
+    ]
+  },
+  {
+    "domain": "poznan.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://www.poznan.pl/mim/main/fotoplastykon,p,23153,45268.html&wo_id=485"
+    ],
+    "eventTitles": [
+      "Wystawa stereofotografii \"Od Muszej Góry do Wolności. Historia jednego placu\""
+    ]
+  },
+  {
+    "domain": "ps.ckzamek.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://ps.ckzamek.pl/podstrony/10786-forum-bez-barier/"
+    ],
+    "eventTitles": [
+      "Forum bez barier. O kinie dostępnym"
+    ]
+  },
+  {
+    "domain": "targiksiazki.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://targiksiazki.pl/pl/dla-zwiedzajacych/wazne-informacje/ceny-biletow-i-dodatkowe-informacje/"
+    ],
+    "eventTitles": [
+      "Poznańskie Targi Książki"
+    ]
+  },
+  {
+    "domain": "",
+    "count": 1,
+    "sampleUrls": [
+      "data:%2025.10.2025-29.03.2026%20Miejsce:%20Galeria%20%15Aluza%20przy%20Bramie%20Poznania%20Wi%119cej:%20strona%20Galerii%20%15Aluza"
+    ],
+    "eventTitles": [
+      "XXXVI Dni Kultury Francuskiej i Frankofonii"
+    ]
+  },
+  {
+    "domain": "nextfest.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://nextfest.pl/"
+    ],
+    "eventTitles": [
+      "NEXT FEST Music Showcase & Conference"
+    ]
+  },
+  {
+    "domain": "komiksy-poznan.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://komiksy-poznan.pl/"
+    ],
+    "eventTitles": [
+      "Poznański Festiwal Sztuki Komiksowej"
+    ]
+  },
+  {
+    "domain": "festiwal.amu.edu.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://festiwal.amu.edu.pl/"
+    ],
+    "eventTitles": [
+      "Poznański Festiwal Nauki i Sztuki"
+    ]
+  },
+  {
+    "domain": "wiosnamuzyczna.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://wiosnamuzyczna.pl/"
+    ],
+    "eventTitles": [
+      "Międzynarodowy Festiwal Muzyki Współczesnej \"Poznańska Wiosna Muzyczna\" - 55 edycja"
+    ]
+  },
+  {
+    "domain": "nocmuzeow.poznan.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://nocmuzeow.poznan.pl/"
+    ],
+    "eventTitles": [
+      "Noc Muzeów"
+    ]
+  },
+  {
+    "domain": "mdag.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://mdag.pl/22/pl/warszawa/homepage"
+    ],
+    "eventTitles": [
+      "Festiwal Filmów Dokumentalnych Millennium Docs Against Gravity"
+    ]
+  },
+  {
+    "domain": "ukulele.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://ukulele.pl/"
+    ],
+    "eventTitles": [
+      "Cały Poznań Ukulele"
+    ]
+  },
+  {
+    "domain": "ethnoport.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://ethnoport.pl/"
+    ],
+    "eventTitles": [
+      "Ethno Port Festival"
+    ]
+  },
+  {
+    "domain": "pyrkon.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://www.pyrkon.pl"
+    ],
+    "eventTitles": [
+      "Festiwal Fantastyki Pyrkon"
+    ]
+  },
+  {
+    "domain": "malta-festival.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://malta-festival.pl/"
+    ],
+    "eventTitles": [
+      "Malta Festival 2026"
+    ]
+  },
+  {
+    "domain": "rockfestiwal.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://rockfestiwal.pl/"
+    ],
+    "eventTitles": [
+      "Poznań Rock Festival"
+    ]
+  },
+  {
+    "domain": "ckzamek.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://ckzamek.pl/"
+    ],
+    "eventTitles": [
+      "Enea Edison Festival"
+    ]
+  },
+  {
+    "domain": "animator-festival.com",
+    "count": 1,
+    "sampleUrls": [
+      "https://animator-festival.com/"
+    ],
+    "eventTitles": [
+      "19. Międzynarodowy Festiwal Filmów Animowanych ANIMATOR"
+    ]
+  },
+  {
+    "domain": "bittersweetfestival.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://bittersweetfestival.pl/"
+    ],
+    "eventTitles": [
+      "BitterSweet Festival 2026"
+    ]
+  },
+  {
+    "domain": "ofds.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://ofds.pl/"
+    ],
+    "eventTitles": [
+      "20. Festiwal Dobrego Smaku"
+    ]
+  },
+  {
+    "domain": "rockowizna.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://rockowizna.pl"
+    ],
+    "eventTitles": [
+      "Rockowizna Festiwal"
+    ]
+  },
+  {
+    "domain": "oldjazzfestival.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://oldjazzfestival.pl"
+    ],
+    "eventTitles": [
+      "XVIII Poznań Old Jazz Festival"
+    ]
+  },
+  {
+    "domain": "festiwal-granda.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://www.festiwal-granda.pl/"
+    ],
+    "eventTitles": [
+      "Poznański Festiwal Kryminału GRANDA 2026"
+    ]
+  },
+  {
+    "domain": "festfyrtel.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://festfyrtel.pl/spacery/"
+    ],
+    "eventTitles": [
+      "Spacery po Fest Fyrtlach"
+    ]
+  },
+  {
+    "domain": "vivaseniorzy.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://vivaseniorzy.pl/pl/"
+    ],
+    "eventTitles": [
+      "Targi Viva Seniorzy!"
+    ]
+  },
+  {
+    "domain": "gamearena.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://gamearena.pl"
+    ],
+    "eventTitles": [
+      "Targi - Poznań Game Arena"
+    ]
+  },
+  {
+    "domain": "caravanssalon.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://caravanssalon.pl"
+    ],
+    "eventTitles": [
+      "Targi - Caravans Salon Poland"
+    ]
+  },
+  {
+    "domain": "tour-salon.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://tour-salon.pl"
+    ],
+    "eventTitles": [
+      "Targi - Tour Salon"
+    ]
+  },
+  {
+    "domain": "bonafide.org.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://bonafide.org.pl"
+    ],
+    "eventTitles": [
+      "V Paderewski Festival"
+    ]
+  },
+  {
+    "domain": "britishfilmfestival.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://britishfilmfestival.pl"
+    ],
+    "eventTitles": [
+      "British Film Festival"
+    ]
+  },
+  {
+    "domain": "alekino.com",
+    "count": 1,
+    "sampleUrls": [
+      "http://alekino.com"
+    ],
+    "eventTitles": [
+      "Międzynarodowy Festiwal Filmów Młodego Widza - Ale Kino!"
+    ]
+  },
+  {
+    "domain": "targihobby.pl",
+    "count": 1,
+    "sampleUrls": [
+      "https://targihobby.pl/pl/"
+    ],
+    "eventTitles": [
+      "Targi Hobby"
+    ]
+  },
+  {
+    "domain": "wystawapsow.com",
+    "count": 1,
+    "sampleUrls": [
+      "https://wystawapsow.com/pl/"
+    ],
+    "eventTitles": [
+      "Międzynarodowa Wystawa Psów Rasowych"
+    ]
+  },
+  {
+    "domain": "jarmark.poznan.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://jarmark.poznan.pl"
+    ],
+    "eventTitles": [
+      "Jarmark Świąteczny na Targach"
+    ]
+  },
+  {
+    "domain": "festiwalprezentow.pl",
+    "count": 1,
+    "sampleUrls": [
+      "http://festiwalprezentow.pl"
+    ],
+    "eventTitles": [
+      "Festiwal Prezentów"
+    ]
+  }
+]

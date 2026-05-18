@@ -1,0 +1,304 @@
+[
+  {
+    "domain": "wmn.poznan.pl",
+    "count": 14,
+    "representativeUrl": "https://www.wmn.poznan.pl/",
+    "allUrls": [
+      "https://www.wmn.poznan.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": true,
+    "hasOgImage": true,
+    "hasOgTitle": true,
+    "hasOgDescription": true,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [
+      "WebPage",
+      "ImageObject",
+      "BreadcrumbList",
+      "WebSite"
+    ],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "description (og)",
+      "image (og)",
+      "JSON-LD: WebPage, ImageObject, BreadcrumbList, WebSite",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "wordpress-rest-api-or-og-meta"
+  },
+  {
+    "domain": "zamek.poznan.pl",
+    "count": 13,
+    "representativeUrl": "http://zamek.poznan.pl",
+    "allUrls": [
+      "http://zamek.poznan.pl"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": true,
+    "hasOgTitle": true,
+    "hasOgDescription": true,
+    "isWordPress": false,
+    "cms": "unknown",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "description (og)",
+      "image (og)",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "generic-og-meta"
+  },
+  {
+    "domain": "galeriasluza.pl",
+    "count": 7,
+    "representativeUrl": "https://galeriasluza.pl/trudna-codziennosc-zycie-w-powojennym-poznaniu/",
+    "allUrls": [
+      "https://galeriasluza.pl/trudna-codziennosc-zycie-w-powojennym-poznaniu/",
+      "https://galeriasluza.pl/uapoteka-o-kolekcji-uniwersytetu-artystycznego-im-magdaleny-abakanowicz-w-poznaniu/",
+      "https://galeriasluza.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": true,
+    "hasOgTitle": true,
+    "hasOgDescription": true,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "description (og)",
+      "image (og)",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "wordpress-rest-api-or-og-meta"
+  },
+  {
+    "domain": "filharmoniapoznanska.pl",
+    "count": 6,
+    "representativeUrl": "https://filharmoniapoznanska.pl/koncerty-miesiac/styczen-2026/",
+    "allUrls": [
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/styczen-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/luty-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/marzec-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/kwiecien-2026/",
+      "https://filharmoniapoznanska.pl/koncerty-miesiac/maj-2026/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": true,
+    "hasOgImage": false,
+    "hasOgTitle": true,
+    "hasOgDescription": false,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [
+      "CollectionPage",
+      "ImageObject",
+      "BreadcrumbList",
+      "WebSite"
+    ],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "JSON-LD: CollectionPage, ImageObject, BreadcrumbList, WebSite",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "generic-json-ld"
+  },
+  {
+    "domain": "amadeus.pl",
+    "count": 6,
+    "representativeUrl": "https://amadeus.pl/pl/",
+    "allUrls": [
+      "https://amadeus.pl/pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": false,
+    "hasOgTitle": false,
+    "hasOgDescription": false,
+    "isWordPress": false,
+    "cms": "unknown",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "custom-html-scrape"
+  },
+  {
+    "domain": "lib.amu.edu.pl",
+    "count": 6,
+    "representativeUrl": "https://lib.amu.edu.pl/spotkanie-z-koleda-2026/",
+    "allUrls": [
+      "https://lib.amu.edu.pl/spotkanie-z-koleda-2026/",
+      "https://lib.amu.edu.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": true,
+    "hasOgImage": false,
+    "hasOgTitle": true,
+    "hasOgDescription": true,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [
+      "WebPage",
+      "ImageObject",
+      "BreadcrumbList",
+      "WebSite",
+      "Organization"
+    ],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "description (og)",
+      "JSON-LD: WebPage, ImageObject, BreadcrumbList, WebSite, Organization",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "wordpress-rest-api-or-og-meta"
+  },
+  {
+    "domain": "mnp.art.pl",
+    "count": 6,
+    "representativeUrl": "https://mnp.art.pl/event/poznanska-boznanska-pokaz-prac-artystki-z-kolekcji-mnp",
+    "allUrls": [
+      "https://mnp.art.pl/event/poznanska-boznanska-pokaz-prac-artystki-z-kolekcji-mnp",
+      "http://www.mnp.art.pl",
+      "https://mnp.art.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": true,
+    "hasOgImage": false,
+    "hasOgTitle": false,
+    "hasOgDescription": false,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [
+      "[class*='event-']",
+      ".tribe-events-event"
+    ],
+    "extractableData": [
+      "JSON-LD: ",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "generic-json-ld"
+  },
+  {
+    "domain": "bramapoznania.pl",
+    "count": 5,
+    "representativeUrl": "https://bramapoznania.pl/article/473/majowka-w-bramie-poznania-i-na-trakcie-krolewsko-cesarskim",
+    "allUrls": [
+      "https://bramapoznania.pl/article/473/majowka-w-bramie-poznania-i-na-trakcie-krolewsko-cesarskim",
+      "https://bramapoznania.pl/kalendarium"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": true,
+    "hasOgTitle": true,
+    "hasOgDescription": false,
+    "isWordPress": false,
+    "cms": "unknown",
+    "hasEventDates": false,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "image (og)",
+      "venue info"
+    ],
+    "recommendedApproach": "generic-og-meta"
+  },
+  {
+    "domain": "2025.poznandesignfestiwal.pl",
+    "count": 5,
+    "representativeUrl": "https://2025.poznandesignfestiwal.pl/",
+    "allUrls": [
+      "https://2025.poznandesignfestiwal.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": false,
+    "hasOgTitle": false,
+    "hasOgDescription": false,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [
+      ".post"
+    ],
+    "extractableData": [
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "custom-html-scrape"
+  },
+  {
+    "domain": "csenigma.pl",
+    "count": 4,
+    "representativeUrl": "https://csenigma.pl/rizomatyczna-pamiec-7-12-2025-31-03-2025/",
+    "allUrls": [
+      "https://csenigma.pl/rizomatyczna-pamiec-7-12-2025-31-03-2025/",
+      "https://csenigma.pl/"
+    ],
+    "fetchStatus": "success",
+    "fetchError": null,
+    "hasJsonLD": false,
+    "hasOgImage": true,
+    "hasOgTitle": true,
+    "hasOgDescription": true,
+    "isWordPress": true,
+    "cms": "WordPress",
+    "hasEventDates": true,
+    "hasEventVenues": true,
+    "jsonLDTypes": [],
+    "suggestedSelectors": [],
+    "extractableData": [
+      "title (og)",
+      "description (og)",
+      "image (og)",
+      "event dates",
+      "venue info"
+    ],
+    "recommendedApproach": "wordpress-rest-api-or-og-meta"
+  }
+]

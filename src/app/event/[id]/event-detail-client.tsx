@@ -128,7 +128,7 @@ export default function EventDetailClient({
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 
-        <div style={{ height: "min(340px, 45dvh)", overflow: "hidden" }}>
+        <div style={{ height: "min(420px, 55dvh)", overflow: "hidden", margin: "0 -18px" }}>
           <EventArt event={event} height={340} style="collage" />
         </div>
 
