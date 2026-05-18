@@ -74,8 +74,8 @@ function parseSubEvents(html: string, year: number): { date: Date; venue: string
 }
 
 // Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
-function parseScreenings(description: string, year: number): { date: Date; title: string }[] {
-  const screenings: { date: Date; title: string }[] = [];
+function parseScreenings(description: string, year: number): { date: Date; time: string; title: string }[] {
+  const screenings: { date: Date; time: string; title: string }[] = [];
   const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
   let match;
   while ((match = pattern.exec(description)) !== null) {
@@ -83,7 +83,7 @@ function parseScreenings(description: string, year: number): { date: Date; title
     const parts = dateStr.split(".");
     const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
     if (!isNaN(d.getTime())) {
-      screenings.push({ date: d, title: title.trim() });
+      screenings.push({ date: d, time, title: title.trim() });
     }
   }
   return screenings;
@@ -184,7 +184,7 @@ export class KulturaPoznanScraper implements Scraper {
                 sourceUrl,
                 startDate: s.date,
                 endDate: s.date,
-                time: undefined,
+                time: s.time,
                 vibes: ["Kulturalne"],
                 source: "kultura-poznan",
                 sourceId: `kp-${Buffer.from(s.title).toString("base64").slice(0, 24)}`,
