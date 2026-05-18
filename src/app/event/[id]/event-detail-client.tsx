@@ -12,6 +12,7 @@ import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
 import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
+import ShareModal from "@/components/share-modal";
 import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
@@ -57,6 +58,7 @@ export default function EventDetailClient({
   const [animatingSave, setAnimatingSave] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [similar, setSimilar] = useState<InitialEvent[]>(initialSimilar);
+  const [showShare, setShowShare] = useState(false);
   const [glowVisible, setGlowVisible] = useState(false);
   const [actionBarVisible, setActionBarVisible] = useState(false);
   const [similarVisible, setSimilarVisible] = useState(false);
@@ -125,6 +127,7 @@ export default function EventDetailClient({
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: "calc(92px + var(--safe-b))" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><BackIcon size={20} /></button>
+          <button onClick={() => setShowShare(true)} aria-label="Wyślij znajomemu" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)", fontSize: 18 }}>💌</button>
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 
@@ -199,6 +202,13 @@ export default function EventDetailClient({
 
       <Confetti active={confetti} />
       <Toast msg={toast} onClear={() => setToast(null)} />
+      {showShare && (
+        <ShareModal
+          eventId={event.id}
+          eventTitle={event.title}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   );
 }

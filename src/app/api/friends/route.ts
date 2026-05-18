@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendPushNotification } from "@/lib/push";
 
 export async function GET(request: NextRequest) {
   try {
@@ -101,6 +102,11 @@ export async function POST(request: NextRequest) {
           body: "Odpowiedz na zaproszenie w profilu",
         },
       });
+      sendPushNotification(friendId, {
+        title: `${sender?.name ?? "Ktoś"} chce być Twoim znajomym`,
+        body: "Odpowiedz na zaproszenie w profilu",
+        url: "/profil",
+      });
       return NextResponse.json({ status: "PENDING" });
     }
 
@@ -110,6 +116,18 @@ export async function POST(request: NextRequest) {
         data: { status: "ACCEPTED" },
       });
       return NextResponse.json({ status: "ACCEPTED" });
+    }
+
+    if (action === "unfriend") {
+      await prisma.friendship.deleteMany({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: friendId },
+            { senderId: friendId, receiverId: userId },
+          ],
+        },
+      });
+      return NextResponse.json({ status: null });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

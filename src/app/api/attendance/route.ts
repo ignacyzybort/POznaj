@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recomputeEventScore } from "@/lib/scoring";
+import { sendPushNotification } from "@/lib/push";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest) {
       await prisma.attendance.delete({
         where: { userId_eventId: { userId, eventId } },
       });
+      recomputeEventScore(prisma, eventId);
       return NextResponse.json({ status: null });
     }
 
@@ -43,9 +46,50 @@ export async function POST(request: NextRequest) {
       data: { userId, eventId, status: finalStatus },
     });
 
-    await prisma.activity.create({
-      data: { userId, eventId, type: "GOING" },
+    if (finalStatus === "GOING" || finalStatus === "SAVED") {
+      await prisma.activity.create({
+        data: { userId, eventId, type: finalStatus },
+      });
+    }
+
+    recomputeEventScore(prisma, eventId);
+
+    const friends = await prisma.friendship.findMany({
+      where: {
+        OR: [
+          { senderId: userId, status: "ACCEPTED" },
+          { receiverId: userId, status: "ACCEPTED" },
+        ],
+      },
+      select: { senderId: true, receiverId: true },
     });
+    const friendIds = friends.map((f) =>
+      f.senderId === userId ? f.receiverId : f.senderId
+    );
+
+    if (friendIds.length > 0) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+      const userName = user?.name ?? "Znajomy";
+      await prisma.notification.createMany({
+        data: friendIds.map((fid) => ({
+          userId: fid,
+          type: "FRIEND_ATTENDING",
+          title: `${userName} wybiera się na wydarzenie`,
+          body: finalStatus === "GOING" ? "Dołącz do znajomego!" : null,
+        })),
+      });
+
+      for (const fid of friendIds) {
+        sendPushNotification(fid, {
+          title: `${userName} wybiera się na wydarzenie`,
+          body: finalStatus === "GOING" ? "Dołącz do znajomego!" : undefined,
+          url: `/event/${eventId}`,
+        });
+      }
+    }
 
     return NextResponse.json({ status: attendance.status });
   } catch (e) {

@@ -3,24 +3,51 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { districts, categoryEmoji } from "@/lib/data";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackIcon } from "@/components/icons";
+
+function getCsrfToken() {
+  return document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "";
+}
 
 export default function UserPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [friendStatus, setFriendStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/users/${params.id}`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.user) setData(d);
+        if (d.user) {
+          setData(d);
+          setFriendStatus(d.user.friendshipStatus);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, [params.id]);
+
+  const handleFriendAction = async (action: "send" | "accept" | "unfriend") => {
+    if (!session?.user) { router.push("/login"); return; }
+    const res = await fetch("/api/friends", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
+      body: JSON.stringify({ friendId: params.id, action }),
+    });
+    const d = await res.json();
+    if (action === "unfriend") {
+      setFriendStatus(null);
+    } else if (action === "send") {
+      setFriendStatus("PENDING_SENT");
+    } else if (action === "accept") {
+      setFriendStatus("ACCEPTED");
+    }
+  };
 
   if (loading) {
     return (
@@ -84,12 +111,36 @@ export default function UserPage() {
               </div>
             )}
           </div>
-          <div>
+          <div style={{ flex: 1 }}>
             <div className="pz-h" style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.025em", color: "var(--ink)" }}>{user.name ?? "Użytkownik"}</div>
             <div style={{ fontSize: 13, color: "var(--ink-3)" }}>
               {user.handle ? `@${user.handle}` : ""}{districtLabel ? ` · ${districtLabel}` : ""}
             </div>
           </div>
+          {session?.user?.id !== user.id && (
+            <div>
+              {friendStatus === null && (
+                <button onClick={() => handleFriendAction("send")} className="pz-btn primary" style={{ height: 38, fontSize: 13, borderRadius: 22, padding: "0 16px" }}>
+                  Dodaj znajomego
+                </button>
+              )}
+              {friendStatus === "PENDING_SENT" && (
+                <button onClick={() => handleFriendAction("unfriend")} className="pz-btn ghost" style={{ height: 38, fontSize: 13, borderRadius: 22, padding: "0 16px" }}>
+                  Zaproszenie wysłane
+                </button>
+              )}
+              {friendStatus === "PENDING_RECEIVED" && (
+                <button onClick={() => handleFriendAction("accept")} className="pz-btn primary" style={{ height: 38, fontSize: 13, borderRadius: 22, padding: "0 16px" }}>
+                  Zaakceptuj
+                </button>
+              )}
+              {friendStatus === "ACCEPTED" && (
+                <button onClick={() => handleFriendAction("unfriend")} className="pz-btn ghost" style={{ height: 38, fontSize: 13, borderRadius: 22, padding: "0 16px" }}>
+                  Znajomi ✓
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -112,7 +163,7 @@ export default function UserPage() {
             <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>zapisane</div>
           </div>
           <div style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
-            <div className="pz-num" style={{ fontSize: 24, fontWeight: 700 }}>{user._count.sentFriendships}</div>
+            <div className="pz-num" style={{ fontSize: 24, fontWeight: 700 }}>{user.friendCount}</div>
             <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>znajomi</div>
           </div>
         </div>
@@ -122,6 +173,36 @@ export default function UserPage() {
       <div style={{ padding: "14px 18px 0" }}>
         <p style={{ fontSize: 12, color: "var(--ink-4)" }}>W POznaj od {createdAt}</p>
       </div>
+
+      {/* Mutual friends */}
+      {user.mutualFriendCount > 0 && user.mutualFriends && (
+        <div style={{ padding: "14px 18px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {user.mutualFriends.slice(0, 5).map((f: any, i: number) => (
+                <div key={f.id} style={{
+                  width: 26, height: 26, borderRadius: 99, overflow: "hidden",
+                  border: "2px solid var(--bg)", marginLeft: i > 0 ? -8 : 0,
+                  flexShrink: 0, background: "var(--bg-soft)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "var(--ink-3)", fontSize: 12, fontWeight: 700,
+                }}>
+                  {f.image ? (
+                    <img src={f.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    f.name?.[0]?.toUpperCase() ?? "?"
+                  )}
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.3 }}>
+              {user.mutualFriendCount === 1
+                ? `Ty i ${user.name} macie 1 wspólnego znajomego`
+                : `Ty i ${user.name} macie ${user.mutualFriendCount} wspólnych znajomych`}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Recent activity */}
       {activities.length > 0 && (

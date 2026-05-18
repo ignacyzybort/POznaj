@@ -2,6 +2,7 @@ import { PikPoznanScraper } from "./pikpoznan";
 import { KulturaPoznanScraper } from "./kultura-poznan";
 import { FacebookScraper } from "./facebook";
 import { saveEvents, Scraper } from "./base";
+import { recomputeAllScores } from "@/lib/scoring";
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
@@ -33,6 +34,10 @@ async function runAll() {
   }
 
   console.log("[Scraper] Done.");
+
+  const recomputed = await recomputeAllScores(prisma);
+  console.log(`[Scraper] Scores recomputed: ${recomputed} events updated.`);
+
   await prisma.$disconnect();
 }
 

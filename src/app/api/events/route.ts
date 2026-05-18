@@ -195,13 +195,51 @@ export async function GET(request: NextRequest) {
 
     const events = await prisma.event.findMany({
       where,
-      include: { vibes: { select: { vibe: true } } },
+      include: {
+        vibes: { select: { vibe: true } },
+        _count: { select: { attendance: { where: { status: "GOING" } } } },
+      },
       orderBy,
       take: limit,
       skip: offset,
     });
 
     const total = await prisma.event.count({ where });
+
+    const session = await auth();
+    let friendGoingMap: Map<string, { name: string; image?: string }[]> = new Map();
+    const currentUserId = session?.user?.id;
+
+    if (currentUserId) {
+      const friendIds = (
+        await prisma.friendship.findMany({
+          where: {
+            status: "ACCEPTED",
+            OR: [{ senderId: currentUserId }, { receiverId: currentUserId }],
+          },
+          select: { senderId: true, receiverId: true },
+        })
+      ).map((f) => (f.senderId === currentUserId ? f.receiverId : f.senderId));
+
+      if (friendIds.length > 0) {
+        const goingAttendances = await prisma.attendance.findMany({
+          where: {
+            userId: { in: friendIds },
+            eventId: { in: events.map((e) => e.id) },
+            status: "GOING",
+          },
+          select: {
+            eventId: true,
+            user: { select: { name: true, image: true } },
+          },
+        });
+        for (const a of goingAttendances) {
+          const list = friendGoingMap.get(a.eventId) ?? [];
+          list.push({ name: a.user.name ?? "Znajomy", image: a.user.image ?? undefined });
+          friendGoingMap.set(a.eventId, list);
+        }
+      }
+    }
 
     const serialized = events.map((e) => ({
       id: e.id,
@@ -223,13 +261,14 @@ export async function GET(request: NextRequest) {
       outdoor: e.outdoor,
       coordsX: e.coordsX,
       coordsY: e.coordsY,
+      going: e._count.attendance,
+      friendsGoing: friendGoingMap.get(e.id) ?? [],
     }));
 
     let recommended: any[] | null = null;
     if (searchParams.get("recommended") === "true") {
-      const session = await auth();
-      if (session?.user?.id) {
-        const recs = await getRecommendations(session.user.id, 5);
+      if (currentUserId) {
+        const recs = await getRecommendations(currentUserId, 5);
         recommended = (recs as any[]).map((e) => ({
           id: e.id,
           title: e.title,

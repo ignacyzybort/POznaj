@@ -9,10 +9,10 @@ export interface UserPreferences {
 export function calculateBaseScore(event: {
   startDate: Date;
   endDate: Date;
-  imageUrl: string | null;
-  description: string | null;
-  time: string | null;
-  address: string | null;
+  imageUrl?: string | null;
+  description?: string | null;
+  time?: string | null;
+  address?: string | null;
 }): number {
   let score = 0;
 
@@ -38,6 +38,57 @@ export function calculateBaseScore(event: {
   score += (completeness / 4) * 20;
 
   return score;
+}
+
+export function calculateAttendanceScore(goingCount: number): number {
+  if (goingCount >= 501) return 40;
+  if (goingCount >= 101) return 30;
+  if (goingCount >= 21) return 20;
+  if (goingCount >= 6) return 10;
+  return 0;
+}
+
+export async function recomputeAllScores(prisma: {
+  event: {
+    findMany: (args: any) => Promise<any[]>;
+    update: (args: any) => Promise<any>;
+  };
+}) {
+  const events = await prisma.event.findMany({
+    where: { endDate: { gte: new Date() } },
+    include: { _count: { select: { attendance: { where: { status: "GOING" } } } } },
+  });
+
+  let updated = 0;
+  for (const e of events) {
+    const base = calculateBaseScore(e);
+    const att = calculateAttendanceScore(e._count.attendance);
+    const score = base + att;
+    if (score !== e.score) {
+      await prisma.event.update({ where: { id: e.id }, data: { score } });
+      updated++;
+    }
+  }
+  return updated;
+}
+
+export async function recomputeEventScore(prisma: {
+  event: {
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+  };
+}, eventId: string) {
+  const e = await prisma.event.findUnique({
+    where: { id: eventId },
+    include: { _count: { select: { attendance: { where: { status: "GOING" } } } } },
+  });
+  if (!e) return;
+  const base = calculateBaseScore(e);
+  const att = calculateAttendanceScore(e._count.attendance);
+  const score = base + att;
+  if (score !== e.score) {
+    await prisma.event.update({ where: { id: eventId }, data: { score } });
+  }
 }
 
 export function calculatePreferenceBoost(

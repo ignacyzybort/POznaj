@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 
 interface NearbyFriend {
   name: string;
+  image?: string;
   color: string;
   where: string;
-  mins: number;
 }
 
 const COLORS = ["#FF6B2C", "#6E3DFF", "#FF3D7F", "#2860FF", "#C8FF2E", "#E89A6B", "#FFB627"];
@@ -16,21 +16,20 @@ export default function NearbyNow() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/friends").then((r) => r.json()),
-      fetch("/api/events?limit=10").then((r) => r.json()),
-    ]).then(([friendsData, eventsData]) => {
-      const fList = friendsData.friends ?? [];
-      const eList = eventsData.events ?? [];
-      const nearby: NearbyFriend[] = fList.slice(0, 5).map((f: any, i: number) => ({
-        name: f.name ?? "Znajomy",
-        color: COLORS[i % COLORS.length],
-        where: eList[i % eList.length]?.placeName ?? "Poznań",
-        mins: 5 + i * 7,
-      }));
-      setFriends(nearby);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    fetch("/api/friends/going")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.friends && d.friends.length > 0) {
+          setFriends(d.friends.slice(0, 5).map((f: any, i: number) => ({
+            name: f.name ?? "Znajomy",
+            image: f.image,
+            color: COLORS[i % COLORS.length],
+            where: f.placeName ?? "w Poznaniu",
+          })));
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   if (loading || friends.length === 0) return null;
@@ -78,7 +77,7 @@ export default function NearbyNow() {
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em" }}>{n.name}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{n.where} · {n.mins} min stąd</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{n.where}</div>
             </div>
           </div>
         ))}

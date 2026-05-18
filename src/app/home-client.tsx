@@ -132,12 +132,12 @@ export default function HomeClient({
   const toggleSave = async (id: string) => {
     if (!session?.user) { router.push("/login"); return; }
     const isSaved = savedIds.includes(id);
+    await fetch("/api/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+      body: JSON.stringify({ eventId: id, status: "SAVED" }),
+    });
     if (!isSaved) {
-      await fetch("/api/attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
-        body: JSON.stringify({ eventId: id, status: "SAVED" }),
-      });
       setToast("Zapisano ✅");
       setTimeout(() => { router.push("/lista"); }, DUR.reveal);
     }

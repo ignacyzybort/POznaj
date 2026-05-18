@@ -25,12 +25,75 @@ export async function GET(
         bio: true,
         district: true,
         createdAt: true,
-        _count: { select: { attendance: true, savedEvents: true, sentFriendships: true } },
+        _count: { select: { attendance: true, savedEvents: true } },
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const friendCount = await prisma.friendship.count({
+      where: {
+        status: "ACCEPTED",
+        OR: [{ senderId: id }, { receiverId: id }],
+      },
+    });
+
+    let friendshipStatus: string | null = null;
+    if (session.user.id !== id) {
+      const friendship = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { senderId: session.user.id, receiverId: id },
+            { senderId: id, receiverId: session.user.id },
+          ],
+        },
+        select: { senderId: true, status: true },
+      });
+      if (friendship) {
+        friendshipStatus =
+          friendship.status === "ACCEPTED"
+            ? "ACCEPTED"
+            : friendship.senderId === session.user.id
+              ? "PENDING_SENT"
+              : "PENDING_RECEIVED";
+      }
+    }
+
+    let mutualFriendCount = 0;
+    let mutualFriends: { id: string; name: string | null; image: string | null }[] = [];
+    const currentUserId = session.user.id;
+    if (currentUserId !== id) {
+      const myFriendIds = (
+        await prisma.friendship.findMany({
+          where: {
+            status: "ACCEPTED",
+            OR: [{ senderId: currentUserId }, { receiverId: currentUserId }],
+          },
+          select: { senderId: true, receiverId: true },
+        })
+      ).map((f) => (f.senderId === currentUserId ? f.receiverId : f.senderId));
+
+      const theirFriendIds = (
+        await prisma.friendship.findMany({
+          where: {
+            status: "ACCEPTED",
+            OR: [{ senderId: id }, { receiverId: id }],
+          },
+          select: { senderId: true, receiverId: true },
+        })
+      ).map((f) => (f.senderId === id ? f.receiverId : f.senderId));
+
+      const intersection = myFriendIds.filter((fid) => theirFriendIds.includes(fid));
+      mutualFriendCount = intersection.length;
+
+      if (intersection.length > 0) {
+        mutualFriends = await prisma.user.findMany({
+          where: { id: { in: intersection.slice(0, 5) } },
+          select: { id: true, name: true, image: true },
+        });
+      }
     }
 
     const activities = await prisma.activity.findMany({
@@ -45,6 +108,10 @@ export async function GET(
     return NextResponse.json({
       user: {
         ...user,
+        friendCount,
+        friendshipStatus,
+        mutualFriendCount,
+        mutualFriends,
         createdAt: user.createdAt.toISOString(),
       },
       activities: activities.map((a) => ({

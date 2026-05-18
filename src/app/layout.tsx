@@ -5,6 +5,7 @@ import AuthProvider from "@/components/auth-provider";
 import ThemeProvider from "@/components/theme-provider";
 import TabBar from "@/components/tab-bar";
 import PageTransition from "@/components/page-transition";
+import OnboardingGate from "@/components/onboarding-gate";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="pz-stage">
           <ThemeProvider>
             <AuthProvider>
+              <OnboardingGate />
               <PageTransition><div id="main-content" role="main">{children}</div></PageTransition>
               <TabBar />
               <Analytics />

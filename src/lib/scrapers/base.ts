@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { pointInDistrict } from "@/lib/geo";
+import { calculateBaseScore } from "@/lib/scoring";
 
 export interface ScrapedEvent {
   title: string;
@@ -104,7 +105,7 @@ const createData = (event: ScrapedEvent, vibes: string[]) => ({
   category: event.category as any,
   source: event.source,
   sourceId: event.sourceId,
-  score: 0,
+  score: calculateBaseScore(event),
   coordsX: event.coordsX,
   coordsY: event.coordsY,
   price: event.price,
@@ -124,7 +125,7 @@ const updateData = (event: ScrapedEvent, vibes: string[]) => {
     address: event.address,
     category: event.category as any,
     source: event.source,
-    score: 0,
+    score: calculateBaseScore(event),
     price: event.price,
     vibes: {
       deleteMany: {},

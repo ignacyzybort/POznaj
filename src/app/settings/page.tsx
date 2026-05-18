@@ -32,15 +32,38 @@ export default function SettingsPage() {
     else localStorage.removeItem("poznaj-district");
   }, [savedDistrict]);
 
-  const toggleNotifications = () => {
+  const toggleNotifications = async () => {
     if (!notificationsOn) {
-      Notification.requestPermission().then((perm) => {
-        if (perm === "granted" || perm === "denied") {
-          setNotificationsOn(perm === "granted");
-          localStorage.setItem("poznaj-notifications", perm === "granted" ? "true" : "false");
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+          });
+          await fetch("/api/push/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+            body: JSON.stringify({ subscription: sub }),
+          });
+          setNotificationsOn(true);
+          localStorage.setItem("poznaj-notifications", "true");
+        } catch {
+          setNotificationsOn(false);
+          localStorage.setItem("poznaj-notifications", "false");
         }
-      });
+      } else {
+        setNotificationsOn(false);
+        localStorage.setItem("poznaj-notifications", "false");
+      }
     } else {
+      try {
+        await fetch("/api/push/subscribe", {
+          method: "DELETE",
+          headers: { "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+        });
+      } catch {}
       setNotificationsOn(false);
       localStorage.setItem("poznaj-notifications", "false");
     }
