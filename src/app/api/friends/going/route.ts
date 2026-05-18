@@ -32,18 +32,27 @@ export async function GET(_request: NextRequest) {
         event: { endDate: { gte: new Date() } },
       },
       select: {
+        userId: true,
         user: { select: { name: true, image: true } },
-        event: { select: { placeName: true, startDate: true } },
+        event: { select: { title: true, placeName: true, startDate: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 30,
     });
 
-    const friends = attendances.map((a) => ({
-      name: a.user.name ?? "Znajomy",
-      image: a.user.image,
-      placeName: a.event.placeName,
-    }));
+    const seen = new Set<string>();
+    const friends: { name: string; image: string | null; placeName: string; eventTitle: string }[] = [];
+    for (const a of attendances) {
+      if (seen.has(a.userId)) continue;
+      seen.add(a.userId);
+      friends.push({
+        name: a.user.name ?? "Znajomy",
+        image: a.user.image,
+        placeName: a.event.placeName,
+        eventTitle: a.event.title,
+      });
+      if (friends.length >= 10) break;
+    }
 
     return NextResponse.json({ friends });
   } catch (e) {

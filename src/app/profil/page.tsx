@@ -142,6 +142,7 @@ export default async function ProfilPage() {
     })),
     notifications: notifsRaw.map((n) => ({
       id: n.id,
+      eventId: n.eventId,
       type: n.type,
       title: n.title,
       body: n.body,

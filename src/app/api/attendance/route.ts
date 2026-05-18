@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       await prisma.notification.createMany({
         data: friendIds.map((fid) => ({
           userId: fid,
+          eventId: eventId,
           type: "FRIEND_ATTENDING",
           title: `${userName} wybiera się na wydarzenie`,
           body: finalStatus === "GOING" ? "Dołącz do znajomego!" : null,

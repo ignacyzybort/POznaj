@@ -7,6 +7,7 @@ interface NearbyFriend {
   image?: string;
   color: string;
   where: string;
+  eventTitle: string;
 }
 
 const COLORS = ["#FF6B2C", "#6E3DFF", "#FF3D7F", "#2860FF", "#C8FF2E", "#E89A6B", "#FFB627"];
@@ -25,6 +26,7 @@ export default function NearbyNow() {
             image: f.image,
             color: COLORS[i % COLORS.length],
             where: f.placeName ?? "w Poznaniu",
+            eventTitle: f.eventTitle ?? "",
           })));
         }
         setLoading(false);
@@ -42,7 +44,7 @@ export default function NearbyNow() {
       }}>
         <h2 className="pz-h" style={{
           margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em",
-        }}>Blisko Ciebie · teraz</h2>
+        }}>Znajomi · idą</h2>
         <span className="pz-eyebrow" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
           <span style={{
             width: 6, height: 6, borderRadius: 99,
@@ -77,7 +79,7 @@ export default function NearbyNow() {
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: "-0.01em" }}>{n.name}</div>
-              <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{n.where}</div>
+              <div style={{ fontSize: 11.5, color: "var(--ink-3)" }}>idzie na {n.eventTitle || n.where}</div>
             </div>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { auth } from "@/lib/auth";
 import AuthProvider from "@/components/auth-provider";
 import ThemeProvider from "@/components/theme-provider";
 import TabBar from "@/components/tab-bar";
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "POznaj" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+
   return (
     <html lang="pl" className="h-full">
       <head>
@@ -29,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main-content" className="pz-skip-link">Przejdź do treści</a>
         <div className="pz-stage">
           <ThemeProvider>
-            <AuthProvider>
+            <AuthProvider session={session}>
               <OnboardingGate />
               <PageTransition><div id="main-content" role="main">{children}</div></PageTransition>
               <TabBar />

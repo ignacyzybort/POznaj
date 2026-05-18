@@ -60,7 +60,7 @@ export type InitialProfile = {
   attendance: { id: string; status: string; event: { id: string; title: string; placeName: string; startDate: string; category: string; district: string; imageUrl: string | null } }[];
   friends: { id: string; name: string | null }[];
   activities: { id: string; type: string; createdAt: string; user: { id: string; name: string | null; image: string | null }; event: { id: string; title: string; startDate: string; category: string } }[];
-  notifications: { id: string; type: string; title: string; body: string | null; createdAt: string }[];
+  notifications: { id: string; eventId: string | null; type: string; title: string; body: string | null; createdAt: string }[];
   requests: { id: string; senderId: string; senderName: string; createdAt: string }[];
 };
 
@@ -290,12 +290,21 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                   </div>
                 </div>
               ))}
-              {notifs.filter((n) => n.type !== "FRIEND_REQUEST").map((n) => (
-                <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
-                  <span style={{ fontSize: 20 }}>🔔</span>
-                  <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>{n.body && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>{n.body}</div>}</div>
-                </div>
-              ))}
+              {notifs.filter((n) => n.type !== "FRIEND_REQUEST").map((n) => {
+                const content = (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
+                    <span style={{ fontSize: 20 }}>🔔</span>
+                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>{n.body && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>{n.body}</div>}</div>
+                  </div>
+                );
+                return n.eventId ? (
+                  <Link key={n.id} href={`/event/${n.eventId}`} style={{ textDecoration: "none", color: "inherit", borderBottom: "0.5px solid var(--line)" }}>
+                    {content}
+                  </Link>
+                ) : (
+                  <div key={n.id} style={{ borderBottom: "0.5px solid var(--line)" }}>{content}</div>
+                );
+              })}
             </div>
           </div>
         </div>

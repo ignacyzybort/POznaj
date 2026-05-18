@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: friendId,
+        eventId: eventId,
         type: "EVENT_SHARE",
         title: `${senderName} poleca: ${event.title}`,
         body: "Sprawdź to wydarzenie!",

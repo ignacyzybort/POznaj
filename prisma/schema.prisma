@@ -53,6 +53,7 @@ enum AttendStatus {
 enum ActivityType {
   GOING
   SAVED
+  REVIEWED
 }
 
 model User {
@@ -165,13 +166,15 @@ model Activity {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
+  eventId   String?
   type      String
   title     String
   body      String?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
 
   @@index([userId, read])
 }
@@ -215,6 +218,7 @@ model Event {
   attendance  Attendance[]
   activities  Activity[]
   savedEvents SavedEvent[]
+  notifications Notification[]
 
   @@unique([title, startDate, placeName])
   @@index([district])
