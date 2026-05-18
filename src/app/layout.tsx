@@ -26,16 +26,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="h-full overflow-hidden">
         <a href="#main-content" className="pz-skip-link">Przejdź do treści</a>
-        <main className="pz-stage">
+        <div className="pz-stage">
           <ThemeProvider>
             <AuthProvider>
-              <PageTransition><div id="main-content">{children}</div></PageTransition>
+              <PageTransition><div id="main-content" role="main">{children}</div></PageTransition>
               <TabBar />
               <Analytics />
               <SpeedInsights />
             </AuthProvider>
           </ThemeProvider>
-        </main>
+        </div>
       </body>
     </html>
   );

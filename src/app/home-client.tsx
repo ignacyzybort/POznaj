@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { motion } from "motion/react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
@@ -19,7 +18,6 @@ import EmptyState from "@/components/empty-state";
 import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
-import { haptic } from "@/lib/haptic";
 import { categoryGradient } from "@/lib/visuals";
 
 export default function HomeClient({
@@ -46,7 +44,7 @@ export default function HomeClient({
     category: [], district: [], vibe: [],
   });
 
-  const buildQuery = useCallback(() => {
+  const buildQuery = () => {
     const params = new URLSearchParams();
     params.set("limit", "200");
     params.set("sort", "score");
@@ -57,9 +55,9 @@ export default function HomeClient({
     for (const d of activeFilters.district) params.append("district", d);
     for (const v of activeFilters.vibe) params.append("vibe", v);
     return params.toString();
-  }, [search, quick, budget, activeFilters]);
+  };
 
-  const fetchEvents = useCallback((signal?: AbortSignal) => {
+  const fetchEvents = (signal?: AbortSignal) => {
     setLoading(true);
     setError(null);
     fetch(`/api/events?${buildQuery()}`, { signal }).then((r) => {
@@ -75,7 +73,7 @@ export default function HomeClient({
       setError("Nie udało się załadować wydarzeń");
       setLoading(false);
     });
-  }, [buildQuery]);
+  };
 
   // Skip the very first run — initialEvents already covers the default view.
   const firstRun = useRef(true);
@@ -130,8 +128,8 @@ export default function HomeClient({
   const cleanHome = !quick && !search && activeCount === 0 && !budget;
 
   const router = useRouter();
-  const openEvent = useCallback((ev: EventData) => { router.push(`/event/${ev.id}`); }, [router]);
-  const toggleSave = useCallback(async (id: string) => {
+  const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
+  const toggleSave = async (id: string) => {
     if (!session?.user) { router.push("/login"); return; }
     const isSaved = savedIds.includes(id);
     if (!isSaved) {
@@ -140,24 +138,23 @@ export default function HomeClient({
         headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
         body: JSON.stringify({ eventId: id, status: "SAVED" }),
       });
-      haptic("success");
       setToast("Zapisano ✅");
       setTimeout(() => { router.push("/lista"); }, DUR.reveal);
     }
     setSavedIds((prev) =>
       isSaved ? prev.filter((v) => v !== id) : [...prev, id]
     );
-  }, [session, savedIds, router]);
+  };
 
 
-  const toggleFilter = useCallback((kind: keyof ActiveFilters, value: string) => {
+  const toggleFilter = (kind: keyof ActiveFilters, value: string) => {
     setActiveFilters((prev) => {
       const list = prev[kind];
       const next = list.includes(value) ? list.filter((x) => x !== value) : [...list, value];
       return { ...prev, [kind]: next };
     });
-  }, []);
-  const clearFilters = useCallback(() => setActiveFilters({ category: [], district: [], vibe: [] }), []);
+  };
+  const clearFilters = () => setActiveFilters({ category: [], district: [], vibe: [] });
 
   return (
     <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
@@ -175,7 +172,7 @@ export default function HomeClient({
               </span>
             </div>
             <h1 className="pz-h" style={{
-              margin: 0, fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em",
+              margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em",
               lineHeight: 0.95,
             }}>
               Co dziś<br />w Poznaniu.
@@ -259,15 +256,16 @@ export default function HomeClient({
       {cleanHome && forYou.length > 0 && (
         <div style={{ padding: "6px 18px 0" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-            <h2 className="pz-h" style={{ margin: 0, fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.025em" }}>
+            <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
               Polecane dla Ciebie
             </h2>
           </div>
           <div style={{ margin: "0 -18px" }}>
             <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto" }}>
               {forYou.map((ev, i) => (
-                <TiltCard key={ev.id} onClick={() => openEvent(ev)}>
+                <TiltCard key={ev.id}>
                   <div
+                  onClick={() => openEvent(ev)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
@@ -279,7 +277,7 @@ export default function HomeClient({
                   }}
                   className="pz-section-reveal"
                 >
-                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} layoutId={`event-art-${ev.id}`} />
+                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
                   <div style={{
                     position: "absolute", inset: 0,
                     background: categoryGradient(ev.category),
@@ -308,7 +306,7 @@ export default function HomeClient({
           justifyContent: "space-between", marginBottom: 12,
         }}>
           <h2 className="pz-h" style={{
-            margin: 0, fontSize: "var(--text-2xl)", fontWeight: 700, letterSpacing: "-0.025em",
+            margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em",
           }}>{quick || search || activeCount || budget ? "Wyniki" : "Wszystko, co się dzieje"}</h2>
           <span className="pz-num" style={{
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
@@ -323,14 +321,7 @@ export default function HomeClient({
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
           )) : events.map((ev, i) => (
-            <motion.div
-              key={ev.id}
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1], delay: Math.min(i % 3, 2) * 0.08 }}
-            >
-              <TiltCard onClick={() => openEvent(ev)}>
+              <TiltCard key={ev.id}>
                 <div style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
                   <EventCard event={ev}
                              onOpen={() => openEvent(ev)}
@@ -339,7 +330,6 @@ export default function HomeClient({
                              className="pz-card-stagger" />
                 </div>
               </TiltCard>
-            </motion.div>
           ))}
           {error && (
             <div style={{ gridColumn: "1 / -1", padding: "40px 16px", textAlign: "center" }}>
@@ -348,7 +338,7 @@ export default function HomeClient({
             </div>
           )}
           {!loading && !error && events.length === 0 && (
-            <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." action={{ label: "Wyczyść filtry", onClick: () => { setQuick(null); setSearch(""); setBudget(null); clearFilters(); } }} />
+            <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
           )}
         </div>
       </div>
