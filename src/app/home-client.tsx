@@ -157,7 +157,7 @@ export default function HomeClient({
   const clearFilters = () => setActiveFilters({ category: [], district: [], vibe: [] });
 
   return (
-    <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(68px + var(--safe-b))" }}>
+    <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       <div className="pz-scroll-progress" ref={progressRef} />
       {/* Header */}
       <div style={{ padding: "calc(16px + var(--safe-t)) 18px 6px" }}>

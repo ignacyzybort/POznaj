@@ -9,7 +9,7 @@ export default async function MapaPage() {
   const today = new Date();
 
   return (
-    <div style={{ position: "absolute", inset: 0, paddingBottom: "calc(68px + var(--safe-b))" }}>
+    <div style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       {/* Header */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,

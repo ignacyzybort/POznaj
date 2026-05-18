@@ -238,10 +238,10 @@ button:not(:disabled):active,
 /* Tab bar */
 .pz-tabbar {
   position: absolute;
-  bottom: calc(8px + var(--safe-b));
-  left: calc(10px + var(--safe-l));
-  right: calc(10px + var(--safe-r));
-  height: 56px; border-radius: 24px;
+  bottom: calc(12px + var(--safe-b));
+  left: calc(14px + var(--safe-l));
+  right: calc(14px + var(--safe-r));
+  height: 64px; border-radius: 28px;
   background: var(--bg-elev);
   box-shadow: var(--shadow-inset), var(--shadow-lg);
   display: flex; align-items: center; justify-content: space-around;
@@ -380,12 +380,12 @@ button:not(:disabled):active,
 
 /* Staggered card entrance */
 .pz-card-stagger {
-  animation: pz-card-enter 0.55s var(--ease-out-quart) both;
-  animation-delay: calc(var(--i, 0) * 50ms);
+  animation: pz-card-enter var(--dur-slow) var(--ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 @keyframes pz-card-enter {
-  from { opacity: 0; transform: translateY(18px) rotate(-0.5deg) scale(0.96); filter: blur(8px); }
-  to { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); filter: blur(0); }
+  from { opacity: 0; transform: translateY(12px) scale(0.97); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
 /* Container queries for feed grid */
