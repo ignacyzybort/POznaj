@@ -28,8 +28,31 @@ export interface Scraper {
 
 const STOPWORDS = new Set(["w", "i", "na", "z", "do", "się", "po", "od", "za", "przed", "pod", "nad", "przy", "dla", "bez", "oraz", "ale", "lub", "the", "a", "an", "of", "to", "is", "it", "dla", "nie", "że", "jak", "co"]);
 
+function decodeEntities(s: string): string {
+  return s.replace(/&#8211;/g, '\u2013').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+}
+
 function cleanTitle(t: string): string {
-  return t.replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "").replace(/\s*\|\s*[Bb]ilety\s*$/g, "").replace(/&#8211;\s*Bilety/gi, "").trim();
+  return t.replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "")
+    .replace(/\s*\|\s*[Bb]ilety\s*$/g, "")
+    .replace(/\s*[–\u2013]\s*[Bb]ilety\s*[–\u2013]\s*.+$/g, "")
+    .replace(/&#8211;\s*Bilety/gi, "")
+    .trim();
+}
+
+function cleanPlaceName(s: string): string {
+  return decodeEntities(s)
+    .replace(/\s*[–\u2013]\s*Nadchodzące wydarzenia.*$/i, '')
+    .replace(/\s*Więcej\s*(informacji)?:.*$/i, '')
+    .replace(/\s*Organizator:.*$/i, '')
+    .replace(/\s*Wstęp\s*wolny.*$/i, '')
+    .replace(/,\s*ul\..*$/i, '')
+    .replace(/\d{2}[-\s]\d{3}\s*Poznań?$/i, '')
+    .trim();
+}
+
+function cleanDescription(desc: string): string {
+  return desc.split(/\n\s*(?:Data:|Miejsce:|Lokalizacja:|Bilety:|Wykonawca|Organizator:|Tagi:)/)[0].trim();
 }
 
 function normalize(s: string): string {
@@ -119,9 +142,12 @@ export async function saveEvents(
   let updated = 0;
   let errors = 0;
 
-  // Clean titles before any processing
+  // Clean titles, placeNames, descriptions before any processing
   for (const ev of events) {
     ev.title = cleanTitle(ev.title);
+    ev.placeName = cleanPlaceName(ev.placeName);
+    if (ev.description) ev.description = cleanDescription(ev.description);
+    if (ev.address) ev.address = decodeEntities(ev.address);
   }
 
   const byDay = new Map<string, ScrapedEvent[]>();

@@ -24,12 +24,24 @@ const MONTHS = [
 ];
 
 function parsePolishDate(dateStr: string, year: number): Date {
-  // "1-3.05.", "16.05", "8-15.05", "8.05"
-  const match = dateStr.match(/(\d{1,2})(?:[.-](\d{1,2}))?\s*\.?\s*(\d{1,2})/);
-  if (!match) return new Date(year, 0, 1);
-  const end = match[2] ? parseInt(match[2]) : parseInt(match[1]);
-  const month = parseInt(match[3]) - 1;
-  return new Date(year, month, end);
+  // "DD.MM" or "DD.MM.YYYY" — single date
+  const single = dateStr.match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+  if (single) {
+    const day = parseInt(single[1]);
+    const month = parseInt(single[2]) - 1;
+    const y = single[3] ? parseInt(single[3]) : year;
+    if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+      return new Date(y, month, day);
+    }
+  }
+  // "1-3.05." or "8-15.05" — date range
+  const range = dateStr.match(/(\d{1,2})[.-](\d{1,2})\s*\.?\s*(\d{1,2})/);
+  if (range) {
+    const month = parseInt(range[3]) - 1;
+    const end = parseInt(range[2]);
+    if (month >= 0 && month <= 11) return new Date(year, month, end);
+  }
+  return new Date(year, 0, 1);
 }
 
 function parseDateRange(dateStr: string, year: number): { start: Date; end: Date } {
@@ -65,6 +77,7 @@ function parseSubEvents(html: string, year: number): { date: Date; venue: string
     const match = line.match(/^[\s-]*(\d{1,2}\.\d{2})\s*[-–]\s*(.+?)\s*[-–]\s*(.+)/);
     if (match) {
       const date = parsePolishDate(match[1], year);
+      if (isNaN(date.getTime())) continue;
       const venue = match[2].trim();
       const title = match[3].trim();
       if (venue && title) sub.push({ date, venue, title });
@@ -187,7 +200,7 @@ export class KulturaPoznanScraper implements Scraper {
                 time: s.time,
                 vibes: ["Kulturalne"],
                 source: "kultura-poznan",
-                sourceId: `kp-${Buffer.from(s.title).toString("base64").slice(0, 24)}`,
+                sourceId: `kp-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
                 coordsX,
                 coordsY,
                 price,
@@ -217,7 +230,7 @@ export class KulturaPoznanScraper implements Scraper {
                 time: undefined,
                 vibes: ["Kulturalne"],
                 source: "kultura-poznan",
-                sourceId: `kp-${Buffer.from(sub.title).toString("base64").slice(0, 24)}`,
+                sourceId: `kp-${Buffer.from(sub.title + sub.date.toISOString()).toString("base64").slice(0, 24)}`,
                 coordsX: subVenue?.lat,
                 coordsY: subVenue?.lon,
                 price,
