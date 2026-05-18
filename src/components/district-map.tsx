@@ -246,7 +246,7 @@ export default function DistrictMap({
     // Permanent district label with event count, colored by district hue
     if (id && !selectedDistrict) {
       const hue = DISTRICT_HUES[id] ?? 0;
-      const labelColor = `hsl(${hue}, 50%, 35%)`;
+      const labelColor = `hsl(${hue}, 60%, 72%)`;
       const label = count > 0
         ? `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: 10px; font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
         : `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;

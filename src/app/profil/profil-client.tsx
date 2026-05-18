@@ -232,38 +232,34 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
         </div>
       </div>
 
-      {/* Challenges */}
-      {challenges.length > 0 && (
-        <div style={{ padding: "0 18px 14px" }}>
-          <div className="pz-card" style={{ padding: 14 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Wyzwania</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {challenges.map((c) => (
-                <div key={c.id}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 16 }}>{c.icon}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{c.title}</span>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: c.done ? "var(--sage)" : "var(--ink-3)" }}>
-                      {c.done ? "✅" : `${c.progress}/${c.max}`}
-                    </span>
-                  </div>
-                  <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
-                    <div style={{ width: `${(c.progress / c.max) * 100}%`, height: "100%", borderRadius: 99, background: c.done ? "var(--sage)" : "var(--ink-3)", transition: "width var(--dur-slow) var(--ease-out-quart)" }} />
-                  </div>
-                  <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Activity + Passport layout */}
       <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {/* Left column: activity stats + streak */}
+        {/* Left column: challenges + activity stats + streak */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {challenges.length > 0 && (
+            <div className="pz-card" style={{ padding: 14 }}>
+              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Wyzwania</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {challenges.map((c) => (
+                  <div key={c.id}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 16 }}>{c.icon}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{c.title}</span>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: c.done ? "var(--sage)" : "var(--ink-3)" }}>
+                        {c.done ? "✅" : `${c.progress}/${c.max}`}
+                      </span>
+                    </div>
+                    <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
+                      <div style={{ width: `${(c.progress / c.max) * 100}%`, height: "100%", borderRadius: 99, background: c.done ? "var(--sage)" : "var(--ink-3)", transition: "width var(--dur-slow) var(--ease-out-quart)" }} />
+                    </div>
+                    <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{c.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="pz-card" style={{ padding: 14 }}>
             <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

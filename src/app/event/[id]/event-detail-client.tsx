@@ -152,7 +152,7 @@ export default function EventDetailClient({
              <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />
           </div>
 
-          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description.replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim()}</p>}
+          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description.replace(/\\t/g, " ").replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim()}</p>}
 
           <div style={{ marginTop: 18 }}><DetailExtras event={event} onToast={setToast} /></div>
 

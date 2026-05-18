@@ -16,6 +16,22 @@ function guessDistrict(text: string): string {
   return "Inny";
 }
 
+// Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
+function parseScreenings(description: string): { date: Date; title: string }[] {
+  const screenings: { date: Date; title: string }[] = [];
+  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  let match;
+  while ((match = pattern.exec(description)) !== null) {
+    const [_, dateStr, time, title] = match;
+    const parts = dateStr.split(".");
+    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
+    if (!isNaN(d.getTime())) {
+      screenings.push({ date: d, title: title.trim() });
+    }
+  }
+  return screenings;
+}
+
 function guessVibes(title: string, desc: string, category: string): string[] {
   const t = (title + " " + desc).toLowerCase();
   const vibes: string[] = [];
@@ -274,6 +290,39 @@ export class PikPoznanScraper implements Scraper {
       ev.coordsX = center.lat;
       ev.coordsY = center.lon;
     }
+
+    // Split recurring screenings (e.g. "Kino plenerowe" with multiple dates)
+    const splitEvents: ScrapedEvent[] = [];
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if (!ev.description) continue;
+      const screenings = parseScreenings(ev.description);
+      if (screenings.length >= 3) {
+        events.splice(i, 1);
+        for (const s of screenings) {
+          splitEvents.push({
+            title: s.title,
+            description: `${ev.title} — ${s.title}`,
+            imageUrl: ev.imageUrl,
+            sourceUrl: ev.sourceUrl,
+            startDate: s.date,
+            endDate: s.date,
+            time: undefined,
+            placeName: ev.placeName,
+            address: ev.address,
+            district: ev.district,
+            category: "Kino",
+            vibes: ["Kulturalne"],
+            source: ev.source,
+            sourceId: `${ev.sourceId}-${s.title.slice(0, 20)}`,
+            coordsX: ev.coordsX,
+            coordsY: ev.coordsY,
+            price: ev.price,
+          });
+        }
+      }
+    }
+    events.push(...splitEvents);
 
     return events;
   }
