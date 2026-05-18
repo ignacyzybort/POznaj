@@ -128,7 +128,7 @@ export default function EventDetailClient({
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 
-        <div style={{ height: "min(420px, 55dvh)", overflow: "hidden", margin: "0 -18px" }}>
+        <div style={{ height: "min(340px, 45dvh)", overflow: "hidden" }}>
           <EventArt event={event} height={340} style="collage" />
         </div>
 
@@ -152,7 +152,7 @@ export default function EventDetailClient({
              <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />
           </div>
 
-          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description}</p>}
+          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description.replace(/\t/g, " ").replace(/\n{3,}/g, "\n\n").trim()}</p>}
 
           <div style={{ marginTop: 18 }}><DetailExtras event={event} onToast={setToast} /></div>
 

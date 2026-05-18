@@ -73,6 +73,22 @@ function parseSubEvents(html: string, year: number): { date: Date; venue: string
   return sub;
 }
 
+// Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
+function parseScreenings(description: string, year: number): { date: Date; title: string }[] {
+  const screenings: { date: Date; title: string }[] = [];
+  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  let match;
+  while ((match = pattern.exec(description)) !== null) {
+    const [_, dateStr, time, title] = match;
+    const parts = dateStr.split(".");
+    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
+    if (!isNaN(d.getTime())) {
+      screenings.push({ date: d, title: title.trim() });
+    }
+  }
+  return screenings;
+}
+
 export class KulturaPoznanScraper implements Scraper {
   name = "kultura-poznan";
 
@@ -151,6 +167,34 @@ export class KulturaPoznanScraper implements Scraper {
           const district = venue?.district ?? guessDistrict(title, placeName);
           const coordsX = venue?.lat;
           const coordsY = venue?.lon;
+
+          // Handle recurring screenings (e.g. "Kino plenerowe" with multiple dates)
+          const screenings = parseScreenings(pText, year);
+          if (screenings.length >= 3) {
+            for (const s of screenings) {
+              const sDaysUntil = (s.date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+              if (sDaysUntil < -1) continue;
+              events.push({
+                title: s.title,
+                description: `${title} — ${s.title}`,
+                placeName,
+                address,
+                district: district !== "Inny" ? district : "Centrum",
+                category: "Kino",
+                sourceUrl,
+                startDate: s.date,
+                endDate: s.date,
+                time: undefined,
+                vibes: ["Kulturalne"],
+                source: "kultura-poznan",
+                sourceId: `kp-${Buffer.from(s.title).toString("base64").slice(0, 24)}`,
+                coordsX,
+                coordsY,
+                price,
+              });
+            }
+            return; // skip parent if screenings extracted
+          }
 
           // Handle sub-events (e.g. "Inne koncerty")
           const subEvents = parseSubEvents(pHtml, year);

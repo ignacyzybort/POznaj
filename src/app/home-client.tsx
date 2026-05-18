@@ -229,14 +229,11 @@ export default function HomeClient({
 
       {/* Tonight hero + NearbyNow — only on clean home */}
       {cleanHome && forYou.length > 0 && (
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 6 }}>
           <TonightHero events={forYou} onOpen={openEvent} />
           <NearbyNow />
         </div>
       )}
-
-      {/* Section break */}
-      <hr className="pz-section-divider" />
 
       {/* Budget chips */}
       <div style={{ padding: "0 18px 10px" }}>
@@ -257,9 +254,9 @@ export default function HomeClient({
       )}
 
       {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "18px 0 6px", background: "var(--bg-soft)", borderRadius: "28px 28px 0 0", marginTop: 12 }}>
-          <div style={{ padding: "0 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
-            <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink-2)" }}>
+        <div style={{ padding: "12px 18px 6px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+            <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
               Polecane dla Ciebie
             </h2>
           </div>
@@ -303,15 +300,6 @@ export default function HomeClient({
       )}
 
       {/* All events */}
-      <hr className="pz-section-divider" />
-      <div style={{ padding: "12px 24px 0", textAlign: "center" }}>
-        <h2 className="pz-eyebrow" style={{ margin: 0, fontSize: "var(--text-xs)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-          {quick || search || activeCount || budget ? "Wyniki" : "Pełna lista"}
-        </h2>
-        {!quick && !search && !activeCount && !budget && (
-          <div style={{ height: 1, width: 36, background: "var(--ink)", margin: "10px auto 0", opacity: 0.25 }} />
-        )}
-      </div>
       <div style={{ padding: "8px 18px 0" }}>
         <div style={{
           display: "flex", alignItems: "baseline",

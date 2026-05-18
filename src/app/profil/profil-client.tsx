@@ -260,22 +260,21 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
         </div>
       )}
 
-      {/* Activity stats */}
-      <div style={{ padding: "0 18px 14px" }}>
-        <div className="pz-card" style={{ padding: 14 }}>
-          <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Najczęstsza kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]} · {topCategory[1]}x</span></div>}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Odwiedzone dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 6</span></div>
-            {topVenue && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Ulubione miejsce</span><span style={{ fontWeight: 700, color: "var(--ink)", textAlign: "right", maxWidth: "50%" }}>{topVenue[0]} · {topVenue[1]}x</span></div>}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>W tym miesiącu</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{monthlyCount[new Date().getMonth()]}</span></div>
+      {/* Activity + Passport layout */}
+      <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        {/* Left column: activity stats + streak */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="pz-card" style={{ padding: 14 }}>
+            <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]}</span></div>}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 6</span></div>
+              {topVenue && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Miejsce</span><span style={{ fontWeight: 700, color: "var(--ink)", textAlign: "right", maxWidth: "50%" }}>{topVenue[0]}</span></div>}
+            </div>
           </div>
+          <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
         </div>
-      </div>
-
-      {/* Streak + Passport */}
-      <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr", gap: 10 }} className="pz-streak-passport-grid">
-        <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
+        {/* Right column: passport */}
         <PassportCard stamps={stamps} />
       </div>
 
