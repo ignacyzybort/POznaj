@@ -53,6 +53,7 @@ export async function recomputeAllScores(prisma: {
     findMany: (args: any) => Promise<any[]>;
     update: (args: any) => Promise<any>;
   };
+  $transaction: (ops: Promise<any>[]) => Promise<any[]>;
 }) {
   const events = await prisma.event.findMany({
     where: { endDate: { gte: new Date() } },
@@ -60,14 +61,23 @@ export async function recomputeAllScores(prisma: {
   });
 
   let updated = 0;
-  for (const e of events) {
-    const base = calculateBaseScore(e);
-    const att = calculateAttendanceScore(e._count.attendance);
-    const score = base + att;
-    if (score !== e.score) {
-      await prisma.event.update({ where: { id: e.id }, data: { score } });
-      updated++;
-    }
+  const updates = events
+    .filter((e: any) => {
+      const base = calculateBaseScore(e);
+      const att = calculateAttendanceScore(e._count.attendance);
+      const score = base + att;
+      return score !== e.score;
+    })
+    .map((e: any) => {
+      const base = calculateBaseScore(e);
+      const att = calculateAttendanceScore(e._count.attendance);
+      const score = base + att;
+      return prisma.event.update({ where: { id: e.id }, data: { score } });
+    });
+
+  if (updates.length > 0) {
+    await prisma.$transaction(updates);
+    updated = updates.length;
   }
   return updated;
 }

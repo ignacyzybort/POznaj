@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
         })),
       });
 
-      for (const fid of friendIds) {
+      await Promise.all(friendIds.map((fid) =>
         sendPushNotification(fid, {
           title: `${userName} wybiera się na wydarzenie`,
           body: finalStatus === "GOING" ? "Dołącz do znajomego!" : undefined,
           url: `/event/${eventId}`,
-        });
-      }
+        })
+      ));
     }
 
     return NextResponse.json({ status: attendance.status });
