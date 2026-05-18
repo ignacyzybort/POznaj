@@ -137,15 +137,15 @@ export class KulturaPoznanScraper implements Scraper {
           const pHtml = pEl.html() || "";
           const pText = pEl.text().trim();
 
-          // Extract fields from <p> content
-          const dataMatch = pText.match(/Data:\s*(.+?)(?:\n|$)/m);
+          // Extract fields from <p> content (handle concatenated fields without newlines)
+          const dataMatch = pText.match(/Data:\s*(.+?)(?:\n|Miejsce|Lokalizacja|Więcej|Organizator|Bilety|\$)/im);
           const dateStr = dataMatch ? dataMatch[1].trim() : "";
           const { start, end } = dateStr ? parseDateRange(dateStr, year) : { start: new Date(year, 0, 1), end: new Date(year, 0, 1) };
 
-          const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|$)/m);
+          const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|Więcej|Organizator|Bilety|\$)/im);
           let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
 
-          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|$)/m);
+          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|Więcej|Organizator|\$)/im);
           let price: string | undefined;
           if (ticketMatch) {
             const raw = ticketMatch[1].trim();
