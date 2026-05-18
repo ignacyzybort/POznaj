@@ -17,8 +17,8 @@ function guessDistrict(text: string): string {
 }
 
 // Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
-function parseScreenings(description: string): { date: Date; title: string }[] {
-  const screenings: { date: Date; title: string }[] = [];
+function parseScreenings(description: string): { date: Date; time: string; title: string }[] {
+  const screenings: { date: Date; time: string; title: string }[] = [];
   const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
   let match;
   while ((match = pattern.exec(description)) !== null) {
@@ -26,7 +26,7 @@ function parseScreenings(description: string): { date: Date; title: string }[] {
     const parts = dateStr.split(".");
     const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
     if (!isNaN(d.getTime())) {
-      screenings.push({ date: d, title: title.trim() });
+      screenings.push({ date: d, time, title: title.trim() });
     }
   }
   return screenings;
@@ -307,14 +307,14 @@ export class PikPoznanScraper implements Scraper {
             sourceUrl: ev.sourceUrl,
             startDate: s.date,
             endDate: s.date,
-            time: undefined,
+            time: s.time,
             placeName: ev.placeName,
             address: ev.address,
             district: ev.district,
             category: "Kino",
             vibes: ["Kulturalne"],
             source: ev.source,
-            sourceId: `${ev.sourceId}-${s.title.slice(0, 20)}`,
+            sourceId: `pikpoznan-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
             coordsX: ev.coordsX,
             coordsY: ev.coordsY,
             price: ev.price,
