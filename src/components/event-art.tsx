@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { motion } from "motion/react";
 import { EventData, categoryColors } from "@/lib/data";
 
 const CAT_GLYPH: Record<string, string> = {
@@ -26,20 +27,21 @@ const CATEGORY_LABEL: Record<string, string> = {
 };
 
 export default function EventArt({
-  event, height = 180, style = "collage", forceArt = false, className = "",
+  event, height = 180, style = "collage", forceArt = false, className = "", layoutId,
 }: {
   event: Pick<EventData, "id" | "category" | "title" | "time" | "imageUrl">;
   height?: number;
   style?: Style;
   forceArt?: boolean;
   className?: string;
+  layoutId?: string;
 }) {
   const [imgFailed, setImgFailed] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
 
   if (!forceArt && event.imageUrl && !imgFailed) {
     return (
-      <div className={`pz-art ${className}`} style={{ height, background: "var(--bg-soft)" }}>
+      <motion.div className={`pz-art ${className}`} style={{ height, background: "var(--bg-soft)" }} layoutId={layoutId}>
         <img
           src={event.imageUrl}
           alt={`Zdjęcie wydarzenia: ${event.title}`}
@@ -53,7 +55,7 @@ export default function EventArt({
           onError={() => setImgFailed(true)}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
         />
-      </div>
+      </motion.div>
     );
   }
 
@@ -73,10 +75,10 @@ export default function EventArt({
 
   if (style === "typographic") {
     return (
-      <div className="pz-art pz-art-noise" style={{
+      <motion.div className="pz-art pz-art-noise" style={{
         height, background: tone.bg, color: tone.fg,
         padding: "14px 16px", display: "flex", alignItems: "flex-end",
-      }}>
+      }} layoutId={layoutId}>
         <div style={{ position: "relative", zIndex: 2, lineHeight: 0.88 }}>
           <div className="pz-display" style={{ fontSize: 44, letterSpacing: "-0.04em" }}>
             {event.title.split(" ").slice(0, 3).join(" ")}
@@ -85,18 +87,18 @@ export default function EventArt({
             {label.toUpperCase()} · {event.time ?? ""}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (style === "gradient") {
     return (
-      <div className={`pz-art ${className}`} style={{
+      <motion.div className={`pz-art ${className}`} style={{
         height,
         background: gradientBg,
         color: tone.fg,
         position: "relative",
-      }}>
+      }} layoutId={layoutId}>
         <div style={{
           position: "absolute", inset: 0, opacity: 0.18,
           background: gradientOverlay,
@@ -109,7 +111,7 @@ export default function EventArt({
           position: "absolute", left: 14, bottom: 12, fontSize: 13,
           fontWeight: 700, letterSpacing: "-0.01em",
         }}>{label}</div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -122,10 +124,17 @@ export default function EventArt({
     rot: rnd(seed, i * 7 + 4) * 90,
   })), [event.id, seed]);
 
+  const isHero = height > 200;
+  const shapeTransition = (i: number) => isHero ? {
+    initial: { scale: 0, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    transition: { delay: 0.15 + i * 0.1, duration: 0.55, ease: [0.25, 1, 0.5, 1] as [number, number, number, number] },
+  } : {};
+
   return (
-    <div className={`pz-art pz-art-noise ${className}`} style={{
+    <motion.div className={`pz-art pz-art-noise ${className}`} style={{
       height, background: tone.bg, color: tone.fg, position: "relative",
-    }}>
+    }} layoutId={layoutId}>
       <svg
         width="100%" height="100%"
         viewBox="0 0 100 100" preserveAspectRatio="none"
@@ -143,46 +152,49 @@ export default function EventArt({
               ? "rgba(255,255,255,0.22)"
               : "rgba(0,0,0,0.10)";
           if (s.shape === "circle") {
-            return <circle key={i} cx={s.x} cy={s.y} r={s.r / 2.4} fill={fill} />;
+            return <motion.circle key={i} cx={s.x} cy={s.y} r={s.r / 2.4} fill={fill} {...shapeTransition(i)} />;
           }
           if (s.shape === "square") {
             return (
-              <rect key={i}
+              <motion.rect key={i}
                     x={s.x - s.r / 3} y={s.y - s.r / 3}
                     width={s.r / 1.5} height={s.r / 1.5}
                     fill={fill} rx="2"
-                    transform={`rotate(${s.rot} ${s.x} ${s.y})`} />
+                    transform={`rotate(${s.rot} ${s.x} ${s.y})`}
+                    {...shapeTransition(i)} />
             );
           }
           if (s.shape === "tri") {
             const pts = `${s.x},${s.y - s.r / 3} ${s.x + s.r / 3},${s.y + s.r / 3} ${s.x - s.r / 3},${s.y + s.r / 3}`;
             return (
-              <polygon key={i} points={pts} fill={fill}
-                       transform={`rotate(${s.rot} ${s.x} ${s.y})`} />
+              <motion.polygon key={i} points={pts} fill={fill}
+                       transform={`rotate(${s.rot} ${s.x} ${s.y})`}
+                       {...shapeTransition(i)} />
             );
           }
           return (
-            <path key={i}
+            <motion.path key={i}
                   d={`M ${s.x - s.r / 3} ${s.y} A ${s.r / 3} ${s.r / 3} 0 0 1 ${s.x + s.r / 3} ${s.y} Z`}
                   fill={fill}
-                  transform={`rotate(${s.rot} ${s.x} ${s.y})`} />
+                  transform={`rotate(${s.rot} ${s.x} ${s.y})`}
+                  {...shapeTransition(i)} />
           );
         })}
       </svg>
-      <div style={{
+      <motion.div style={{
         position: "absolute", left: "50%", top: "50%",
         transform: "translate(-50%, -50%) rotate(-6deg)",
         fontSize: Math.max(64, height * 0.55), lineHeight: 1, fontFamily: "serif",
         opacity: 0.92, mixBlendMode: "multiply",
-      }}>{glyph}</div>
-      <div style={{
+      }} {...(isHero ? { initial: { scale: 0.6, opacity: 0 }, animate: { scale: 1, opacity: 0.92 }, transition: { delay: 0.4, duration: 0.6, ease: [0.25, 1, 0.5, 1] } } : {})}>{glyph}</motion.div>
+      <motion.div style={{
         position: "absolute", left: 12, bottom: 12,
         background: "rgba(255,255,255,0.95)", color: "var(--ink)",
         padding: "5px 10px", borderRadius: 999,
         fontSize: 11, fontWeight: 700, letterSpacing: "-0.005em",
         transform: "rotate(-2deg)",
         boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-      }}>{label}</div>
-    </div>
+      }} {...(isHero ? { initial: { y: 20, opacity: 0 }, animate: { y: 0, opacity: 1 }, transition: { delay: 0.55, duration: 0.45, ease: [0.25, 1, 0.5, 1] } } : {})}>{label}</motion.div>
+    </motion.div>
   );
 }

@@ -5,8 +5,7 @@
 @import "@fontsource/inter/500.css";
 @import "@fontsource/inter/600.css";
 @import "@fontsource/inter/700.css";
-@import "@fontsource/instrument-serif/400.css";
-@import "@fontsource/instrument-serif/400-italic.css";
+@import "@fontsource/inter/800.css";
 @import "@fontsource/jetbrains-mono/400.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -18,7 +17,7 @@
   --ink: #14130F;
   --ink-2: #2A2723;
   --ink-3: rgba(20, 19, 15, 0.72);
-  --ink-4: rgba(20, 19, 15, 0.55);
+  --ink-4: rgba(20, 19, 15, 0.72);
   --ink-5: rgba(20, 19, 15, 0.22);
   --line: rgba(20, 19, 15, 0.08);
   --line-2: rgba(20, 19, 15, 0.14);
@@ -66,7 +65,7 @@
   --hot-2: #FF7A0F;
   --hot-3: #FFB627;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-  --font-display: 'Instrument Serif', 'New York', 'Times New Roman', serif;
+  --font-display: var(--font-sans);
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --safe-t: env(safe-area-inset-top, 0px);
@@ -117,7 +116,7 @@
   --ink: #F4F4F6;
   --ink-2: #DCDCE0;
   --ink-3: rgba(244, 244, 246, 0.78);
-  --ink-4: rgba(244, 244, 246, 0.58);
+  --ink-4: rgba(244, 244, 246, 0.72);
   --ink-5: rgba(244, 244, 246, 0.24);
   --line: rgba(244, 244, 246, 0.09);
   --line-2: rgba(244, 244, 246, 0.16);
@@ -182,7 +181,7 @@ button:not(:disabled):active,
 .pz-stage button { font-family: inherit; color: inherit; }
 
 /* Font helpers */
-.pz-display { font-family: var(--font-display); font-weight: 400; letter-spacing: -0.02em; }
+.pz-display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
 .pz-display.tight { letter-spacing: -0.04em; }
 .pz-sans-display { font-family: var(--font-sans); font-weight: 700; letter-spacing: -0.035em; }
 .pz-h { font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
@@ -362,14 +361,7 @@ button:not(:disabled):active,
 .leaflet-popup-content-wrapper { border-radius: 14px !important; padding: 2px !important; }
 .leaflet-popup-close-button { color: var(--ink-3) !important; }
 
-/* Atmospheric noise overlay on stage */
-.pz-stage::after {
-  content: '';
-  position: fixed; inset: 0; pointer-events: none; z-index: 1;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay; opacity: 0.035;
-}
-.dark .pz-stage::after { opacity: 0.06; }
+
 
 @keyframes pz-pop {
   0% { transform: scale(0.92); opacity: 0; }
@@ -626,6 +618,12 @@ body {
 }
 .pz-district-glow {
   animation: pz-glow 0.6s var(--ease-out-quart);
+}
+
+/* Ambient hero glow */
+@keyframes pz-ambient-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.72; transform: scale(1.14); }
 }
 
 /* Leaflet zoom buttons — reposition bottom-right, match pz-* design */

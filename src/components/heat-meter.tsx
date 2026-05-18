@@ -15,8 +15,9 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
 
   if (size === "sm") {
     return (
-      <span className="pz-heat" style={{ color }}>
-        <span className="pz-heat-wave" aria-hidden>
+      <span className="pz-heat" style={{ color }} title={`${label} — ${pct} pkt`}>
+        <span className="sr-only">{label} — {pct} pkt</span>
+        <span className="pz-heat-wave" aria-hidden="true">
           {heights.map((h, i) => (
             <span key={i} className="pz-heat-bar"
                   style={{ height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}/>

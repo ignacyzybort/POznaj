@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { EventData } from "@/lib/data";
 import { relDay } from "@/lib/date";
 import EventArt from "@/components/event-art";
@@ -28,15 +28,15 @@ export default function SearchOverlay({
     setTimeout(onClose, 200);
   };
 
-  const filtered = events.filter((e) => {
-    if (!q) return true;
+  const filtered = useMemo(() => {
+    if (!q) return events.slice(0, 8);
     const needle = q.toLowerCase();
-    return (
+    return events.filter((e) => (
       e.title.toLowerCase().includes(needle) ||
       e.placeName.toLowerCase().includes(needle) ||
       e.district.toLowerCase().includes(needle)
-    );
-  }).slice(0, 8);
+    )).slice(0, 8);
+  }, [events, q]);
 
   return (
     <div

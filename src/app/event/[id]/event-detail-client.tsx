@@ -13,6 +13,7 @@ import Toast from "@/components/toast";
 import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
 import { DUR } from "@/lib/duration";
+import { haptic } from "@/lib/haptic";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
 
 export type InitialEvent = {
@@ -104,6 +105,7 @@ export default function EventDetailClient({
         const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" }, body: JSON.stringify({ eventId: event.id, status: "SAVED" }) });
         if (!res.ok) { setToast("Błąd zapisu"); return; }
         setToast("Zapisano ✅");
+        haptic("success");
       } catch { setToast("Błąd zapisu"); }
     }
     setSaved((s) => !s);
@@ -112,7 +114,7 @@ export default function EventDetailClient({
   const toggleGoing = async () => {
     const prev = going;
     setGoing(!going);
-    if (!going) setConfetti(true);
+    if (!going) { setConfetti(true); haptic("heavy"); }
     try {
       const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" }, body: JSON.stringify({ eventId: event.id, status: "GOING" }) });
       if (!res.ok) throw new Error();
@@ -129,7 +131,7 @@ export default function EventDetailClient({
         </div>
 
         <div style={{ height: "min(340px, 45dvh)", overflow: "hidden" }}>
-          <EventArt event={event} height={340} style="collage" />
+          <EventArt event={event} height={340} style="collage" layoutId={`event-art-${event.id}`} />
         </div>
 
         <div className="pz-detail-glow" style={{ position: "absolute", top: "min(300px, 40dvh)", left: 0, right: 0, height: 200, pointerEvents: "none", zIndex: 1, "--glow-color": `var(--c-${event.category.toLowerCase()})`, opacity: glowVisible ? 1 : 0, transition: "opacity 0.6s" } as React.CSSProperties} />
@@ -152,7 +154,7 @@ export default function EventDetailClient({
              <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />
           </div>
 
-          {event.description && <p style={{ marginTop: 18, fontSize: 15.5, lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description}</p>}
+          {event.description && <p style={{ marginTop: 18, fontSize: "var(--text-base)", lineHeight: 1.55, color: "var(--ink-2)", whiteSpace: "pre-wrap" }}>{event.description}</p>}
 
           <div style={{ marginTop: 18 }}><DetailExtras event={event} onToast={setToast} /></div>
 
@@ -168,7 +170,7 @@ export default function EventDetailClient({
         {/* Similar events — at bottom of scroll, above action bar */}
         {similar.length > 0 && (
           <div style={{ padding: "0 18px 24px", transform: similarVisible ? "translateX(0)" : "translateX(40px)", opacity: similarVisible ? 1 : 0, transition: "transform 0.45s var(--ease-spring), opacity 0.35s var(--ease-out-quart)" }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</div>
+            <h2 className="pz-eyebrow" style={{ marginBottom: 10 }}>Może Cię zainteresować</h2>
             <div style={{ display: "flex", gap: 12, overflowX: "auto" }}>
               {similar.map((ev) => (
                 <TiltCard key={ev.id}>

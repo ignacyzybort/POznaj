@@ -39,6 +39,12 @@ export default function TonightHero({
       height: "min(420px, 55dvh)", margin: "0 16px 18px",
       background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>
+      {/* Ambient category glow */}
+      <div style={{
+        position: "absolute", inset: "-25%", zIndex: 0, pointerEvents: "none",
+        background: `radial-gradient(ellipse at 50% 70%, ${categoryColors[ev.category].bg}48, transparent 55%)`,
+        filter: "blur(48px)", animation: "pz-ambient-glow 5.5s ease-in-out infinite",
+      }} />
       <EventArt event={ev} height={420} style="gradient" forceArt />
       <div style={{
         position: "absolute", inset: 0, padding: 20,
