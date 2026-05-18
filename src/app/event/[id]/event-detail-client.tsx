@@ -15,6 +15,7 @@ import Confetti from "@/components/confetti";
 import ShareModal from "@/components/share-modal";
 import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
+import { getCsrfToken } from "@/lib/csrf";
 
 export type InitialEvent = {
   id: string;
@@ -103,7 +104,7 @@ export default function EventDetailClient({
   const toggleSave = async () => {
     if (!saved) {
       try {
-        const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" }, body: JSON.stringify({ eventId: event.id, status: "SAVED" }) });
+        const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "SAVED" }) });
         if (!res.ok) { setToast("Błąd zapisu"); return; }
         setToast("Zapisano ✅");
       } catch { setToast("Błąd zapisu"); }
@@ -116,7 +117,7 @@ export default function EventDetailClient({
     setGoing(!going);
     if (!going) setConfetti(true);
     try {
-      const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" }, body: JSON.stringify({ eventId: event.id, status: "GOING" }) });
+      const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "GOING" }) });
       if (!res.ok) throw new Error();
       setToast(going ? "Nie idziesz" : "Idziesz 🎉");
     } catch { setGoing(prev); setToast("Błąd"); }

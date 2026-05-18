@@ -178,8 +178,8 @@ export async function saveEvents(
       try {
         const { vibes } = ev;
 
-        if (ev.coordsX) {
-          const geoDistrict = pointInDistrict(ev.coordsX, ev.coordsY!);
+        if (ev.coordsX && ev.coordsY) {
+          const geoDistrict = pointInDistrict(ev.coordsX, ev.coordsY);
           if (geoDistrict) ev.district = geoDistrict;
         }
 

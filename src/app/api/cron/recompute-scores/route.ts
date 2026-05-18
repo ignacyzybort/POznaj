@@ -4,8 +4,12 @@ import { recomputeAllScores } from "@/lib/scoring";
 
 export async function POST(request: NextRequest) {
   try {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret) {
+      return NextResponse.json({ error: "Not configured" }, { status: 501 });
+    }
     const auth = request.headers.get("authorization");
-    if (!auth || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!auth || auth !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

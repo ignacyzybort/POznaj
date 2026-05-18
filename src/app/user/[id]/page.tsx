@@ -6,10 +6,7 @@ import { districts, categoryEmoji } from "@/lib/data";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackIcon } from "@/components/icons";
-
-function getCsrfToken() {
-  return document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "";
-}
+import { getCsrfToken } from "@/lib/csrf";
 
 export default function UserPage() {
   const params = useParams();

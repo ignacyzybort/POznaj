@@ -10,7 +10,9 @@ try {
       process.env.VAPID_PRIVATE_KEY
     );
   }
-} catch {}
+} catch {
+  console.warn("[push] web-push unavailable — push notifications disabled");
+}
 
 export async function sendPushNotification(
   userId: string,

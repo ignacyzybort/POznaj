@@ -43,7 +43,8 @@ export function middleware(req: NextRequest) {
   const method = req.method ?? "GET";
 
   // NextAuth handles its own CSRF, rate limiting, and cookies.
-  if (path.startsWith("/api/auth")) {
+  // Cron endpoints use Bearer auth, not browser CSRF.
+  if (path.startsWith("/api/auth") || path.startsWith("/api/cron")) {
     return NextResponse.next();
   }
 

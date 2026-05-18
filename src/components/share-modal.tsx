@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { SearchIcon, CheckIcon } from "@/components/icons";
+import { getCsrfToken } from "@/lib/csrf";
 
 interface Friend {
   id: string;
@@ -54,7 +55,7 @@ export default function ShareModal({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "",
+          "x-csrf-token": getCsrfToken(),
         },
         body: JSON.stringify({ eventId, friendId }),
       });

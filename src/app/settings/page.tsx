@@ -6,6 +6,7 @@ import { BackIcon } from "@/components/icons";
 import { districts } from "@/lib/data";
 import { useTheme } from "@/components/theme-provider";
 import { DUR } from "@/lib/duration";
+import { getCsrfToken } from "@/lib/csrf";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function SettingsPage() {
           });
           await fetch("/api/push/subscribe", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+            headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
             body: JSON.stringify({ subscription: sub }),
           });
           setNotificationsOn(true);
@@ -61,7 +62,7 @@ export default function SettingsPage() {
       try {
         await fetch("/api/push/subscribe", {
           method: "DELETE",
-          headers: { "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+          headers: { "x-csrf-token": getCsrfToken() },
         });
       } catch {}
       setNotificationsOn(false);

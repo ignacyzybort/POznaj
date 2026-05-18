@@ -19,6 +19,7 @@ import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 import { categoryGradient } from "@/lib/visuals";
+import { getCsrfToken } from "@/lib/csrf";
 
 export default function HomeClient({
   initialEvents,
@@ -134,7 +135,7 @@ export default function HomeClient({
     const isSaved = savedIds.includes(id);
     await fetch("/api/attendance", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-csrf-token": document.cookie.split(";").map(c => c.trim()).find(r => r.startsWith("csrf-token="))?.split("=").slice(1).join("=") ?? "" },
+      headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
       body: JSON.stringify({ eventId: id, status: "SAVED" }),
     });
     if (!isSaved) {
