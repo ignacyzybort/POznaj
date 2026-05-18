@@ -61,8 +61,8 @@ function parseCategory(url: string, title: string, text: string): string {
   const c = (url + " " + title + " " + text).toLowerCase();
   if (c.includes("kino") || c.includes("film") || c.includes("filmow") || c.includes("projekcj") || c.includes("seans")) return "Kino";
   if (c.includes("sztuk") || c.includes("wystaw") || c.includes("galeri") || c.includes("wernis") || c.includes("malarstw") || c.includes("rzeźb")) return "Sztuka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("stand") || c.includes("komedi") || c.includes("balet")) return "Teatr";
   if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("opera") || c.includes("rock") || c.includes("jazz") || c.includes("chór") || c.includes("chorał")) return "Muzyka";
+  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("stand") || c.includes("komedi") || c.includes("balet")) return "Teatr";
   if (c.includes("sport") || c.includes("bieg") || c.includes("aktywn") || c.includes("zawody") || c.includes("turniej") || c.includes("marsz") || c.includes("mecz")) return "Sport";
   if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole") || c.includes("nauka") || c.includes("lekcj")) return "Warsztaty";
   if (c.includes("konferenc") || c.includes("wykład") || c.includes("spotkan") || c.includes("seminari") || c.includes("prelekcj")) return "Konferencje";

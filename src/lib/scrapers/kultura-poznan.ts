@@ -6,10 +6,12 @@ import { geocodeVenue, districtFallback } from "./geocode";
 
 function guessCategory(title: string, desc: string): string {
   const c = (title + " " + desc).toLowerCase();
+  // "koncert w Teatrze" = Music, not Theater
+  if (c.includes("koncer") && c.includes("teatr")) return "Muzyka";
   if (c.includes("kino") || c.includes("film") || c.includes("seans")) return "Kino";
   if (c.includes("sztuk") || c.includes("wystaw") || c.includes("wernis") || c.includes("galeri")) return "Sztuka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi") || c.includes("balet")) return "Teatr";
   if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("rock") || c.includes("jazz") || c.includes("chór")) return "Muzyka";
+  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi") || c.includes("balet")) return "Teatr";
   if (c.includes("sport") || c.includes("bieg") || c.includes("zawod") || c.includes("turniej") || c.includes("mecz")) return "Sport";
   if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole")) return "Warsztaty";
   if (c.includes("konferenc") || c.includes("wykład") || c.includes("prelekcj")) return "Konferencje";
