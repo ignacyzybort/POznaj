@@ -8,16 +8,19 @@ Find the most interesting events happening in Poznań — filtered by district, 
 
 - **5 tabs**: Dziś (Home), Mapa (Map), Plan (Calendar), Lista (Saved/Going), Ja (Profile)
 - **Event discovery**: Browse, search, and filter events by district, category, and vibe
-- **Heat meter**: Visual popularity indicator for every event
+- **Interactive map**: SVG district polygons → Leaflet per-district view with event markers
+- **Real-time weather**: OpenWeatherMap forecast matched to event start time
+- **Heat meter**: Animated waveform popularity indicator for every event
 - **Vibe Quiz**: Answer 4 questions to get personalized event recommendations
 - **Surprise Me**: Random event picker (slot machine style)
-- **Social**: Friend system, activity feed, going/saved tracking
-- **Notifications**: Browser notification reminders for events
+- **Social**: Friend system, activity feed, going/saved tracking, invite modal
+- **Notifications**: Browser Notification API reminders for events
 - **Passport**: District stamp collection gamification
 - **Streak**: Weekly event-going streak tracking
 - **Year in Review**: Annual event recap (Spotify Wrapped style)
 - **Dark mode**: Full theme toggle
-- **Scraped events**: Real events from pik.poznan.pl and poznan.pl
+- **Vercel Analytics + Speed Insights**: Real-time traffic and performance monitoring
+- **Scraped events**: Real events from pik.poznan.pl and poznan.pl with venue-based coordinates
 
 ## Tech Stack
 
@@ -27,7 +30,11 @@ Find the most interesting events happening in Poznań — filtered by district, 
 - **Database**: PostgreSQL via Neon (serverless)
 - **ORM**: Prisma 7
 - **Auth**: NextAuth.js v5 (Google, Apple, Email magic link)
-- **Deployment**: Vercel
+- **Maps**: Leaflet + OpenStreetMap (free, no API key)
+- **Weather**: OpenWeatherMap 5-day forecast API
+- **Analytics**: Vercel Analytics + Speed Insights
+- **Scraping**: Axios + Cheerio
+- **Deployment**: Vercel (auto-deploy from GitHub)
 
 ## Getting Started
 
