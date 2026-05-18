@@ -149,7 +149,7 @@ export async function saveEvents(
 
   // Clean titles, placeNames, descriptions before any processing
   for (const ev of events) {
-    ev.title = cleanTitle(ev.title);
+    ev.title = decodeEntities(cleanTitle(ev.title));
     ev.placeName = cleanPlaceName(ev.placeName);
     if (ev.description) ev.description = cleanDescription(ev.description);
     if (ev.address) ev.address = decodeEntities(ev.address);
