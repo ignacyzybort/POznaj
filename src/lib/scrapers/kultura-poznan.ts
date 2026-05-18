@@ -6,14 +6,14 @@ import { geocodeVenue, districtFallback } from "./geocode";
 
 function guessCategory(title: string, desc: string): string {
   const c = (title + " " + desc).toLowerCase();
-  if (c.includes("kino") || c.includes("film")) return "Kino";
+  if (c.includes("kino") || c.includes("film") || c.includes("seans")) return "Kino";
   if (c.includes("sztuk") || c.includes("wystaw") || c.includes("wernis") || c.includes("galeri")) return "Sztuka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi")) return "Teatr";
-  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal")) return "Muzyka";
-  if (c.includes("sport") || c.includes("bieg") || c.includes("zawod")) return "Sport";
-  if (c.includes("warsztat") || c.includes("kurs")) return "Warsztaty";
-  if (c.includes("konferenc") || c.includes("wykład")) return "Konferencje";
-  if (c.includes("jedzeni") || c.includes("kulinar") || c.includes("degustac")) return "Jedzenie";
+  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi") || c.includes("balet")) return "Teatr";
+  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("rock") || c.includes("jazz") || c.includes("chór")) return "Muzyka";
+  if (c.includes("sport") || c.includes("bieg") || c.includes("zawod") || c.includes("turniej") || c.includes("mecz")) return "Sport";
+  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole")) return "Warsztaty";
+  if (c.includes("konferenc") || c.includes("wykład") || c.includes("prelekcj")) return "Konferencje";
+  if (c.includes("jedzeni") || c.includes("kulinar") || c.includes("degustac") || c.includes("jarmark") || c.includes("targ")) return "Jedzenie";
   return "Inne";
 }
 
@@ -222,7 +222,7 @@ export class KulturaPoznanScraper implements Scraper {
                 placeName: sub.venue,
                 address: subVenue?.address,
                 district: subVenue?.district ?? guessDistrict(sub.venue, ""),
-                category: guessCategory(sub.title, ""),
+                category: guessCategory(sub.title, description),
                 description: `${title} — ${sub.venue}`,
                 sourceUrl,
                 startDate: sub.date,
