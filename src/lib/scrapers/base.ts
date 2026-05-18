@@ -52,7 +52,10 @@ function cleanPlaceName(s: string): string {
 }
 
 function cleanDescription(desc: string): string {
-  return desc.split(/\n\s*(?:Data:|Miejsce:|Lokalizacja:|Bilety:|Wykonawca|Organizator:|Tagi:)/)[0].trim();
+  return desc.split(/\s*(?:Data:|Miejsce:|Lokalizacja:|Bilety:|Wykonawca:|Organizator:|Tagi:)/)[0]
+    .replace(/\t/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 function normalize(s: string): string {
@@ -114,8 +117,10 @@ const updateData = (event: ScrapedEvent, vibes: string[]) => {
     description: event.description,
     imageUrl: event.imageUrl,
     sourceUrl: event.sourceUrl,
+    startDate: event.startDate,
     endDate: event.endDate,
     time: event.time,
+    placeName: event.placeName,
     address: event.address,
     category: event.category as any,
     source: event.source,
