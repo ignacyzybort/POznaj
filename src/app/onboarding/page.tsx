@@ -55,13 +55,13 @@ export default function OnboardingPage() {
         {/* Welcome */}
         {step === "welcome" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 24 }}>👋</div>
+            <div style={{ fontSize: 56, marginBottom: 24 }}>🏙️</div>
             <h1 className="pz-h" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.035em", margin: "0 0 12px", lineHeight: 1.05, color: "var(--ink)" }}>
-              Co dziś<br />w Poznaniu.
+              Cześć,<br />Poznaniaku.
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "var(--ink-3)", margin: 0 }}>
-              POznaj pomoże Ci znaleźć najlepsze wydarzenia w mieście.
-              Dopasujemy je do Twoich zainteresowań.
+              Poznań ma więcej do zaoferowania niż Stary Rynek.
+              Pokażemy Ci wydarzenia, które przegapiasz.
             </p>
           </div>
         )}

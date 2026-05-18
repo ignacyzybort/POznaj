@@ -44,6 +44,7 @@ export default function SurpriseModal({
   const [spinKey, setSpinKey] = useState(0);
   const [phase, setPhase] = useState<"spinning" | "stopped" | "picked">("spinning");
   const [picked, setPicked] = useState<EventData | null>(null);
+  const [flash, setFlash] = useState(false);
   const [exiting, setExiting] = useState(false);
 
   useEscape(onClose);
@@ -79,6 +80,8 @@ export default function SurpriseModal({
 
   useEffect(() => {
     if (allStopped) {
+      setFlash(true);
+      setTimeout(() => setFlash(false), 500);
       const t = setTimeout(snap, 400);
       return () => clearTimeout(t);
     }
@@ -100,7 +103,14 @@ export default function SurpriseModal({
       background: "var(--scrim)",
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
     }}>
-      <div style={{ margin: "0 16px", maxWidth: 440, width: "100%", padding: "24px 16px", borderRadius: 28, background: "var(--bg-elev)" }}>
+      <div style={{ margin: "0 16px", maxWidth: 440, width: "100%", padding: "24px 16px", borderRadius: 28, background: "var(--bg-elev)", position: "relative", overflow: "hidden" }}>
+        {flash && (
+          <div style={{
+            position: "absolute", inset: 0, borderRadius: 28, pointerEvents: "none", zIndex: 2,
+            background: "radial-gradient(circle at 50% 40%, rgba(255,255,255,0.45) 0%, transparent 60%)",
+            animation: "pz-slot-win 0.6s var(--ease-out-quart) both",
+          }} />
+        )}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <ShuffleIcon size={20} />
           <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Zaskocz mnie</h2>

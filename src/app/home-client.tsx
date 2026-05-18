@@ -70,7 +70,7 @@ export default function HomeClient({
     }).catch((e) => {
       if (e?.name === "AbortError") return;
       console.error("home fetch failed", e);
-      setError("Nie udało się załadować wydarzeń");
+      setError("Ups, coś się zacięło — spróbuj jeszcze raz");
       setLoading(false);
     });
   };
@@ -175,7 +175,7 @@ export default function HomeClient({
               margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em",
               lineHeight: 0.95,
             }}>
-              Co dziś<br />w Poznaniu.
+              Poznań nie<br />zasypia.
             </h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -254,7 +254,7 @@ export default function HomeClient({
       )}
 
       {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "6px 18px 0" }}>
+        <div style={{ padding: "12px 18px 6px" }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
             <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
               Polecane dla Ciebie

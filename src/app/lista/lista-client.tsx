@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
 
 type AttendanceItem = {
   id: string;
@@ -51,8 +52,14 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {filtered.map((a) => (
-            <Link key={a.id} href={`/event/${a.event.id}`} style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit" }}>
+          {filtered.map((a, i) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1], delay: Math.min(i, 8) * 0.05 }}
+            >
+            <Link href={`/event/${a.event.id}`} style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit" }}>
               <div style={{ width: 64, height: 64, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: "var(--bg-soft)" }}>
                 {a.event.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -69,6 +76,7 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
                 <span className="pz-pill" style={{ marginTop: 4, fontSize: 10 }}>{a.event.category}</span>
               </div>
             </Link>
+            </motion.div>
           ))}
         </div>
       )}

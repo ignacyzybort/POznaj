@@ -16,6 +16,22 @@ function guessDistrict(text: string): string {
   return "Inny";
 }
 
+// Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
+function parseScreenings(description: string): { date: Date; time: string; title: string }[] {
+  const screenings: { date: Date; time: string; title: string }[] = [];
+  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  let match;
+  while ((match = pattern.exec(description)) !== null) {
+    const [_, dateStr, time, title] = match;
+    const parts = dateStr.split(".");
+    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
+    if (!isNaN(d.getTime())) {
+      screenings.push({ date: d, time, title: title.trim() });
+    }
+  }
+  return screenings;
+}
+
 function guessVibes(title: string, desc: string, category: string): string[] {
   const t = (title + " " + desc).toLowerCase();
   const vibes: string[] = [];
@@ -43,14 +59,14 @@ function guessVibes(title: string, desc: string, category: string): string[] {
 
 function parseCategory(url: string, title: string, text: string): string {
   const c = (url + " " + title + " " + text).toLowerCase();
-  if (c.includes("kino") || c.includes("film") || c.includes("filmow") || c.includes("projekcj") || c.includes("lgtb")) return "Kino";
+  if (c.includes("kino") || c.includes("film") || c.includes("filmow") || c.includes("projekcj") || c.includes("seans")) return "Kino";
   if (c.includes("sztuk") || c.includes("wystaw") || c.includes("galeri") || c.includes("wernis") || c.includes("malarstw") || c.includes("rzeźb")) return "Sztuka";
+  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("opera") || c.includes("rock") || c.includes("jazz") || c.includes("chór") || c.includes("chorał")) return "Muzyka";
   if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("stand") || c.includes("komedi") || c.includes("balet")) return "Teatr";
-  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("zestaw piosenek")) return "Muzyka";
-  if (c.includes("sport") || c.includes("bieg") || c.includes("aktywn") || c.includes("zawody") || c.includes("turniej") || c.includes("marsz")) return "Sport";
-  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole") || c.includes("nauka")) return "Warsztaty";
-  if (c.includes("konferenc") || c.includes("wykład") || c.includes("spotkan") || c.includes("seminari")) return "Konferencje";
-  if (c.includes("jedzeni") || c.includes("kuchni") || c.includes("kulinar") || c.includes("degustac") || c.includes("kawa") || c.includes("piwo") || c.includes("kawiarn") || c.includes("restaurac")) return "Jedzenie";
+  if (c.includes("sport") || c.includes("bieg") || c.includes("aktywn") || c.includes("zawody") || c.includes("turniej") || c.includes("marsz") || c.includes("mecz")) return "Sport";
+  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole") || c.includes("nauka") || c.includes("lekcj")) return "Warsztaty";
+  if (c.includes("konferenc") || c.includes("wykład") || c.includes("spotkan") || c.includes("seminari") || c.includes("prelekcj")) return "Konferencje";
+  if (c.includes("jedzeni") || c.includes("kuchni") || c.includes("kulinar") || c.includes("degustac") || c.includes("kawa") || c.includes("piwo") || c.includes("kawiarn") || c.includes("restaurac") || c.includes("jarmark") || c.includes("targ")) return "Jedzenie";
   return "Inne";
 }
 
@@ -233,6 +249,11 @@ export class PikPoznanScraper implements Scraper {
             contentEl.find("script, style, noscript, iframe").remove();
             const desc = contentEl.text().trim();
             if (desc.length > 50) ev.description = desc.slice(0, 2000);
+            // Re-check category using enriched description
+            if (ev.category === "Inne" && ev.description) {
+              const improved = parseCategory(ev.sourceUrl, ev.title, ev.description);
+              if (improved !== "Inne") ev.category = improved;
+            }
             if (venueFromLd) {
               ev.placeName = venueFromLd;
               if (addrFromLd) ev.address = addrFromLd;
@@ -274,6 +295,39 @@ export class PikPoznanScraper implements Scraper {
       ev.coordsX = center.lat;
       ev.coordsY = center.lon;
     }
+
+    // Split recurring screenings (e.g. "Kino plenerowe" with multiple dates)
+    const splitEvents: ScrapedEvent[] = [];
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if (!ev.description) continue;
+      const screenings = parseScreenings(ev.description);
+      if (screenings.length >= 3) {
+        events.splice(i, 1);
+        for (const s of screenings) {
+          splitEvents.push({
+            title: s.title,
+            description: `${ev.title} — ${s.title}`,
+            imageUrl: ev.imageUrl,
+            sourceUrl: ev.sourceUrl,
+            startDate: s.date,
+            endDate: s.date,
+            time: s.time,
+            placeName: ev.placeName,
+            address: ev.address,
+            district: ev.district,
+            category: "Kino",
+            vibes: ["Kulturalne"],
+            source: ev.source,
+            sourceId: `pikpoznan-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
+            coordsX: ev.coordsX,
+            coordsY: ev.coordsY,
+            price: ev.price,
+          });
+        }
+      }
+    }
+    events.push(...splitEvents);
 
     return events;
   }

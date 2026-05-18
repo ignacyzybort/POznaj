@@ -6,14 +6,16 @@ import { geocodeVenue, districtFallback } from "./geocode";
 
 function guessCategory(title: string, desc: string): string {
   const c = (title + " " + desc).toLowerCase();
-  if (c.includes("kino") || c.includes("film")) return "Kino";
+  // "koncert w Teatrze" = Music, not Theater
+  if (c.includes("koncer") && c.includes("teatr")) return "Muzyka";
+  if (c.includes("kino") || c.includes("film") || c.includes("seans")) return "Kino";
   if (c.includes("sztuk") || c.includes("wystaw") || c.includes("wernis") || c.includes("galeri")) return "Sztuka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi")) return "Teatr";
-  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal")) return "Muzyka";
-  if (c.includes("sport") || c.includes("bieg") || c.includes("zawod")) return "Sport";
-  if (c.includes("warsztat") || c.includes("kurs")) return "Warsztaty";
-  if (c.includes("konferenc") || c.includes("wykład")) return "Konferencje";
-  if (c.includes("jedzeni") || c.includes("kulinar") || c.includes("degustac")) return "Jedzenie";
+  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("rock") || c.includes("jazz") || c.includes("chór")) return "Muzyka";
+  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi") || c.includes("balet")) return "Teatr";
+  if (c.includes("sport") || c.includes("bieg") || c.includes("zawod") || c.includes("turniej") || c.includes("mecz")) return "Sport";
+  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole")) return "Warsztaty";
+  if (c.includes("konferenc") || c.includes("wykład") || c.includes("prelekcj")) return "Konferencje";
+  if (c.includes("jedzeni") || c.includes("kulinar") || c.includes("degustac") || c.includes("jarmark") || c.includes("targ")) return "Jedzenie";
   return "Inne";
 }
 
@@ -24,12 +26,24 @@ const MONTHS = [
 ];
 
 function parsePolishDate(dateStr: string, year: number): Date {
-  // "1-3.05.", "16.05", "8-15.05", "8.05"
-  const match = dateStr.match(/(\d{1,2})(?:[.-](\d{1,2}))?\s*\.?\s*(\d{1,2})/);
-  if (!match) return new Date(year, 0, 1);
-  const end = match[2] ? parseInt(match[2]) : parseInt(match[1]);
-  const month = parseInt(match[3]) - 1;
-  return new Date(year, month, end);
+  // "DD.MM" or "DD.MM.YYYY" — single date
+  const single = dateStr.match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+  if (single) {
+    const day = parseInt(single[1]);
+    const month = parseInt(single[2]) - 1;
+    const y = single[3] ? parseInt(single[3]) : year;
+    if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
+      return new Date(y, month, day);
+    }
+  }
+  // "1-3.05." or "8-15.05" — date range
+  const range = dateStr.match(/(\d{1,2})[.-](\d{1,2})\s*\.?\s*(\d{1,2})/);
+  if (range) {
+    const month = parseInt(range[3]) - 1;
+    const end = parseInt(range[2]);
+    if (month >= 0 && month <= 11) return new Date(year, month, end);
+  }
+  return new Date(year, 0, 1);
 }
 
 function parseDateRange(dateStr: string, year: number): { start: Date; end: Date } {
@@ -65,12 +79,29 @@ function parseSubEvents(html: string, year: number): { date: Date; venue: string
     const match = line.match(/^[\s-]*(\d{1,2}\.\d{2})\s*[-–]\s*(.+?)\s*[-–]\s*(.+)/);
     if (match) {
       const date = parsePolishDate(match[1], year);
+      if (isNaN(date.getTime())) continue;
       const venue = match[2].trim();
       const title = match[3].trim();
       if (venue && title) sub.push({ date, venue, title });
     }
   }
   return sub;
+}
+
+// Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
+function parseScreenings(description: string, year: number): { date: Date; time: string; title: string }[] {
+  const screenings: { date: Date; time: string; title: string }[] = [];
+  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  let match;
+  while ((match = pattern.exec(description)) !== null) {
+    const [_, dateStr, time, title] = match;
+    const parts = dateStr.split(".");
+    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
+    if (!isNaN(d.getTime())) {
+      screenings.push({ date: d, time, title: title.trim() });
+    }
+  }
+  return screenings;
 }
 
 export class KulturaPoznanScraper implements Scraper {
@@ -106,15 +137,15 @@ export class KulturaPoznanScraper implements Scraper {
           const pHtml = pEl.html() || "";
           const pText = pEl.text().trim();
 
-          // Extract fields from <p> content
-          const dataMatch = pText.match(/Data:\s*(.+?)(?:\n|$)/m);
+          // Extract fields from <p> content (handle concatenated fields without newlines)
+          const dataMatch = pText.match(/Data:\s*(.+?)(?:\n|Miejsce|Lokalizacja|Więcej|Organizator|Bilety|\$)/im);
           const dateStr = dataMatch ? dataMatch[1].trim() : "";
           const { start, end } = dateStr ? parseDateRange(dateStr, year) : { start: new Date(year, 0, 1), end: new Date(year, 0, 1) };
 
-          const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|$)/m);
+          const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|Więcej|Organizator|Bilety|\$)/im);
           let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
 
-          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|$)/m);
+          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|Więcej|Organizator|\$)/im);
           let price: string | undefined;
           if (ticketMatch) {
             const raw = ticketMatch[1].trim();
@@ -152,6 +183,34 @@ export class KulturaPoznanScraper implements Scraper {
           const coordsX = venue?.lat;
           const coordsY = venue?.lon;
 
+          // Handle recurring screenings (e.g. "Kino plenerowe" with multiple dates)
+          const screenings = parseScreenings(pText, year);
+          if (screenings.length >= 3) {
+            for (const s of screenings) {
+              const sDaysUntil = (s.date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+              if (sDaysUntil < -1) continue;
+              events.push({
+                title: s.title,
+                description: `${title} — ${s.title}`,
+                placeName,
+                address,
+                district: district !== "Inny" ? district : "Centrum",
+                category: "Kino",
+                sourceUrl,
+                startDate: s.date,
+                endDate: s.date,
+                time: s.time,
+                vibes: ["Kulturalne"],
+                source: "kultura-poznan",
+                sourceId: `kp-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
+                coordsX,
+                coordsY,
+                price,
+              });
+            }
+            return; // skip parent if screenings extracted
+          }
+
           // Handle sub-events (e.g. "Inne koncerty")
           const subEvents = parseSubEvents(pHtml, year);
 
@@ -165,7 +224,7 @@ export class KulturaPoznanScraper implements Scraper {
                 placeName: sub.venue,
                 address: subVenue?.address,
                 district: subVenue?.district ?? guessDistrict(sub.venue, ""),
-                category: guessCategory(sub.title, ""),
+                category: guessCategory(sub.title, description),
                 description: `${title} — ${sub.venue}`,
                 sourceUrl,
                 startDate: sub.date,
@@ -173,7 +232,7 @@ export class KulturaPoznanScraper implements Scraper {
                 time: undefined,
                 vibes: ["Kulturalne"],
                 source: "kultura-poznan",
-                sourceId: `kp-${Buffer.from(sub.title).toString("base64").slice(0, 24)}`,
+                sourceId: `kp-${Buffer.from(sub.title + sub.date.toISOString()).toString("base64").slice(0, 24)}`,
                 coordsX: subVenue?.lat,
                 coordsY: subVenue?.lon,
                 price,

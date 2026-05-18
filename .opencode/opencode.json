@@ -118,22 +118,22 @@
     "colorist": {
       "description": "Color: OKLCH conversions, contrast ratio checks, palette design, token color assignments. Use when user mentions: color, contrast, palette, shade, hue, dark mode color, token color.",
       "mode": "subagent",
-      "model": "opencode-zen/deepseek-v4-flash-free"
+      "model": "opencode-go/qwen3.5-plus"
     },
     "typographer": {
       "description": "Typography: font scale consistency, heading hierarchy, line heights, letter-spacing, font tokens. Use when user mentions: typography, font, text, heading, type scale, line height, letter spacing.",
       "mode": "subagent",
-      "model": "opencode-zen/deepseek-v4-flash-free"
+      "model": "opencode-go/qwen3.5-plus"
     },
     "devops": {
       "description": "Vercel deployment, CI/CD, environment variables, build configuration. Use when user mentions: deploy, Vercel, CI/CD, build, environment, env var, production.",
       "mode": "subagent",
-      "model": "opencode-zen/deepseek-v4-flash-free"
+      "model": "opencode-go/qwen3.5-plus"
     },
     "deps": {
       "description": "Package dependency management: npm audit, version upgrades, compatibility checks, bundle analysis. Use when user mentions: dependency, package, npm, upgrade, audit, install, remove package.",
       "mode": "subagent",
-      "model": "opencode-zen/deepseek-v4-flash-free"
+      "model": "opencode-go/qwen3.5-plus"
     },
     "seed": {
       "description": "Database seeding and fixture data generation. Use for scripts/seed.ts changes, generating test data, populating development database. Use when user mentions: seed, fixture, test data, populate database.",
