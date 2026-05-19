@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google,
     Apple,
     Resend({
-      from: "POznaj <noreply@poznaj.app>",
+      from: "POznaj <noreply@po-znaj.pl>",
     }),
   ],
   callbacks: {
