@@ -11,7 +11,7 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
-import { SettingsIcon, EditIcon, ChevronIcon } from "@/components/icons";
+import { SettingsIcon, EditIcon } from "@/components/icons";
 import { computeChallenges } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
@@ -269,6 +269,13 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
             </div>
           </div>
           <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
+          <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 12, textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800, flexShrink: 0 }}>?</div>
+            <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania</div></div>
+          </button>
+          <button onClick={() => setYirOpen(true)} style={{ padding: 14, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Wrapped</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingItems.length} wydarzeń</div>
+          </button>
         </div>
         {/* Right column: passport */}
         <PassportCard stamps={stamps} />
@@ -309,19 +316,6 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           </div>
         </div>
       )}
-
-      {/* Vibe quiz + wrapped */}
-      <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
-        <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 14, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800 }}>?</div>
-          <div style={{ flex: 1 }}><div className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>4 pytania · odpalimy świeży feed</div></div>
-          <span style={{ color: "var(--ink-3)" }}><ChevronIcon size={18} /></span>
-        </button>
-        <button onClick={() => setYirOpen(true)} style={{ padding: 16, width: "100%", textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-          <div><div style={{ fontSize: "var(--text-xs)", fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 4 }}>Twój 2026</div><div style={{ fontSize: "var(--text-sm)", opacity: 0.9, marginTop: 6 }}>{goingItems.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {friendsList.length} osób</div></div>
-          <span style={{ marginLeft: "auto", opacity: 0.85 }}><ChevronIcon size={18} /></span>
-        </button>
-      </div>
 
       {/* Friends */}
       <div style={{ padding: "0 18px 6px" }}>
