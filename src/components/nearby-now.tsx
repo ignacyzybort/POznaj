@@ -10,7 +10,9 @@ interface NearbyFriend {
   eventTitle: string;
 }
 
-const COLORS = ["#FF6B2C", "#6E3DFF", "#FF3D7F", "#2860FF", "#C8FF2E", "#E89A6B", "#FFB627"];
+const COLORS = [
+  "var(--c-teatr)", "var(--c-kino)", "var(--c-muzyka)", "var(--c-sztuka)", "var(--c-sport)", "var(--c-warsztaty)", "var(--c-jedzenie)"
+];
 
 export default function NearbyNow() {
   const [friends, setFriends] = useState<NearbyFriend[]>([]);
@@ -48,7 +50,7 @@ export default function NearbyNow() {
         <span className="pz-eyebrow" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
           <span style={{
             width: 6, height: 6, borderRadius: 99,
-            background: "#2EC36B", boxShadow: "0 0 6px #2EC36B",
+            background: "var(--online-green)", boxShadow: "0 0 6px var(--online-green)",
             animation: "pz-pulse 1.6s infinite",
           }} />
           Live
@@ -74,7 +76,7 @@ export default function NearbyNow() {
               <span style={{
                 position: "absolute", right: -1, bottom: -1,
                 width: 12, height: 12, borderRadius: 99,
-                background: "#2EC36B", border: "2px solid var(--bg-elev)",
+                background: "var(--online-green)", border: "2px solid var(--bg-elev)",
               }} />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>

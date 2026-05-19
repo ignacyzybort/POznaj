@@ -54,9 +54,9 @@ export default function CropModal({
   };
 
   return (
-    <div ref={focusTrapRef} role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--scrim)" }}>
-      <div className="rounded-3xl overflow-hidden mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)" }}>
-        <div className="p-4">
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" aria-label="Przytnij zdjęcie" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--scrim)" }}>
+      <div style={{ borderRadius: 28, overflow: "hidden", margin: "0 16px", maxWidth: "24rem", width: "100%", background: "var(--bg-elev)" }}>
+        <div style={{ padding: 16 }}>
           <h2 className="pz-h" style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", textAlign: "center" }}>
             Przytnij zdjęcie
           </h2>

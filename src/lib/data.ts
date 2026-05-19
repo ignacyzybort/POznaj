@@ -77,15 +77,15 @@ export const categoryEmoji: Record<string, string> = {
 };
 
 export const categoryColors: Record<string, { bg: string; fg: string }> = {
-  Muzyka: { bg: "#FF3D7F", fg: "#4A0B23" },
-  Kino: { bg: "#6E3DFF", fg: "#1F0A55" },
-  Sztuka: { bg: "#2860FF", fg: "#07194C" },
-  Sport: { bg: "#C8FF2E", fg: "#1F2A04" },
-  Teatr: { bg: "#FF6B2C", fg: "#4A1A02" },
-  Warsztaty: { bg: "#E89A6B", fg: "#3A1C0A" },
-  Konferencje: { bg: "#1F2D5A", fg: "#F4F4FB" },
-  Jedzenie: { bg: "#FFB627", fg: "#3A2200" },
-  Inne: { bg: "#E8E3D8", fg: "#1A1A1A" },
+  Muzyka: { bg: "var(--c-muzyka)", fg: "var(--c-muzyka-ink)" },
+  Kino: { bg: "var(--c-kino)", fg: "var(--c-kino-ink)" },
+  Sztuka: { bg: "var(--c-sztuka)", fg: "var(--c-sztuka-ink)" },
+  Sport: { bg: "var(--c-sport)", fg: "var(--c-sport-ink)" },
+  Teatr: { bg: "var(--c-teatr)", fg: "var(--c-teatr-ink)" },
+  Warsztaty: { bg: "var(--c-warsztaty)", fg: "var(--c-warsztaty-ink)" },
+  Konferencje: { bg: "var(--c-konferencje)", fg: "var(--c-konferencje-ink)" },
+  Jedzenie: { bg: "var(--c-jedzenie)", fg: "var(--c-jedzenie-ink)" },
+  Inne: { bg: "var(--c-inne)", fg: "var(--c-inne-ink)" },
 };
 
 const today = new Date();

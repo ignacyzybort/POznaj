@@ -157,9 +157,9 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, paddingBottom: 96 }}>
       {/* Wordmark */}
       <div style={{ padding: "calc(24px + var(--safe-t)) 18px 12px" }}>
-        <h1 style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
+        <span style={{ fontSize: "var(--text-lg)", fontWeight: 800, letterSpacing: "-0.02em", margin: 0, color: "var(--ink)" }}>
           poznaj<span style={{ color: "var(--sage)" }}>.</span>
-        </h1>
+        </span>
       </div>
 
       {/* Cover banner — 120px */}
@@ -190,7 +190,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
             )}
           </div>
           <div style={{ paddingBottom: 4 }}>
-            <div className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)" }}>{name}</div>
+            <h1 className="pz-h" style={{ fontSize: "var(--text-xl)", fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, color: "var(--ink)", margin: 0 }}>{name}</h1>
             <div style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)", marginTop: 1 }}>@{handle}{districtLabel ? ` · ${districtLabel}` : ""}</div>
           </div>
         </div>
@@ -272,10 +272,10 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
           <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 12, textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800, flexShrink: 0 }}>?</div>
-            <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania</div></div>
+            <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Dostrój</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania</div></div>
           </button>
           <button onClick={() => setYirOpen(true)} style={{ padding: 14, flex: 1, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Wrapped</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingItems.length} wydarzeń</div>
+            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Podsumowanie</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingItems.length} wydarzeń</div>
           </button>
         </div>
         {/* Right column: passport */}

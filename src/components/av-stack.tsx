@@ -1,4 +1,6 @@
-const COLORS = ["#FF6B2C", "#6E3DFF", "#FF3D7F", "#2860FF", "#C8FF2E", "#E89A6B", "#FFB627"];
+const COLORS = [
+  "var(--c-teatr)", "var(--c-kino)", "var(--c-muzyka)", "var(--c-sztuka)", "var(--c-sport)", "var(--c-warsztaty)", "var(--c-jedzenie)"
+];
 
 export default function AvStack({ people, max = 3, size = 22 }: { people?: { name: string }[]; max?: number; size?: number }) {
   if (!people || people.length === 0) return null;

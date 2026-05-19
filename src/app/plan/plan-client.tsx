@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { EventData, categoryColors } from "@/lib/data";
+import { EventData, categoryColors, districts } from "@/lib/data";
 import Link from "next/link";
 import HeatMeter from "@/components/heat-meter";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
@@ -86,7 +86,7 @@ export default function PlanClient({ events }: { events: EventData[] }) {
                     {ev.title}
                   </p>
                   <p style={{ fontSize: 12, marginTop: 2, color: "var(--ink-3)" }}>
-                    {ev.placeName} · {ev.district === "Inny" ? "Poznań" : ev.district}
+                    {ev.placeName} · {districts.find(d => d.value === ev.district)?.label ?? "Poznań"}
                   </p>
                 </div>
               </Link>

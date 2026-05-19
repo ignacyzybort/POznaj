@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
-import { PinIcon } from "@/components/icons";
+import { PinIcon, CloseIcon } from "@/components/icons";
 
 interface SearchUser {
   id: string;
@@ -54,14 +54,15 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div ref={focusTrapRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
+    <div ref={focusTrapRef} role="dialog" aria-modal="true" aria-label="Zaproś znajomych" style={{
+      position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center",
       background: "rgba(20,19,15,0.5)",
-      animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+      animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
     }}>
-      <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "80%", display: "flex", flexDirection: "column" }}>
-        <div className="flex items-center justify-between mb-4">
+      <div style={{ borderRadius: 28, padding: 24, margin: "0 16px", maxWidth: "24rem", width: "100%", background: "var(--bg-elev)", maxHeight: "80%", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Zaproś znajomych</h2>
-          <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+          <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><CloseIcon size={16} /></button>
         </div>
 
         <label htmlFor="invite-search-input" className="sr-only">Szukaj znajomych</label>
@@ -81,7 +82,7 @@ export default function InviteModal({ onClose }: { onClose: () => void }) {
             const sent = sentIds.includes(u.id);
             return (
               <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0" }}>
-                <div style={{ width: 38, height: 38, borderRadius: 99, background: "linear-gradient(135deg, #FF3D7F, #FFB627)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
+                <div style={{ width: 38, height: 38, borderRadius: 99,           background: "linear-gradient(135deg, var(--c-muzyka), var(--c-jedzenie))", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
                   {u.name?.[0]?.toUpperCase() ?? "?"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

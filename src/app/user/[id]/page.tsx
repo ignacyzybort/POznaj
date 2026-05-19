@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { districts, categoryEmoji } from "@/lib/data";
+import { fmtFullDate } from "@/lib/date";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackIcon } from "@/components/icons";
@@ -49,10 +50,10 @@ export default function UserPage() {
   if (loading) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
-        <div className="animate-pulse p-6 space-y-4">
-          <div className="h-32 bg-zinc-100 rounded-2xl" />
-          <div className="h-8 w-1/3 bg-zinc-100 rounded-lg" />
-          <div className="h-4 w-1/2 bg-zinc-100 rounded-lg" />
+        <div style={{ padding: "calc(54px + var(--safe-t)) 18px" }}>
+          <div className="pz-skeleton pz-skeleton-breath" style={{ height: 120, borderRadius: 18, marginBottom: 16 }} />
+          <div className="pz-skeleton pz-skeleton-breath" style={{ height: 20, width: "40%", borderRadius: 10, marginBottom: 8 }} />
+          <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "60%", borderRadius: 7 }} />
         </div>
       </div>
     );
@@ -73,14 +74,14 @@ export default function UserPage() {
   const { user, activities } = data;
   const districtLabel = districts.find((d) => d.value === user.district)?.label ?? "";
   const COVER_GRADIENTS = [
-    "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
+    "linear-gradient(135deg, var(--c-muzyka), var(--c-jedzenie))",
     "linear-gradient(135deg, var(--c-kino), var(--c-muzyka))",
-    "linear-gradient(135deg, var(--c-sztuka), #06B6D4)",
-    "linear-gradient(135deg, #C8FF2E, var(--sage))",
+    "linear-gradient(135deg, var(--c-sztuka), var(--c-teatr))",
+    "linear-gradient(135deg, var(--c-sport), var(--sage))",
     "linear-gradient(135deg, var(--c-teatr), var(--c-sztuka))",
   ];
   const coverGradient = COVER_GRADIENTS[((user.name ?? "").length * 7) % COVER_GRADIENTS.length];
-  const createdAt = new Date(user.createdAt).toLocaleDateString("pl-PL", { month: "long", year: "numeric" });
+  const createdAt = fmtFullDate(new Date(user.createdAt));
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)", paddingBottom: 96 }}>

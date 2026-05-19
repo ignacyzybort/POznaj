@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { SearchIcon, CheckIcon } from "@/components/icons";
+import { SearchIcon, CheckIcon, CloseIcon, ArrowIcon } from "@/components/icons";
 import { getCsrfToken } from "@/lib/csrf";
+import { useFocusTrap } from "@/hooks/use-focus-trap";
 
 interface Friend {
   id: string;
@@ -24,6 +25,7 @@ export default function ShareModal({
   const [loading, setLoading] = useState(true);
   const [sentTo, setSentTo] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
+  const focusTrapRef = useFocusTrap(true);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,19 +80,22 @@ export default function ShareModal({
       style={{
         position: "fixed", inset: 0, zIndex: 200,
         display: "flex", flexDirection: "column",
-        background: "var(--bg)",
       }}
     >
+      <div ref={focusTrapRef} style={{
+        flex: 1, display: "flex", flexDirection: "column",
+        background: "var(--bg)", borderRadius: "28px 28px 0 0",
+        marginTop: "10vh",
+      }}>
       <div style={{
         padding: "calc(16px + var(--safe-t)) 16px 0",
         display: "flex", alignItems: "center", gap: 12,
       }}>
         <button onClick={onClose} aria-label="Zamknij" style={{
-          width: 36, height: 36, borderRadius: 99, border: 0,
+          width: 44, height: 44, borderRadius: 99, border: 0,
           background: "var(--bg-soft)", color: "var(--ink)",
-          cursor: "pointer", fontSize: 16, lineHeight: 1,
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-        }}>×</button>
+          cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}><CloseIcon size={18} /></button>
         <div>
           <div className="pz-h" style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.025em", color: "var(--ink)" }}>
             Wyślij znajomemu
@@ -108,7 +113,9 @@ export default function ShareModal({
           background: "var(--bg-soft)",
         }}>
           <SearchIcon size={14} />
+          <label htmlFor="share-search" className="sr-only">Szukaj znajomych</label>
           <input
+            id="share-search"
             ref={inputRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -168,7 +175,7 @@ export default function ShareModal({
                     }}><CheckIcon size={16} /></div>
                   ) : (
                     <span style={{ fontSize: 12.5, color: "var(--ink-4)", fontWeight: 600 }}>
-                      Wyślij →
+                      Wyślij <ArrowIcon size={12} />
                     </span>
                   )}
                 </div>
@@ -176,6 +183,7 @@ export default function ShareModal({
             );
           })
         )}
+      </div>
       </div>
     </div>
   );

@@ -17,7 +17,6 @@ import Toast from "@/components/toast";
 import EmptyState from "@/components/empty-state";
 import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
-import { DUR } from "@/lib/duration";
 import { categoryGradient } from "@/lib/visuals";
 import { getCsrfToken } from "@/lib/csrf";
 
@@ -140,7 +139,6 @@ export default function HomeClient({
     });
     if (!isSaved) {
       setToast("Zapisano ✅");
-      setTimeout(() => { router.push("/lista"); }, DUR.reveal);
     }
     setSavedIds((prev) =>
       isSaved ? prev.filter((v) => v !== id) : [...prev, id]

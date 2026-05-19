@@ -5,7 +5,7 @@ import { districts } from "@/lib/data";
 import CropModal from "@/components/crop-modal";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
-import { CameraIcon, CoverIcon } from "@/components/icons";
+import { CameraIcon, CoverIcon, CloseIcon } from "@/components/icons";
 
 export default function EditProfile({
   user,
@@ -97,14 +97,15 @@ export default function EditProfile({
 
   return (
     <>
-      <div ref={focusTrapRef} role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center" style={{
+      <div ref={focusTrapRef} role="dialog" aria-modal="true" aria-label="Edytuj profil" style={{
+        position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center",
         background: "rgba(20,19,15,0.5)",
-        animation: exiting ? "pz-fade-out 0.2s ease both" : undefined,
+        animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : undefined,
       }}>
-        <div className="rounded-3xl p-6 mx-4 max-w-sm w-full" style={{ background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
-          <div className="flex items-center justify-between mb-5">
+        <div style={{ borderRadius: 28, padding: 24, margin: "0 16px", maxWidth: "24rem", width: "100%", background: "var(--bg-elev)", maxHeight: "85%", overflowY: "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
             <h2 className="pz-h" style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>Edytuj profil</h2>
-            <button onClick={close} aria-label="Zamknij" autoFocus style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>✕</button>
+            <button onClick={close} aria-label="Zamknij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-soft)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><CloseIcon size={16} /></button>
           </div>
 
           {/* Avatar upload */}
@@ -112,7 +113,7 @@ export default function EditProfile({
             <label htmlFor="avatar-upload" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie profilowe</label>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 56, height: 56, borderRadius: 99, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
-                {avatarPreview && <img src={avatarPreview} alt="" className="w-full h-full object-cover" />}
+                {avatarPreview && <img src={avatarPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
               <button onClick={() => avatarRef.current?.click()} disabled={uploading === "avatar"}
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "avatar" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "avatar" ? 0.5 : 1 }}>
@@ -127,7 +128,7 @@ export default function EditProfile({
             <label htmlFor="cover-upload" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 8 }}>Zdjęcie w tle</label>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
               <div style={{ width: 80, height: 48, borderRadius: 12, overflow: "hidden", background: "var(--bg-soft)", flexShrink: 0 }}>
-                {coverPreview && <img src={coverPreview} alt="" className="w-full h-full object-cover" />}
+                {coverPreview && <img src={coverPreview} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
               </div>
               <button onClick={() => coverRef.current?.click()} disabled={uploading === "cover"}
                 style={{ border: 0, padding: "8px 16px", borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: uploading === "cover" ? "default" : "pointer", background: "var(--bg-soft)", color: "var(--ink)", opacity: uploading === "cover" ? 0.5 : 1 }}>
@@ -137,7 +138,7 @@ export default function EditProfile({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
               <label htmlFor="edit-name" style={{ fontSize: 11, fontWeight: 700, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", display: "block", marginBottom: 4 }}>Imię</label>
               <input id="edit-name" value={name} onChange={(e) => setName(e.target.value)}
