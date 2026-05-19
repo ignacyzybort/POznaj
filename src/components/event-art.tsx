@@ -103,7 +103,7 @@ export default function EventArt({
         }} />
         <div style={{
           position: "absolute", right: 14, top: 12, fontSize: 50, opacity: 0.5,
-          fontFamily: "serif", lineHeight: 1,
+          fontFamily: "var(--font-display)", lineHeight: 1,
         }}>{glyph}</div>
         <div style={{
           position: "absolute", left: 14, bottom: 12, fontSize: 13,
@@ -172,7 +172,7 @@ export default function EventArt({
       <div style={{
         position: "absolute", left: "50%", top: "50%",
         transform: "translate(-50%, -50%) rotate(-6deg)",
-        fontSize: Math.max(64, height * 0.55), lineHeight: 1, fontFamily: "serif",
+        fontSize: Math.max(64, height * 0.55), lineHeight: 1, fontFamily: "var(--font-display)",
         opacity: 0.92, mixBlendMode: "multiply",
       }}>{glyph}</div>
       <div style={{

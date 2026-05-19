@@ -46,12 +46,12 @@ export default function SearchOverlay({
       aria-label="Szukaj wydarzeń"
       style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
-      animation: exiting ? "pz-fade-out 0.2s ease both" : "pz-fade-in 0.22s ease both",
+      animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : "pz-fade-in var(--dur-fast) var(--ease-out-quart) both",
       display: "flex", flexDirection: "column",
     }}>
       <div style={{ padding: "54px 16px 10px", display: "flex", gap: 10, alignItems: "center" }}>
         <div style={{
-          flex: 1, height: 44, borderRadius: 16,
+          flex: 1, height: 44, borderRadius: 14,
           background: "var(--bg-soft)",
           display: "flex", alignItems: "center", padding: "0 14px", gap: 8,
         }}>
@@ -84,7 +84,7 @@ export default function SearchOverlay({
               padding: "10px 4px", border: 0, background: "transparent",
               cursor: "pointer", textAlign: "left",
             }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 14, overflow: "hidden", flexShrink: 0 }}>
                 <EventArt event={ev} height={44} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>

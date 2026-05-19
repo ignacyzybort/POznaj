@@ -85,7 +85,7 @@ function createCategoryMarker(category: string, index: number) {
       animation: pz-pop 0.3s var(--ease-spring) both;
       animation-delay: ${index * 60}ms;
     ">${CAT_INITIAL[category] ?? "?"}</span>`,
-    className: "", iconSize: [36, 36], iconAnchor: [18, 18],
+    className: "", iconSize: [44, 44], iconAnchor: [22, 22],
   });
 }
 
@@ -248,8 +248,8 @@ export default function DistrictMap({
       const hue = DISTRICT_HUES[id] ?? 0;
       const labelColor = `hsl(${hue}, 60%, 72%)`;
       const label = count > 0
-        ? `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: 10px; font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
-        : `<span style="font-size: 13px; font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;
+        ? `<span style="font-size: var(--text-sm); font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: var(--text-xs); font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
+        : `<span style="font-size: var(--text-sm); font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;
       layer.bindTooltip(label, {
         permanent: true, direction: "center", className: "pz-map-tooltip",
         opacity: 0.85,
@@ -262,7 +262,7 @@ export default function DistrictMap({
       {/* Back button — bottom-left, thumb-reachable */}
       {selectedDistrict && (
         <button onClick={handleBack} style={{
-          position: "absolute",           bottom: "calc(170px + var(--safe-b))", left: 14,
+          position: "absolute",           bottom: "calc(170px + var(--safe-b))", left: "calc(14px + var(--safe-l))",
           zIndex: 1000, gap: 6, alignItems: "center",
           padding: "8px 18px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
@@ -365,7 +365,7 @@ export default function DistrictMap({
               </div>
             ))}
             {filteredEvents.length > 8 && (
-              <div style={{ flex: "0 0 100px", borderRadius: 18, height: 120, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div role="button" tabIndex={0} style={{ flex: "0 0 100px", borderRadius: 18, height: 120, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-3)" }}>+{filteredEvents.length - 8} więcej</span>
               </div>
             )}

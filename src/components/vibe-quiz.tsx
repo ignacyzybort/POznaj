@@ -137,7 +137,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
               <a key={ev.id} href={`/event/${ev.id}`}
                 style={{ display: "flex", gap: 12, padding: 12, borderRadius: 22, background: "var(--bg-soft)", textDecoration: "none", color: "inherit" }}
               >
-                <div style={{ width: 64, height: 64, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
+                <div style={{ width: 64, height: 64, borderRadius: 14, overflow: "hidden", flexShrink: 0, background: "var(--bg-elev)" }}>
                   {ev.imageUrl && <img loading="lazy" src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>

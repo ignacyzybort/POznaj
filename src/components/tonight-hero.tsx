@@ -35,7 +35,7 @@ export default function TonightHero({
 
   return (
     <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{
-      position: "relative", borderRadius: 26, overflow: "hidden",
+      position: "relative",           borderRadius: 22, overflow: "hidden",
       height: "min(420px, 55dvh)", margin: "0 16px 18px",
       background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)",
     }}>

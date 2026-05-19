@@ -18,7 +18,7 @@ export default function Toast({ msg, onClear }: { msg: string | null; onClear: (
       background: "var(--ink)", color: "var(--bg)",
       padding: "12px 18px", borderRadius: 99,
       fontSize: 13, fontWeight: 600, whiteSpace: "nowrap",
-      boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+      boxShadow: "var(--shadow-lg)",
     }}>{msg}</div>
   );
 }

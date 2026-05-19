@@ -27,7 +27,7 @@ export default function StreakCard({ weeks = 0, longest = 0 }: { weeks?: number;
       <div style={{ display: "flex", gap: 4 }}>
         {Array.from({ length: totalBars }, (_, i) => (
           <div key={i} style={{
-            flex: 1, height: 26, borderRadius: 6,
+            flex: 1, height: 26, borderRadius: 8,
             background: i < weeks ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)",
           }} />
         ))}
