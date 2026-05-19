@@ -14,7 +14,7 @@ import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
 import ShareModal from "@/components/share-modal";
 import { DUR } from "@/lib/duration";
-import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon } from "@/components/icons";
+import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon, SendIcon } from "@/components/icons";
 import { getCsrfToken } from "@/lib/csrf";
 
 export type InitialEvent = {
@@ -94,11 +94,12 @@ export default function EventDetailClient({
     try {
       const perm = await Notification.requestPermission();
       if (perm === "granted") {
-        new Notification("POznaj", { body: `${event.title} zaczyna się ${event.time ?? "wkrótce"}`, icon: "/icons/icon-192.png" });
+        setReminded(true);
+        setToast("🔔 Przypomnienie włączone");
+      } else {
+        setToast("🔔 Powiadomienia zablokowane");
       }
-      setReminded(true);
-      setToast("🔔 Przypomnimy Ci 30 min przed startem");
-    } catch { setToast("🔔 Zapiszemy w przeglądarce"); setReminded(true); }
+    } catch { setToast("🔔 Powiadomienia niedostępne"); }
   };
 
   const toggleSave = async () => {
@@ -128,7 +129,7 @@ export default function EventDetailClient({
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: "calc(92px + var(--safe-b))" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><BackIcon size={20} /></button>
-          <button onClick={() => setShowShare(true)} aria-label="Wyślij znajomemu" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)", fontSize: 18 }}>💌</button>
+          <button onClick={() => setShowShare(true)} aria-label="Wyślij znajomemu" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><SendIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 

@@ -162,23 +162,22 @@ export async function GET(request: NextRequest) {
     }
 
     if (budget === "free") {
-      where.OR = [
-        ...((where.OR as any[]) || []),
+      const budgetOr: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { contains: "bezpł", mode: "insensitive" as any } },
         { price: { contains: "wolny", mode: "insensitive" as any } },
       ];
+      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
     } else if (budget === "cheap") {
-      where.OR = [
-        ...((where.OR as any[]) || []),
+      const budgetOr: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { lte: "45" } },
       ];
+      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
     } else if (budget === "student") {
-      where.OR = [
-        ...((where.OR as any[]) || []),
+      const budgetOr: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { contains: "bezpł", mode: "insensitive" as any } },
@@ -186,6 +185,7 @@ export async function GET(request: NextRequest) {
         { price: { contains: "ulgow", mode: "insensitive" as any } },
         { price: { contains: "ulga", mode: "insensitive" as any } },
       ];
+      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
     }
 
     const orderBy: Prisma.EventOrderByWithRelationInput[] =

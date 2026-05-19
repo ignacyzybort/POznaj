@@ -85,10 +85,27 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "send") {
-      const existing = await prisma.friendship.findUnique({
-        where: { senderId_receiverId: { senderId: userId, receiverId: friendId } },
+      const existing = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { senderId: userId, receiverId: friendId },
+            { senderId: friendId, receiverId: userId },
+          ],
+        },
       });
-      if (existing) return NextResponse.json({ error: "Already exists" });
+      if (existing) {
+        if (existing.status === "ACCEPTED") return NextResponse.json({ error: "Already friends" });
+        if (existing.status === "PENDING") {
+          if (existing.senderId === friendId && existing.receiverId === userId) {
+            await prisma.friendship.updateMany({
+              where: { senderId: friendId, receiverId: userId, status: "PENDING" },
+              data: { status: "ACCEPTED" },
+            });
+            return NextResponse.json({ status: "ACCEPTED" });
+          }
+          return NextResponse.json({ error: "Request already sent" });
+        }
+      }
 
       const sender = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
       await prisma.friendship.create({

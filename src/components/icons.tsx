@@ -155,3 +155,7 @@ export function LockIcon({ size }: { size?: number }) {
 export function PassportIcon({ size }: { size?: number }) {
   return <Icon size={size}><rect x="3" y="3" width="18" height="20" rx="2" /><line x1="9" y1="7" x2="15" y2="7" /><line x1="9" y1="11" x2="15" y2="11" /><line x1="9" y1="15" x2="11" y2="15" /></Icon>;
 }
+
+export function SendIcon({ size }: { size?: number }) {
+  return <Icon size={size}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22,2 15,22 11,13 2,9" /></Icon>;
+}

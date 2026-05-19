@@ -113,6 +113,7 @@ export default async function ProfilPage() {
       image: user.image,
       coverImage: user.coverImage,
       _count: user._count,
+      friendCount: friends.length,
     },
     attendance: attendance.map((a) => ({
       id: a.id,

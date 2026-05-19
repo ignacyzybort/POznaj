@@ -55,6 +55,7 @@ export type InitialProfile = {
     district: string | null;
     image: string | null;
     coverImage: string | null;
+    friendCount: number;
     _count: { attendance: number; savedEvents: number; sentFriendships: number };
   };
   attendance: { id: string; status: string; event: { id: string; title: string; placeName: string; startDate: string; category: string; district: string; imageUrl: string | null } }[];
@@ -201,7 +202,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       <div style={{ padding: "14px 18px 14px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {[
-            { n: stats.attendance, l: "plany" }, { n: stats.savedEvents, l: "zapisane" }, { n: friendsList.length, l: "znajomi" },
+            { n: stats.attendance, l: "plany" }, { n: stats.savedEvents, l: "zapisane" }, { n: userData.friendCount ?? 0, l: "znajomi" },
           ].map((s, i) => (
             <div key={i} style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
               <div className="pz-num" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{s.n}</div>

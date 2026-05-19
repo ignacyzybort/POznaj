@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { recomputeEventScore } from "@/lib/scoring";
 import { sendPushNotification } from "@/lib/push";
+import { Prisma } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,6 +95,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ status: attendance.status });
   } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") return NextResponse.json({ status: null });
+      if (e.code === "P2025") return NextResponse.json({ status: null });
+    }
     console.error("[attendance] error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
