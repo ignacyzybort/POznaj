@@ -71,8 +71,8 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
       {weather?.rain && event.outdoor && (
         <div style={{
           padding: "12px 14px", borderRadius: 14,
-          background: "linear-gradient(135deg, rgba(255,107,44,0.14), rgba(255,61,127,0.10))",
-          boxShadow: "inset 0 0 0 0.5px rgba(255,107,44,0.25)",
+          background: "linear-gradient(135deg, color-mix(in srgb, var(--c-teatr) 14%, transparent), color-mix(in srgb, var(--c-muzyka) 10%, transparent))",
+          boxShadow: "inset 0 0 0 0.5px color-mix(in srgb, var(--c-teatr) 25%, transparent)",
           display: "flex", alignItems: "center", gap: 10,
         }}>
           <RainIcon size={16} />

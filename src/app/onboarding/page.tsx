@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, vibes as vibeOpts, districts, categoryEmoji, vibeEmoji } from "@/lib/data";
+import { BackIcon, ArrowIcon, PinIcon } from "@/components/icons";
 
 type Step = "welcome" | "categories" | "vibes" | "district" | "ready";
 
@@ -127,7 +128,7 @@ export default function OnboardingPage() {
                 return (
                   <button key={d.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedDistrict(active ? "" : d.value)}>
-                    📍 {d.label}
+                    <PinIcon size={14} /> {d.label}
                   </button>
                 );
               })}
@@ -155,12 +156,12 @@ export default function OnboardingPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 40, marginTop: "auto" }}>
           {currentIdx > 0 && (
             <button onClick={prev} className="pz-btn ghost" style={{ flex: 1, height: 48 }}>
-              ← Wstecz
+              <BackIcon size={16} /> Wstecz
             </button>
           )}
           {currentIdx < steps.length - 1 ? (
             <button onClick={next} className="pz-btn primary" style={{ flex: 1, height: 48 }}>
-              Dalej →
+              Dalej <ArrowIcon size={16} />
             </button>
           ) : (
             <button onClick={finish} style={{

@@ -19,7 +19,7 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
         <span className="pz-heat-wave" aria-hidden>
           {heights.map((h, i) => (
             <span key={i} className="pz-heat-bar"
-                  style={{ height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}/>
+                  style={{ height: `${h * 100}%`, animationDelay: `${i * 120}ms` }}/>
           ))}
         </span>
         <span className="pz-num" style={{ fontSize: 11, fontWeight: 700 }}>{pct}</span>
@@ -33,7 +33,7 @@ export default function HeatMeter({ score, size = "sm" }: { score: number; size?
         <span className="pz-heat-wave" style={{ height: 22 }} aria-hidden>
           {heights.map((h, i) => (
             <span key={i} className="pz-heat-bar"
-                  style={{ width: 3, height: `${h * 100}%`, animationDelay: `${i * 0.12}s` }}/>
+                  style={{ width: 3, height: `${h * 100}%`, animationDelay: `${i * 120}ms` }}/>
           ))}
         </span>
       </span>
