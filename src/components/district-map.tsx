@@ -339,7 +339,7 @@ export default function DistrictMap({
           zIndex: 1000, padding: "14px 18px calc(20px + var(--safe-b))",
           background: "linear-gradient(180deg, transparent, var(--bg) 25%)",
         }}>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36 }}>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36, touchAction: "pan-x" }}>
             {filteredEvents.slice(0, 8).map((ev) => (
               <div
                 key={ev.id}
@@ -354,7 +354,7 @@ export default function DistrictMap({
                 }}
               >
                 {ev.imageUrl ? (
-                  <img src={ev.imageUrl} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={ev.imageUrl} alt={ev.title} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <div style={{ width: "100%", height: "100%", background: "var(--stone)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "var(--ink-4)" }}>{ev.category?.[0] ?? "?"}</div>
                 )}

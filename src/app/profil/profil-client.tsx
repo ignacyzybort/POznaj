@@ -11,7 +11,7 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
-import { SettingsIcon, EditIcon } from "@/components/icons";
+import { SettingsIcon, EditIcon, SparkIcon, BellIcon } from "@/components/icons";
 import { computeChallenges } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
@@ -262,7 +262,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
             </div>
           )}
           <div className="pz-card" style={{ padding: 14 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Aktywność</div>
+            <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><SparkIcon size={12} /> Aktywność</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {topCategory && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Kategoria</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{topCategory[0]}</span></div>}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Dzielnice</span><span style={{ fontWeight: 700, color: "var(--ink)" }}>{Object.values(stamps).filter(Boolean).length} / 6</span></div>
@@ -272,10 +272,10 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
           <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 12, textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800, flexShrink: 0 }}>?</div>
-            <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Dostrój</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania</div></div>
+            <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania</div></div>
           </button>
           <button onClick={() => setYirOpen(true)} style={{ padding: 14, flex: 1, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Podsumowanie</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingItems.length} wydarzeń</div>
+            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>Wrapped</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingItems.length} wydarzeń</div>
           </button>
         </div>
         {/* Right column: passport */}
@@ -286,7 +286,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       {(pendingReqs.length > 0 || notifs.length > 0) && (
         <div style={{ padding: "0 18px 14px" }}>
           <div className="pz-card" style={{ padding: 16 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 7L2 7"/></svg>Powiadomienia ({pendingReqs.length + notifs.length})</div>
+            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><BellIcon size={12} /> Powiadomienia ({pendingReqs.length + notifs.length})</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
                 <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>

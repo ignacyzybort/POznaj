@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { EventData } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
-import { ShuffleIcon, RefreshIcon } from "@/components/icons";
+import { ShuffleIcon, RefreshIcon, CloseIcon } from "@/components/icons";
 
 const CARD_H = 140;
 const TAPE_N = 50;
@@ -201,7 +201,7 @@ export default function SurpriseModal({
             </button>
           ) : (
             <button onClick={() => { setExiting(true); setTimeout(onClose, 200); }} className="pz-btn primary" autoFocus style={{ flex: 1, height: 44, fontSize: "var(--text-sm)" }}>
-              ✕ Zamknij
+              <CloseIcon size={16} /> Zamknij
             </button>
           )}
         </div>

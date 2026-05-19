@@ -123,7 +123,7 @@ export default function LoginPage() {
 
       <div style={{ textAlign: "center", padding: "0 24px 32px" }}>
         <p style={{ fontSize: 12, color: "var(--ink-4)", margin: 0 }}>
-          Szybkie logowanie, żadnych haseł.
+          Szybkie logowanie, bez haseł.
         </p>
       </div>
     </div>

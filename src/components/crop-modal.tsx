@@ -4,7 +4,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import Cropper, { Area } from "react-easy-crop";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
-import { SearchIcon } from "@/components/icons";
 
 export default function CropModal({
   imageUrl,
@@ -76,8 +75,8 @@ export default function CropModal({
 
         {/* Zoom slider */}
         <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-          <SearchIcon size={14} />
-          <label htmlFor="crop-zoom-range" style={{ display: "block", fontSize: "var(--text-xs)", color: "var(--ink-2)", marginBottom: 4 }}>Zoom</label>
+          <span aria-hidden="true" style={{ fontSize: 14, color: "var(--ink-3)" }}>−</span>
+          <label htmlFor="crop-zoom-range" className="sr-only">Zoom</label>
           <input
             id="crop-zoom-range"
             type="range"
@@ -88,7 +87,7 @@ export default function CropModal({
             onChange={(e) => setZoom(Number(e.target.value))}
             style={{ flex: 1, accentColor: "var(--ink)" }}
           />
-          <SearchIcon size={14} />
+          <span aria-hidden="true" style={{ fontSize: 14, color: "var(--ink-3)" }}>+</span>
         </div>
 
         <div style={{ display: "flex", gap: 10, padding: "12px 16px 20px" }}>
