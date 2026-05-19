@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { HomeIcon, MapIcon, CalIcon, SavedIcon, ProfileIcon } from "@/components/icons";
 
-const tabs = [
-  { id: "home", icon: HomeIcon, label: "Dziś" },
-  { id: "map", icon: MapIcon, label: "Mapa" },
-  { id: "cal", icon: CalIcon, label: "Plan" },
-  { id: "saved", icon: SavedIcon, label: "Lista" },
-  { id: "profile", icon: ProfileIcon, label: "Ja" },
-];
+const TABS = [
+  { id: "home", href: "/", icon: HomeIcon, label: "Dziś" },
+  { id: "map", href: "/mapa", icon: MapIcon, label: "Mapa" },
+  { id: "cal", href: "/plan", icon: CalIcon, label: "Plan" },
+  { id: "saved", href: "/lista", icon: SavedIcon, label: "Lista" },
+  { id: "profile", href: "/profil", icon: ProfileIcon, label: "Ja" },
+] as const;
 
-const pathMap: Record<string, string> = {
+const PATH_MAP: Record<string, string> = {
   "/": "home",
   "/mapa": "map",
   "/plan": "cal",
@@ -22,66 +22,105 @@ const pathMap: Record<string, string> = {
   "/profil": "profile",
 };
 
+const TAB_COUNT = TABS.length;
+const INITIAL_TAB_PCT = 100 / TAB_COUNT;
+
 export default function TabBar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const activeTab = pathMap[pathname] ?? "";
+  const activeTab = PATH_MAP[pathname] ?? "";
+  const activeIdx = TABS.findIndex((t) => t.id === activeTab);
   const [notifCount, setNotifCount] = useState(0);
-  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [measured, setMeasured] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
   const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+
+  const measurePill = useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const el = nav.querySelector<HTMLElement>('[data-active="true"]');
+    if (!el) return;
+    const navRect = nav.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    setPillStyle({
+      left: elRect.left - navRect.left,
+      width: elRect.width,
+    });
+    setMeasured(true);
+  }, []);
+
+  useEffect(() => {
+    measurePill();
+  }, [activeTab, measurePill]);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const observer = new ResizeObserver(() => measurePill());
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [measurePill]);
 
   useEffect(() => {
     if (!session?.user) return;
-    fetch("/api/notifications?countOnly=true")
+    const ctrl = new AbortController();
+    fetch("/api/notifications?countOnly=true", { signal: ctrl.signal })
       .then((r) => r.json())
       .then((d) => setNotifCount(d.count ?? 0))
       .catch(() => {});
+    return () => ctrl.abort();
   }, [session]);
-
-  useLayoutEffect(() => {
-    const idx = tabs.findIndex((t) => t.id === activeTab);
-    const el = tabRefs.current[idx];
-    if (!el) return;
-    const parent = el.parentElement;
-    if (!parent) return;
-    const parentRect = parent.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    setPillStyle({
-      left: elRect.left - parentRect.left,
-      width: elRect.width,
-    });
-  }, [activeTab]);
 
   if (pathname.startsWith("/event/") || pathname === "/login" || pathname === "/onboarding") return null;
 
+  const ssrLeft = activeIdx >= 0 ? activeIdx * INITIAL_TAB_PCT : 0;
+
   return (
-    <nav className="pz-tabbar" aria-label="Główna nawigacja">
+    <nav ref={navRef} className="pz-tabbar" aria-label="Główna nawigacja">
       <span
-        className="pz-tab-pill"
+        className={`pz-tab-pill${measured ? " measured" : ""}`}
         aria-hidden="true"
         style={{
-          transform: `translateX(${pillStyle.left}px)`,
-          width: pillStyle.width || 0,
+          left: measured ? `${pillStyle.left}px` : `${ssrLeft}%`,
+          width: measured ? `${pillStyle.width}px` : `${INITIAL_TAB_PCT}%`,
         }}
       />
-      {tabs.map((t, i) => {
+      {TABS.map((t) => {
         const Icon = t.icon;
+        const isActive = activeTab === t.id;
         return (
-          <Link key={t.id} href={t.id === "home" ? "/" : `/${t.id === "map" ? "mapa" : t.id === "cal" ? "plan" : t.id === "saved" ? "lista" : t.id === "profile" ? "profil" : t.id}`}
-             className="pz-tab" data-active={activeTab === t.id}
-             aria-current={activeTab === t.id ? "page" : undefined}
-             ref={(el) => { tabRefs.current[i] = el; }}>
+          <Link
+            key={t.id}
+            href={t.href}
+            className="pz-tab"
+            data-active={isActive || undefined}
+            aria-current={isActive ? "page" : undefined}
+          >
             <Icon size={22} />
             <span>{t.label}</span>
             {t.id === "profile" && notifCount > 0 && (
-              <span aria-label={`${notifCount} powiadomień`} style={{
-                position: "absolute", top: 2, right: "50%", marginRight: -28,
-                minWidth: 18, height: 18, borderRadius: 99,
-                background: "var(--hot)", color: "white",
-                fontSize: 9.5, fontWeight: 700,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                padding: "0 5px",
-              }}>{notifCount > 9 ? "9+" : notifCount}</span>
+              <span
+                aria-label={`${notifCount} powiadomień`}
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  right: "50%",
+                  marginRight: -28,
+                  minWidth: 18,
+                  height: 18,
+                  borderRadius: 99,
+                  background: "var(--hot)",
+                  color: "white",
+                  fontSize: 9.5,
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "0 5px",
+                }}
+              >
+                {notifCount > 9 ? "9+" : notifCount}
+              </span>
             )}
           </Link>
         );

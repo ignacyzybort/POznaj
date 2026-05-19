@@ -262,16 +262,23 @@ button:not(:disabled):active,
 
 .pz-tab-pill {
   position: absolute; left: 0;
-  top: 4px;
-  height: 48px;
+  top: 4px; bottom: 4px;
   border-radius: 20px;
   background: var(--bg-soft);
+  box-shadow: 0 0 0 0.5px rgba(255,255,255,0.6) inset, 0 2px 8px rgba(20,19,15,0.08), 0 0 1px rgba(20,19,15,0.06);
   z-index: 0;
   pointer-events: none;
-  transition: transform var(--dur-slow) var(--ease-spring),
-              width var(--dur-slow) var(--ease-spring);
+  opacity: 0;
+  will-change: left, width;
+  transition: left var(--dur-slow) var(--ease-spring),
+              width var(--dur-slow) var(--ease-spring),
+              opacity var(--dur-fast) var(--ease-out-quart);
 }
-.dark .pz-tab-pill { background: rgba(244,244,246,0.08); }
+.pz-tab-pill.measured { opacity: 1; }
+.dark .pz-tab-pill {
+  background: rgba(244,244,246,0.08);
+  box-shadow: 0 0 0 0.5px rgba(255,255,255,0.04) inset, 0 2px 8px rgba(0,0,0,0.3), 0 0 1px rgba(0,0,0,0.2);
+}
 
 /* Sheet */
 .pz-sheet-backdrop {
