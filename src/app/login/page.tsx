@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
@@ -73,21 +74,34 @@ export default function LoginPage() {
               <span style={{ fontSize: 28 }}>📧</span>
               <p style={{ fontSize: 13, fontWeight: 600, marginTop: 8, color: "var(--ink-2)" }}>Sprawdź skrzynkę</p>
               <p style={{ fontSize: 12, marginTop: 4, color: "var(--ink-3)" }}>Wysłaliśmy magiczny link na {email}</p>
-              <button onClick={() => setEmailSent(false)} style={{ fontSize: 12, textDecoration: "underline", marginTop: 12, cursor: "pointer", border: 0, background: "none", color: "var(--ink-4)" }}>Inny adres</button>
+              <button onClick={() => { setEmailSent(false); setError(null); }} style={{ fontSize: 12, textDecoration: "underline", marginTop: 12, cursor: "pointer", border: 0, background: "none", color: "var(--ink-4)" }}>Inny adres</button>
             </div>
           ) : (
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                if (email && !sending) {
-                  setSending(true);
-                  signIn("resend", { email, callbackUrl: "/" });
+                if (!email || sending) return;
+                setSending(true);
+                setError(null);
+                const result = await signIn("resend", {
+                  redirect: false,
+                  email,
+                  callbackUrl: "/",
+                });
+                setSending(false);
+                if (result?.ok) {
                   setEmailSent(true);
-                  setSending(false);
+                } else {
+                  setError(result?.error ?? "Nie udało się wysłać linku. Spróbuj ponownie.");
                 }
               }}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}
             >
+              {error && (
+                <div style={{ padding: "10px 14px", borderRadius: 12, background: "var(--bg-soft)", fontSize: 12, color: "var(--hot)", fontWeight: 600, textAlign: "center" }}>
+                  {error}
+                </div>
+              )}
               <label htmlFor="login-email" className="sr-only">Email</label>
               <input
                 id="login-email"
