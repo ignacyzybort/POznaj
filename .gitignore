@@ -49,3 +49,5 @@ prisma/config.ts
 skills-lock.json
 /AGENTS.md
 /CLAUDE.md
+.Rhistory
+session-*.md
