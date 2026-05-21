@@ -4,6 +4,7 @@ import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
 import { guessVibesForCategory } from "@/lib/vibes";
+import { fetchMoviePoster } from "@/lib/tmdb";
 
 const BASE = "https://www.poznan.pl/mim/events/seances";
 const SOURCE = "poznan-cinema";
@@ -130,6 +131,18 @@ export class PoznanCinemaScraper implements Scraper {
     }
 
     const events = Array.from(allGrouped.values());
+
+    // Resolve TMDB posters — 1 API call per unique film title
+    const uniqueTitles = new Set(events.map((e) => e.title));
+    for (const title of uniqueTitles) {
+      const poster = await fetchMoviePoster(title);
+      if (poster) {
+        for (const e of events) {
+          if (e.title === title) e.imageUrl = poster;
+        }
+      }
+    }
+
     return events;
   }
 }
