@@ -151,14 +151,10 @@ export default function UserPage() {
 
       {/* Stats */}
       <div style={{ padding: "14px 18px 0" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
           <div style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
             <div className="pz-num" style={{ fontSize: 24, fontWeight: 700 }}>{user._count.attendance}</div>
-            <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>wydarzeń</div>
-          </div>
-          <div style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
-            <div className="pz-num" style={{ fontSize: 24, fontWeight: 700 }}>{user._count.savedEvents}</div>
-            <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>zapisane</div>
+            <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2, fontWeight: 600 }}>wydarzen</div>
           </div>
           <div style={{ padding: 14, borderRadius: 18, background: "var(--bg-soft)", textAlign: "center" }}>
             <div className="pz-num" style={{ fontSize: 24, fontWeight: 700 }}>{user.friendCount}</div>

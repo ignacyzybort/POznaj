@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { EventData } from "@/lib/data";
 import { relDay } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
 import { PinIcon, BookmarkIcon } from "@/components/icons";
+import { getVenueSlug } from "@/lib/slug";
 
 export default function EventCard({
   event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "",
@@ -48,7 +50,9 @@ export default function EventCard({
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
-          <span style={{ fontWeight: 500 }}>{event.placeName}</span>
+          <Link href={`/miejsca/${getVenueSlug(event.placeName)}`} onClick={(e) => e.stopPropagation()} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}>
+            {event.placeName}
+          </Link>
           <span style={{ opacity: 0.5 }}>·</span>
           <span>{event.district === "Inny" ? "Poznań" : event.district}</span>
         </div>
@@ -56,6 +60,11 @@ export default function EventCard({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {friends.length > 0 && <AvStack people={friends} max={3} />}
+            {going_count > 0 && (
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--ink-4)", letterSpacing: "-0.01em" }}>
+                {going_count} idzie
+              </span>
+            )}
           </div>
           <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",

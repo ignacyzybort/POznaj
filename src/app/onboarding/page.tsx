@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { categories, vibes as vibeOpts, districts, categoryEmoji, vibeEmoji } from "@/lib/data";
+import { getCsrfToken } from "@/lib/csrf";
 import { BackIcon, ArrowIcon, PinIcon } from "@/components/icons";
 
 type Step = "welcome" | "categories" | "vibes" | "district" | "ready";
@@ -34,6 +35,16 @@ export default function OnboardingPage() {
     if (selectedVibes.length) localStorage.setItem("poznaj-preferredVibes", JSON.stringify(selectedVibes));
     if (selectedDistrict) localStorage.setItem("poznaj-district", selectedDistrict);
     router.push("/");
+    const csrf = getCsrfToken();
+    fetch("/api/user/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
+      body: JSON.stringify({
+        preferredCategories: selectedCategories.length ? selectedCategories : undefined,
+        preferredVibes: selectedVibes.length ? selectedVibes : undefined,
+        district: selectedDistrict || undefined,
+      }),
+    });
   };
 
   return (

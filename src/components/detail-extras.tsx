@@ -100,10 +100,16 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Apple Calendar</span>
               </a>
               <a href={calGoogle} target="_blank" rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)" }}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)", borderBottom: "0.5px solid var(--line)" }}
                 onClick={() => setShowCal(false)}>
                 <span style={{ fontSize: 18 }}>📅</span>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Google Calendar</span>
+              </a>
+              <a href={`/api/ical/${event.id}`} target="_blank" rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)" }}
+                onClick={() => { setShowCal(false); onToast("Dodano do kalendarza"); }}>
+                <span style={{ fontSize: 18 }}>📥</span>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>Pobierz .ics</span>
               </a>
             </div>
           )}

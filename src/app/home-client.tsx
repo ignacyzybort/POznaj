@@ -35,6 +35,7 @@ export default function HomeClient({
   const [quick, setQuick] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [budget, setBudget] = useState<Budget>(null);
+  const [outdoorOn, setOutdoorOn] = useState(false);
   const [surpriseOpen, setSurpriseOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,7 @@ export default function HomeClient({
     if (search) params.set("q", search);
     if (quick) params.set("quick", quick);
     if (budget) params.set("budget", budget);
+    if (outdoorOn) params.set("outdoor", "true");
     for (const c of activeFilters.category) params.append("category", c);
     for (const d of activeFilters.district) params.append("district", d);
     for (const v of activeFilters.vibe) params.append("vibe", v);
@@ -88,7 +90,7 @@ export default function HomeClient({
     fetchEvents(ctrl.signal);
     return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quick, search, budget, activeFilters]);
+  }, [quick, search, budget, outdoorOn, activeFilters]);
 
   const { data: session } = useSession();
 
@@ -125,7 +127,7 @@ export default function HomeClient({
   );
 
   const activeCount = activeFilters.category.length + activeFilters.district.length + activeFilters.vibe.length;
-  const cleanHome = !quick && !search && activeCount === 0 && !budget;
+  const cleanHome = !quick && !search && activeCount === 0 && !budget && !outdoorOn;
 
   const router = useRouter();
   const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
@@ -235,8 +237,13 @@ export default function HomeClient({
       )}
 
       {/* Budget chips */}
-      <div style={{ padding: "0 18px 10px" }}>
+      <div style={{ padding: "0 18px 10px", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         <BudgetChips active={budget} onToggle={setBudget} />
+        <button className="pz-chip pz-chip-spring" aria-pressed={outdoorOn}
+                data-active={outdoorOn ? "true" : undefined}
+                onClick={() => setOutdoorOn(!outdoorOn)}>
+          Na świeżym
+        </button>
       </div>
 
       {/* Surprise me CTA */}
@@ -306,7 +313,7 @@ export default function HomeClient({
         }}>
           <h2 className="pz-h" style={{
             margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em",
-          }}>{quick || search || activeCount || budget ? "Wyniki" : "Wszystko, co się dzieje"}</h2>
+          }}>{quick || search || activeCount || budget || outdoorOn ? "Wyniki" : "Wszystko, co się dzieje"}</h2>
           <span className="pz-num" style={{
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
           }}>{total}</span>

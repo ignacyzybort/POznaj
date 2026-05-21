@@ -94,6 +94,8 @@ export async function GET(request: NextRequest) {
 
     const quick = searchParams.get("quick");
     const budget = searchParams.get("budget");
+    const outdoor = searchParams.get("outdoor");
+    const place = searchParams.get("place");
     const dateFromRaw = searchParams.get("dateFrom");
     const dateToRaw = searchParams.get("dateTo");
 
@@ -186,6 +188,14 @@ export async function GET(request: NextRequest) {
         { price: { contains: "ulga", mode: "insensitive" as any } },
       ];
       where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
+    }
+
+    if (outdoor === "true") {
+      where.outdoor = true;
+    }
+
+    if (place) {
+      where.placeName = { contains: place, mode: "insensitive" };
     }
 
     const orderBy: Prisma.EventOrderByWithRelationInput[] =

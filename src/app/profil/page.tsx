@@ -38,7 +38,7 @@ export default async function ProfilPage() {
         district: true,
         image: true,
         coverImage: true,
-        _count: { select: { attendance: true, savedEvents: true, sentFriendships: true } },
+        _count: { select: { attendance: true, sentFriendships: true } },
       },
     }),
     prisma.attendance.findMany({

@@ -78,8 +78,9 @@ export async function POST(request: NextRequest) {
           data: { status: "ACCEPTED" },
         });
       } else {
-        await prisma.friendship.delete({
+        await prisma.friendship.update({
           where: { id: notificationId },
+          data: { status: "REJECTED" },
         });
       }
 

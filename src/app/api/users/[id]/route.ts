@@ -25,7 +25,7 @@ export async function GET(
         bio: true,
         district: true,
         createdAt: true,
-        _count: { select: { attendance: true, savedEvents: true } },
+        _count: { select: { attendance: true } },
       },
     });
 

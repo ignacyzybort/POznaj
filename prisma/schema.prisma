@@ -53,7 +53,6 @@ enum AttendStatus {
 enum ActivityType {
   GOING
   SAVED
-  REVIEWED
 }
 
 model User {
@@ -66,6 +65,8 @@ model User {
   district      District?
   handle        String?  @unique
   bio           String?
+  preferredCategories String[] @default([])
+  preferredVibes      String[] @default([])
   pushSubscription String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -77,7 +78,6 @@ model User {
   attendance      Attendance[]
   activities      Activity[]
   notifications   Notification[]
-  savedEvents     SavedEvent[]
 
   @@index([email])
 }
@@ -179,18 +179,6 @@ model Notification {
   @@index([userId, read])
 }
 
-model SavedEvent {
-  id        String   @id @default(cuid())
-  userId    String
-  eventId   String
-  createdAt DateTime @default(now())
-
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, eventId])
-}
-
 model Event {
   id          String   @id @default(cuid())
   title       String
@@ -217,7 +205,6 @@ model Event {
   vibes       EventVibe[]
   attendance  Attendance[]
   activities  Activity[]
-  savedEvents SavedEvent[]
   notifications Notification[]
 
   @@unique([title, startDate, placeName])

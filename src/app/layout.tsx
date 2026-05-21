@@ -25,7 +25,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="theme-color" content="#FDFCF8" />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1A1B20" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <link rel="apple-touch-icon" href="/icons/icon.svg" />
 
       </head>
       <body className="h-full overflow-hidden">

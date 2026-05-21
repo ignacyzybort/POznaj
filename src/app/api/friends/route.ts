@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       });
       if (existing) {
         if (existing.status === "ACCEPTED") return NextResponse.json({ error: "Already friends" });
+        if (existing.status === "REJECTED") return NextResponse.json({ error: "Request was rejected" });
         if (existing.status === "PENDING") {
           if (existing.senderId === friendId && existing.receiverId === userId) {
             await prisma.friendship.updateMany({

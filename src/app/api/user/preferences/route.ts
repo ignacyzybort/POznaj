@@ -12,20 +12,34 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { district?: unknown; handle?: unknown; bio?: unknown };
+  let body: { district?: unknown; handle?: unknown; bio?: unknown; preferredCategories?: unknown; preferredVibes?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const data: { district?: District; handle?: string; bio?: string } = {};
+  const data: { district?: District; handle?: string; bio?: string; preferredCategories?: string[]; preferredVibes?: string[] } = {};
 
   if (body.district !== undefined && body.district !== null) {
     if (typeof body.district !== "string" || !(body.district in District)) {
       return NextResponse.json({ error: "Invalid district" }, { status: 400 });
     }
     data.district = body.district as District;
+  }
+
+  if (body.preferredCategories !== undefined && body.preferredCategories !== null) {
+    if (!Array.isArray(body.preferredCategories) || !body.preferredCategories.every((c) => typeof c === "string")) {
+      return NextResponse.json({ error: "preferredCategories must be a string array" }, { status: 400 });
+    }
+    data.preferredCategories = body.preferredCategories;
+  }
+
+  if (body.preferredVibes !== undefined && body.preferredVibes !== null) {
+    if (!Array.isArray(body.preferredVibes) || !body.preferredVibes.every((v) => typeof v === "string")) {
+      return NextResponse.json({ error: "preferredVibes must be a string array" }, { status: 400 });
+    }
+    data.preferredVibes = body.preferredVibes;
   }
 
   if (body.handle !== undefined && body.handle !== null) {
@@ -79,7 +93,6 @@ export async function GET() {
       _count: {
         select: {
           attendance: true,
-          savedEvents: true,
           sentFriendships: true,
         },
       },

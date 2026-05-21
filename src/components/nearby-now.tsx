@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 interface NearbyFriend {
   name: string;
@@ -15,10 +16,12 @@ const COLORS = [
 ];
 
 export default function NearbyNow() {
+  const { status } = useSession();
   const [friends, setFriends] = useState<NearbyFriend[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status !== "authenticated") { setLoading(false); return; }
     fetch("/api/friends/going")
       .then((r) => r.json())
       .then((d) => {
@@ -34,9 +37,33 @@ export default function NearbyNow() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [status]);
 
-  if (loading || friends.length === 0) return null;
+  if (loading) return null;
+
+  if (status !== "authenticated") {
+    return (
+      <div style={{ padding: "0 16px 22px" }}>
+        <div className="pz-card" style={{
+          padding: 16, textAlign: "center", fontSize: 14, color: "var(--ink-3)",
+        }}>
+          Zaloguj się, aby zobaczyć gdzie idą znajomi.
+        </div>
+      </div>
+    );
+  }
+
+  if (friends.length === 0) {
+    return (
+      <div style={{ padding: "0 16px 22px" }}>
+        <div className="pz-card" style={{
+          padding: 16, textAlign: "center", fontSize: 14, color: "var(--ink-3)",
+        }}>
+          Dodaj znajomych, by widzieć gdzie idą.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "0 16px 22px" }}>
