@@ -20,6 +20,7 @@ export interface ScrapedEvent {
   coordsX?: number;
   coordsY?: number;
   price?: string;
+  outdoor?: boolean;
 }
 
 export interface Scraper {
@@ -109,6 +110,7 @@ const createData = (event: ScrapedEvent, vibes: string[]) => ({
   coordsX: event.coordsX,
   coordsY: event.coordsY,
   price: event.price,
+  outdoor: event.outdoor ?? false,
   vibes: { create: vibes.map((v) => ({ vibe: v as any })) },
 });
 
@@ -136,9 +138,40 @@ const updateData = (event: ScrapedEvent, vibes: string[]) => {
   if (event.district && event.district !== "Inny") d.district = event.district;
   if (event.coordsX) d.coordsX = event.coordsX;
   if (event.coordsY) d.coordsY = event.coordsY;
+  if (event.outdoor !== undefined) d.outdoor = event.outdoor;
 
   return d;
 };
+
+const OUTDOOR_KEYWORDS = [
+  "park", "ogród", "jezioro", "malta", "rusałka", "cytadela", "plaża",
+  "rynek", "plac", "skwer", "bulwar", "wyspa", "las", "promenada",
+  "amfiteatr", "scena plenerowa", "boisko", "stadion", "tor regatowy",
+  "zoo", "ogród zoologiczny", "palmiarnia", "ogród botaniczny",
+];
+
+function detectOutdoor(placeName: string, description: string | undefined): boolean {
+  const lowerName = placeName.toLowerCase();
+  const lowerDesc = description?.toLowerCase() ?? "";
+
+  for (const kw of OUTDOOR_KEYWORDS) {
+    if (lowerName.includes(kw) || lowerDesc.includes(kw)) return true;
+  }
+
+  // Exact venue matches
+  const exactOutdoor = [
+    "park cytadela", "scena nad rusałką", "malta", "termy maltańskie",
+    "stary rynek", "rynek łazarski", "plac wolności", "jezioro strzeszyńskie",
+    "park sołacki", "park wilsona", "park kasprowicza", "tor regatowy malta",
+    "enea stadion", "nowe zoo", "stare zoo", "ogród botaniczny uam",
+    "palmiarnia poznańska", "tor poznań", "kontenerart",
+  ];
+  for (const ex of exactOutdoor) {
+    if (lowerName.includes(ex)) return true;
+  }
+
+  return false;
+}
 
 export async function saveEvents(
   prisma: PrismaClient,
@@ -154,6 +187,7 @@ export async function saveEvents(
     ev.placeName = cleanPlaceName(ev.placeName);
     if (ev.description) ev.description = cleanDescription(ev.description);
     if (ev.address) ev.address = decodeEntities(ev.address);
+    if (ev.outdoor === undefined) ev.outdoor = detectOutdoor(ev.placeName, ev.description);
   }
 
   const byDay = new Map<string, ScrapedEvent[]>();
