@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { districtFallback } from "./geocode";
+import { guessVibesForCategory } from "@/lib/vibes";
 
 const URL = "https://www.put.poznan.pl/wydarzenia";
 const SOURCE = "put";
@@ -93,7 +94,7 @@ export class PutScraper implements Scraper {
           placeName,
           district: venue?.district || fallback.district,
           category: "Konferencje",
-          vibes: [],
+          vibes: guessVibesForCategory("Konferencje"),
           source: SOURCE,
           sourceId: `put/${key}`,
           coordsX: venue?.lat || fallback.lat,

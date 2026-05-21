@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
+import { guessVibes, guessVibesForCategory } from "@/lib/vibes";
 
 function guessCategory(title: string, desc: string): string {
   const c = (title + " " + desc).toLowerCase();
@@ -200,7 +201,7 @@ export class KulturaPoznanScraper implements Scraper {
                 startDate: s.date,
                 endDate: s.date,
                 time: s.time,
-                vibes: ["Kulturalne"],
+                vibes: guessVibesForCategory("Kino"),
                 source: "kultura-poznan",
                 sourceId: `kp-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
                 coordsX,
@@ -230,7 +231,7 @@ export class KulturaPoznanScraper implements Scraper {
                 startDate: sub.date,
                 endDate: sub.date,
                 time: undefined,
-                vibes: ["Kulturalne"],
+                vibes: guessVibes(sub.title, description ?? "", guessCategory(sub.title, description)),
                 source: "kultura-poznan",
                 sourceId: `kp-${Buffer.from(sub.title + sub.date.toISOString()).toString("base64").slice(0, 24)}`,
                 coordsX: subVenue?.lat,
@@ -256,7 +257,7 @@ export class KulturaPoznanScraper implements Scraper {
             startDate: start,
             endDate: end,
             time: undefined,
-            vibes: ["Kulturalne"],
+            vibes: guessVibes(title, description ?? "", category),
             source: "kultura-poznan",
             sourceId: `kp-${Buffer.from(title).toString("base64").slice(0, 24)}`,
             coordsX,

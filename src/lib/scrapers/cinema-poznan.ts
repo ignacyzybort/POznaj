@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
+import { guessVibesForCategory } from "@/lib/vibes";
 
 const BASE = "https://www.poznan.pl/mim/events/seances";
 const SOURCE = "poznan-cinema";
@@ -116,7 +117,7 @@ export class PoznanCinemaScraper implements Scraper {
               placeName: cinemaName,
               district: geo?.district || "Centrum",
               category: "Kino",
-              vibes: [],
+              vibes: guessVibesForCategory("Kino"),
               source: SOURCE,
               sourceId: groupKey,
               coordsX: geo?.lat,

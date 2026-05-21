@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
+import { guessVibes } from "@/lib/vibes";
 
 function guessDistrict(text: string): string {
   const lower = text.toLowerCase();
@@ -30,31 +31,6 @@ function parseScreenings(description: string): { date: Date; time: string; title
     }
   }
   return screenings;
-}
-
-function guessVibes(title: string, desc: string, category: string): string[] {
-  const t = (title + " " + desc).toLowerCase();
-  const vibes: string[] = [];
-
-  if (t.includes("randka") || t.includes("walentynki") || t.includes("romantycz") || t.includes("dla dwojga") || t.includes("we dwoje") || (t.includes("wieczór") && (t.includes("kolacja") || t.includes("muzyka") || t.includes("przy świec")))) vibes.push("Randka");
-  if (t.includes("impreza") || t.includes("disco") || t.includes("club") || t.includes("dj") || t.includes("dance") || t.includes("after") || t.includes("tanecz") || t.includes("lata 80") || t.includes("lata 90") || t.includes("party") || t.includes("after party") || category === "Impreza") vibes.push("Impreza");
-  if (t.includes("rodzin") || t.includes("dzieci") || t.includes("piknik") || t.includes("rodzinn") || t.includes("dzień dziecka") || t.includes("dla całej") || t.includes("bajk") || t.includes("animac") || t.includes("balon") || t.includes("warsztaty dla dzieci") || t.includes("dziecięcy")) vibes.push("Rodzinne");
-  if (t.includes("spacer") || t.includes("spokoj") || t.includes("relaks") || t.includes("medytac") || t.includes("cisza") || t.includes("wycisz") || t.includes("joga") || t.includes("zwiedzanie") || t.includes("herbata") || t.includes("kawiarn") || category === "Spokojne") vibes.push("Spokojne");
-  if (t.includes("bieg") || t.includes("sport") || t.includes("aktywn") || t.includes("fitness") || t.includes("triathlon") || t.includes("rower") || t.includes("zawod") || t.includes("bieg") || t.includes("bieg") || t.includes("turniej") || t.includes("aktyw") || t.includes("gimnast") || category === "Sport") vibes.push("Aktywne");
-  if (t.includes("znajom") || t.includes("spotkan") || t.includes("grupa") || t.includes("razem") || t.includes("towarzyst") || t.includes("wspólne") || t.includes("after") || t.includes("klub") || t.includes("bar") || category === "WyjscieZeZnajomymi") vibes.push("WyjscieZeZnajomymi");
-
-  if (vibes.length === 0) {
-    if (category === "Muzyka") vibes.push("Kulturalne", "Impreza");
-    else if (category === "Teatr") vibes.push("Kulturalne");
-    else if (category === "Kino") vibes.push("Kulturalne", "Randka");
-    else if (category === "Sport") vibes.push("Aktywne", "Rodzinne");
-    else if (category === "Jedzenie") vibes.push("WyjscieZeZnajomymi");
-    else if (category === "Warsztaty") vibes.push("Spokojne", "WyjscieZeZnajomymi");
-    else vibes.push("Kulturalne");
-  }
-
-  const unique = [...new Set(vibes)];
-  return unique.slice(0, 3);
 }
 
 function parseCategory(url: string, title: string, text: string): string {

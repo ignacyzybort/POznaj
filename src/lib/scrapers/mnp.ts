@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
+import { guessVibesForCategory } from "@/lib/vibes";
 
 const URL = "https://mnp.art.pl/wystawy-i-wydarzenia";
 const SOURCE = "mnp";
@@ -139,7 +140,7 @@ export class MnpScraper implements Scraper {
         address,
         district: geo.district,
         category,
-        vibes: [],
+        vibes: guessVibesForCategory(category),
         source: SOURCE,
         sourceId: `mnp/${key}`,
         coordsX: geo.lat,
