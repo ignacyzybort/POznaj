@@ -144,28 +144,33 @@ const updateData = (event: ScrapedEvent, vibes: string[]) => {
 };
 
 const OUTDOOR_KEYWORDS = [
-  "park", "ogród", "jezioro", "malta", "rusałka", "cytadela", "plaża",
-  "rynek", "plac", "skwer", "bulwar", "wyspa", "las", "promenada",
-  "amfiteatr", "scena plenerowa", "boisko", "stadion", "tor regatowy",
-  "zoo", "ogród zoologiczny", "palmiarnia", "ogród botaniczny",
+  "park", "ogród", "jezioro", "rusałka", "cytadela", "plaża",
+  "rynek", "plac", "skwer", "bulwar", "wyspa", "promenada",
+  "amfiteatr", "scena plenerowa", "boisko", "stadion",
+  "palmiarnia", "ogród botaniczny",
 ];
 
+function containsWord(text: string, keyword: string): boolean {
+  const re = new RegExp("\\b" + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$\&') + "\\b", "i");
+  return re.test(text);
+}
+
 function detectOutdoor(placeName: string, description: string | undefined): boolean {
-  const lowerName = placeName.toLowerCase();
   const lowerDesc = description?.toLowerCase() ?? "";
 
   for (const kw of OUTDOOR_KEYWORDS) {
-    if (lowerName.includes(kw) || lowerDesc.includes(kw)) return true;
+    if (containsWord(placeName, kw) || containsWord(lowerDesc, kw)) return true;
   }
 
-  // Exact venue matches
   const exactOutdoor = [
     "park cytadela", "scena nad rusałką", "malta", "termy maltańskie",
     "stary rynek", "rynek łazarski", "plac wolności", "jezioro strzeszyńskie",
     "park sołacki", "park wilsona", "park kasprowicza", "tor regatowy malta",
     "enea stadion", "nowe zoo", "stare zoo", "ogród botaniczny uam",
     "palmiarnia poznańska", "tor poznań", "kontenerart",
+    "letnia strefa", "scena plenerowa",
   ];
+  const lowerName = placeName.toLowerCase();
   for (const ex of exactOutdoor) {
     if (lowerName.includes(ex)) return true;
   }
