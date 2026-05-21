@@ -107,6 +107,14 @@ export const VENUES: Record<string, { address: string; district: string; lat: nu
   "Muzeum Archeologiczne": { address: "Wodna 27", district: "Centrum", lat: 52.406, lon: 16.936 },
   "Muzeum Etnograficzne": { address: "Grobla 25", district: "Centrum", lat: 52.404, lon: 16.936 },
   "Kamienica MTP": { address: "Bukowska 14", district: "Grunwald", lat: 52.399, lon: 16.899 },
+  "Kino Bułgarska 19": { address: "Bułgarska 19", district: "Jezyce", lat: 52.399, lon: 16.860 },
+  "Kino Teatr Apollo": { address: "Ratajczaka 18", district: "Centrum", lat: 52.405, lon: 16.927 },
+  "Helios Poznań": { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
+  "Cinema City KINEPOLIS": { address: "Warszawska 49", district: "NoweMiasto", lat: 52.374, lon: 16.981 },
+  "Cinema City PLAZA": { address: "Drużbickiego 2", district: "Grunwald", lat: 52.382, lon: 16.889 },
+  "Multikino Stary Browar": { address: "Półwiejska 42", district: "StareMiasto", lat: 52.403, lon: 16.926 },
+  "Charlie Monroe Kino Malta": { address: "Malta", district: "NoweMiasto", lat: 52.401, lon: 16.960 },
+  "Imax": { address: "Warszawska 49", district: "NoweMiasto", lat: 52.374, lon: 16.981 },
 };
 
 // Keywords → venue fallback for when venue name doesn't appear verbatim
@@ -254,6 +262,16 @@ const KEYWORD_VENUES: [string, string][] = [
   ["muzeum etnograficzne", "Muzeum Etnograficzne"],
   ["kamienica mtp", "Kamienica MTP"],
   ["teatr animacji", "Teatr Animacji"],
+  ["kino bułgarska", "Kino Bułgarska 19"],
+  ["bułgarska 19", "Kino Bułgarska 19"],
+  ["kino teatr apollo", "Kino Teatr Apollo"],
+  ["helios", "Helios Poznań"],
+  ["kinepolis", "Cinema City KINEPOLIS"],
+  ["cinema city plaza", "Cinema City PLAZA"],
+  ["multikino", "Multikino Stary Browar"],
+  ["charlie monroe", "Charlie Monroe Kino Malta"],
+  ["kino malta", "Charlie Monroe Kino Malta"],
+  ["imax", "Imax"],
 ];
 
 export function matchVenue(text: string): { address: string; district: string; lat: number; lon: number } | null {

@@ -1,5 +1,8 @@
 import { PikPoznanScraper } from "./pikpoznan";
 import { KulturaPoznanScraper } from "./kultura-poznan";
+import { PoznanCinemaScraper } from "./cinema-poznan";
+import { MnpScraper } from "./mnp";
+import { PutScraper } from "./put";
 import { FacebookScraper } from "./facebook";
 import { saveEvents, Scraper } from "./base";
 import { recomputeAllScores } from "@/lib/scoring";
@@ -12,6 +15,9 @@ const prisma = new PrismaClient({ adapter });
 const scrapers: Scraper[] = [
   new PikPoznanScraper(),
   new KulturaPoznanScraper(),
+  new PoznanCinemaScraper(),
+  new MnpScraper(),
+  new PutScraper(),
   new FacebookScraper(),
 ];
 

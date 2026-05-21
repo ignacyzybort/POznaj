@@ -40,15 +40,20 @@ export default function HomeClient({
   const [toast, setToast] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [recommended, setRecommended] = useState<EventData[] | null>(null);
   const [activeFilters, setActiveFilters] = useState<ActiveFilters>({
     category: [], district: [], vibe: [],
   });
 
-  const buildQuery = () => {
+  const offsetRef = useRef(initialEvents.length);
+  const hasMore = events.length < total;
+
+  const buildQuery = (forOffset: number) => {
     const params = new URLSearchParams();
-    params.set("limit", "200");
+    params.set("limit", "50");
     params.set("sort", "score");
+    params.set("offset", String(forOffset));
     if (search) params.set("q", search);
     if (quick) params.set("quick", quick);
     if (budget) params.set("budget", budget);
@@ -59,27 +64,38 @@ export default function HomeClient({
     return params.toString();
   };
 
-  const fetchEvents = (signal?: AbortSignal) => {
-    setLoading(true);
+  const fetchEvents = (signal?: AbortSignal, append = false) => {
+    if (append) setLoadingMore(true);
+    else { setLoading(true); offsetRef.current = 0; }
     setError(null);
-    fetch(`/api/events?${buildQuery()}`, { signal }).then((r) => {
+    fetch(`/api/events?${buildQuery(offsetRef.current)}`, { signal }).then((r) => {
       if (!r.ok) throw new Error("Błąd ładowania");
       return r.json();
     }).then((d) => {
-      if (d.events) setEvents(d.events);
-      setTotal(d.total ?? d.events?.length ?? 0);
+      const fetched = d.events?.length ?? 0;
+      if (append) {
+        setEvents((prev) => [...prev, ...(d.events ?? [])]);
+        offsetRef.current += fetched;
+      } else {
+        setEvents(d.events ?? []);
+        offsetRef.current = fetched;
+      }
+      setTotal(d.total ?? 0);
       setLoading(false);
+      setLoadingMore(false);
     }).catch((e) => {
       if (e?.name === "AbortError") return;
       console.error("home fetch failed", e);
       setError("Ups, coś się zacięło — spróbuj jeszcze raz");
       setLoading(false);
+      setLoadingMore(false);
     });
   };
 
   // Skip the very first run — initialEvents already covers the default view.
   const firstRun = useRef(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (firstRun.current) {
@@ -87,10 +103,33 @@ export default function HomeClient({
       return;
     }
     const ctrl = new AbortController();
-    fetchEvents(ctrl.signal);
+    fetchEvents(ctrl.signal, false);
     return () => ctrl.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quick, search, budget, outdoorOn, activeFilters]);
+
+  // Infinite scroll
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
+  const loadingMoreRef = useRef(loadingMore);
+  loadingMoreRef.current = loadingMore;
+  const hasMoreRef = useRef(hasMore);
+  hasMoreRef.current = hasMore;
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreRef.current && !loadingRef.current && !loadingMoreRef.current) {
+          const ctrl = new AbortController();
+          fetchEvents(ctrl.signal, true);
+        }
+      },
+      { root: containerRef.current, threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const { data: session } = useSession();
 
@@ -347,6 +386,12 @@ export default function HomeClient({
             <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
           )}
         </div>
+        {hasMore && <div ref={sentinelRef} style={{ height: 1, marginTop: 8 }} />}
+        {loadingMore && (
+          <div style={{ display: "flex", justifyContent: "center", padding: "24px 0 40px" }}>
+            <span className="pz-spinner" style={{ width: 24, height: 24 }} />
+          </div>
+        )}
       </div>
 
       {searchOpen && (

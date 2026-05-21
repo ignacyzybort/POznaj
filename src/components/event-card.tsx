@@ -23,6 +23,8 @@ export default function EventCard({
 }) {
   const friends = event.friendsGoing ?? [];
   const going_count = event.going ?? 0;
+  const showtimes = event.time?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+  const multiSeance = showtimes.length > 1;
 
   const [bouncing, setBouncing] = useState(false);
   useEffect(() => {
@@ -39,7 +41,10 @@ export default function EventCard({
 
       <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-          <span className="pz-eyebrow">{relDay(new Date(event.startDate))} · {event.time ?? "cały dzień"}</span>
+          <span className="pz-eyebrow">
+            {relDay(new Date(event.startDate))}
+            {multiSeance ? ` · ${showtimes.length} ${showtimes.length === 1 ? "seans" : showtimes.length < 5 ? "seanse" : "seansów"}` : event.time ? ` · ${event.time}` : " · cały dzień"}
+          </span>
           <HeatMeter score={event.score} />
         </div>
 
@@ -47,6 +52,14 @@ export default function EventCard({
           fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
           margin: 0, lineHeight: 1.18, cursor: "pointer",
         }}>{event.title}</h3>
+
+        {multiSeance && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
+            {showtimes.map((t) => (
+              <span key={t} className="pz-chip" style={{ fontSize: 11, padding: "3px 8px" }}>{t}</span>
+            ))}
+          </div>
+        )}
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
