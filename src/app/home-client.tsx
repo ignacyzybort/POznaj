@@ -306,7 +306,7 @@ export default function HomeClient({
             </h2>
           </div>
           <div style={{ margin: "0 -18px" }}>
-            <div style={{ display: "flex", gap: 12, padding: "0 18px 14px", overflowX: "auto" }}>
+            <div style={{ display: "flex", gap: 12, padding: "0 0 14px 18px", overflowX: "auto" }}>
               {forYou.map((ev, i) => (
                 <TiltCard key={ev.id}>
                   <div
