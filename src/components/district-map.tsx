@@ -372,9 +372,9 @@ export default function DistrictMap({
                 click: () => setExpandedKey(isExpanded ? null : cluster.key),
               }}
             >
-              <Popup>
-                <div style={{ padding: 4 }}>
-                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", marginBottom: 6 }}>{cluster.events.length} wydarzeń</div>
+              <Popup maxWidth={260} maxHeight={220}>
+                <div style={{ padding: 4, maxHeight: 200, overflowY: "auto" }}>
+                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", marginBottom: 6, position: "sticky", top: 0, background: "white", paddingBottom: 4 }}>{cluster.events.length} wydarzeń</div>
                   {cluster.events.map((ev) => (
                     <div key={ev.id} onClick={() => router.push(`/event/${ev.id}`)} style={{ padding: "6px 0", borderTop: "0.5px solid var(--line)", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
                       {ev.title}
@@ -433,7 +433,7 @@ export default function DistrictMap({
           zIndex: 1000, padding: "14px 18px calc(90px + var(--safe-b))",
           background: "linear-gradient(180deg, transparent, var(--bg) 25%)",
         }}>
-          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36, touchAction: "pan-x" }}>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36, touchAction: "pan-x", WebkitOverflowScrolling: "touch" }}>
             {filteredEvents.slice(0, 8).map((ev) => (
               <div
                 key={ev.id}
@@ -441,7 +441,7 @@ export default function DistrictMap({
                 role="button" tabIndex={0}
                 onKeyDown={(e) => { if (e.key === "Enter") { router.push(`/event/${ev.id}`); } }}
                 style={{
-                  flex: "0 0 160px", borderRadius: 18, overflow: "hidden",
+                  flex: "0 0 172px", borderRadius: 18, overflow: "hidden",
                   position: "relative", height: 120, cursor: "pointer",
                   boxShadow: "var(--shadow-md)",
                   transition: "transform 0.2s var(--ease-out-quart)",
