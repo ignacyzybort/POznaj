@@ -434,7 +434,7 @@ export default function DistrictMap({
           background: "linear-gradient(180deg, transparent, var(--bg) 25%)",
         }}>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingRight: 36, touchAction: "pan-x", WebkitOverflowScrolling: "touch" }}>
-            {filteredEvents.slice(0, 8).map((ev) => (
+            {filteredEvents.map((ev) => (
               <div
                 key={ev.id}
                 onClick={() => router.push(`/event/${ev.id}`)}
@@ -458,11 +458,6 @@ export default function DistrictMap({
                 </div>
               </div>
             ))}
-            {filteredEvents.length > 8 && (
-              <div role="button" tabIndex={0} style={{ flex: "0 0 100px", borderRadius: 18, height: 120, background: "var(--bg-soft)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                <span style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink-3)" }}>+{filteredEvents.length - 8} więcej</span>
-              </div>
-            )}
           </div>
         </div>
       )}
