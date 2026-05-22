@@ -59,7 +59,19 @@ export async function POST(request: NextRequest) {
     const notificationId: unknown = body?.notificationId;
     const action: unknown = body?.action;
 
-    if (typeof notificationId !== "string" || !notificationId || typeof action !== "string" || !action) {
+    if (typeof action !== "string" || !action) {
+      return NextResponse.json({ error: "Missing action" }, { status: 400 });
+    }
+
+    if (action === "markAllRead") {
+      await prisma.notification.updateMany({
+        where: { userId, read: false },
+        data: { read: true },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (typeof notificationId !== "string" || !notificationId) {
       return NextResponse.json({ error: "Missing params" }, { status: 400 });
     }
 

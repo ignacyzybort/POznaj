@@ -286,7 +286,10 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       {(pendingReqs.length > 0 || notifs.length > 0) && (
         <div style={{ padding: "0 18px 14px" }}>
           <div className="pz-card" style={{ padding: 16 }}>
-            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}><BellIcon size={12} /> Powiadomienia ({pendingReqs.length + notifs.length})</div>
+            <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BellIcon size={12} /> Powiadomienia ({pendingReqs.length + notifs.length})</span>
+              <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "markAllRead" }) }); fetchNotifs(); }} style={{ border: 0, background: "transparent", color: "var(--ink-4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Przeczytaj wszystkie</button>
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
                 <div key={req.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "0.5px solid var(--line)" }}>
