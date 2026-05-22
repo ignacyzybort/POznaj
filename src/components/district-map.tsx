@@ -229,6 +229,40 @@ export default function DistrictMap({
     ? events.filter((e) => mapDistrict(e.district) === selectedDistrict && e.coordsX)
     : [];
 
+  // Spread overlapping markers at same location
+  const spreadEvents = useMemo(() => {
+    const coordKey = (e: EventData) => `${e.coordsX!.toFixed(5)},${e.coordsY!.toFixed(5)}`;
+    const groups = new Map<string, EventData[]>();
+    for (const ev of filteredEvents) {
+      const k = coordKey(ev);
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(ev);
+    }
+    const result: { event: EventData; lat: number; lon: number }[] = [];
+    for (const [, group] of groups) {
+      if (group.length === 1) {
+        result.push({ event: group[0], lat: group[0].coordsX!, lon: group[0].coordsY! });
+      } else {
+        const step = 0.00025;
+        const offsets = [
+          [0, 0], [0, 1], [1, 0], [0, -1], [-1, 0],
+          [1, 1], [-1, 1], [1, -1], [-1, -1], [0, 2],
+          [2, 0], [0, -2], [-2, 0],
+        ];
+        for (let i = 0; i < group.length; i++) {
+          const [oy, ox] = offsets[i % offsets.length];
+          const ring = Math.floor(i / offsets.length) + 1;
+          result.push({
+            event: group[i],
+            lat: group[i].coordsX! + oy * step * ring,
+            lon: group[i].coordsY! + ox * step * ring,
+          });
+        }
+      }
+    }
+    return result;
+  }, [filteredEvents]);
+
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const id = getId(feature);
     const count = eventCounts[id] ?? 0;
@@ -303,10 +337,10 @@ export default function DistrictMap({
             }}
           />
         )}
-        {filteredEvents.map((ev, i) => (
+        {spreadEvents.map(({ event: ev, lat, lon }, i) => (
           <Marker
             key={ev.id}
-            position={[ev.coordsX!, ev.coordsY!]}
+            position={[lat, lon]}
             icon={createCategoryMarker(ev.category, i)}
           >
             <Popup>
@@ -324,7 +358,7 @@ export default function DistrictMap({
       </MapContainer>
 
       {/* Empty district message */}
-      {selectedDistrict && filteredEvents.length === 0 && (
+      {selectedDistrict && spreadEvents.length === 0 && (
         <div style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
           <span style={{ padding: "8px 16px", borderRadius: 99, background: "var(--bg-elev)", color: "var(--ink-3)", fontSize: 13, fontWeight: 600, boxShadow: "var(--shadow-md)" }}>
             Brak wydarzeń w tej dzielnicy
