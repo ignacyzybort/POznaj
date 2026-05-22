@@ -34,12 +34,12 @@ export default function EventCard({
   }, [saved]);
 
   return (
-    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card pz-card-lift ${className}`} style={{ cursor: "pointer" }}>
+    <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card pz-card-lift ${className}`} style={{ cursor: "pointer", height: "100%", display: "flex", flexDirection: "column" }}>
       <div style={{ pointerEvents: "none" }}>
         <EventArt event={event} height={dense ? 132 : 170} style={cardStyle} />
       </div>
 
-      <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px" }}>
+      <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
           <span className="pz-eyebrow">
             {relDay(new Date(event.startDate))}
@@ -51,6 +51,7 @@ export default function EventCard({
         <h3 className="pz-h" style={{
           fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
           margin: 0, lineHeight: 1.18, cursor: "pointer",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>{event.title}</h3>
 
         {multiSeance && (
@@ -60,6 +61,8 @@ export default function EventCard({
             ))}
           </div>
         )}
+
+        <div style={{ flex: 1 }} />
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13 }}>
           <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
