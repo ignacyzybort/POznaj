@@ -185,9 +185,6 @@ export async function GET(request: NextRequest) {
       where.AND = [...((where.AND as any[]) || []), { OR: priceOr }];
     } else if (budget === "student") {
       const priceLikeStudent: Record<string, any>[] = [
-        { price: { startsWith: "0" } },
-        { price: { contains: "free", mode: "insensitive" as any } },
-        { price: { contains: "bezpł", mode: "insensitive" as any } },
         { price: { contains: "studen", mode: "insensitive" as any } },
         { price: { contains: "ulgow", mode: "insensitive" as any } },
         { price: { contains: "ulga", mode: "insensitive" as any } },
@@ -202,7 +199,6 @@ export async function GET(request: NextRequest) {
         { description: { contains: "uczelnia", mode: "insensitive" as any } },
         { description: { contains: "uniwersytet", mode: "insensitive" as any } },
         { description: { contains: "politechnika", mode: "insensitive" as any } },
-        { description: { contains: "dzień otwarty", mode: "insensitive" as any } },
       ];
       where.AND = [...((where.AND as any[]) || []), { OR: [...priceLikeStudent, ...studentTitleDesc] }];
     }
