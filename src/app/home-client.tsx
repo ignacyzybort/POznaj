@@ -34,6 +34,7 @@ export default function HomeClient({
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quick, setQuick] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [savedSlots, setSavedSlots] = useState<Record<string, Set<string>>>({});
   const [budget, setBudget] = useState<Budget>(null);
   const [outdoorOn, setOutdoorOn] = useState(false);
   const [surpriseOpen, setSurpriseOpen] = useState(false);
@@ -170,20 +171,39 @@ export default function HomeClient({
 
   const router = useRouter();
   const openEvent = (ev: EventData) => { router.push(`/event/${ev.id}`); };
-  const toggleSave = async (id: string) => {
+  const toggleSave = async (id: string, timeSlot?: string) => {
     if (!session?.user) { router.push("/login"); return; }
-    const isSaved = savedIds.includes(id);
-    await fetch("/api/attendance", {
+    const body: Record<string, unknown> = { eventId: id, status: "SAVED" };
+    if (timeSlot) body.timeSlot = timeSlot;
+
+    const res = await fetch("/api/attendance", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
-      body: JSON.stringify({ eventId: id, status: "SAVED" }),
+      body: JSON.stringify(body),
     });
-    if (!isSaved) {
-      setToast("Zapisano ✅");
+    const data = await res.json();
+
+    if (timeSlot) {
+      setSavedSlots((prev) => {
+        const next = { ...prev };
+        const slots = new Set(prev[id] ?? []);
+        if (data.status === null) {
+          slots.delete(timeSlot);
+        } else {
+          slots.add(timeSlot);
+        }
+        next[id] = slots;
+        return next;
+      });
+    } else {
+      const isSaved = savedIds.includes(id);
+      if (data.status === null) {
+        setSavedIds((prev) => prev.filter((v) => v !== id));
+      } else {
+        setSavedIds((prev) => [...prev, id]);
+      }
+      if (!isSaved) setToast("Zapisano ✅");
     }
-    setSavedIds((prev) =>
-      isSaved ? prev.filter((v) => v !== id) : [...prev, id]
-    );
   };
 
 
@@ -360,11 +380,12 @@ export default function HomeClient({
           )) : events.map((ev, i) => (
               <TiltCard key={ev.id} maxTilt={4}>
                 <div style={{ '--i': Math.min(i, 8), height: "100%" } as React.CSSProperties}>
-                  <EventCard event={ev}
-                             onOpen={() => openEvent(ev)}
-                             onSave={() => toggleSave(ev.id)}
-                             saved={savedIds.includes(ev.id)}
-                             className="pz-card-stagger" />
+                   <EventCard event={ev}
+                              onOpen={() => openEvent(ev)}
+                              onSave={(ts) => toggleSave(ev.id, ts)}
+                              saved={savedIds.includes(ev.id)}
+                              savedSlots={[...(savedSlots[ev.id] ?? [])]}
+                              className="pz-card-stagger" />
                 </div>
               </TiltCard>
           ))}

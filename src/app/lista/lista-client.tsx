@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 type AttendanceItem = {
   id: string;
   status: "SAVED" | "GOING" | "INTERESTED";
+  timeSlot?: string | null;
   event: {
     id: string;
     title: string;
@@ -69,6 +70,7 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {a.event.title}
+                  {a.timeSlot && <span style={{ fontSize: 11, color: "var(--ink-4)", fontWeight: 500, marginLeft: 4 }}>{a.timeSlot}</span>}
                 </p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "var(--ink-3)" }}>
                   {a.event.placeName} · {new Date(a.event.startDate).toLocaleDateString("pl-PL", { day: "numeric", month: "short" })}

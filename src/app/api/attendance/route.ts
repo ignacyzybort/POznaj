@@ -16,6 +16,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const eventId: unknown = body?.eventId;
     const status: unknown = body?.status;
+    let timeSlot: string | null = null;
+    if (typeof body?.timeSlot === "string" && body.timeSlot.trim().length > 0) {
+      timeSlot = body.timeSlot.trim();
+    }
 
     if (typeof eventId !== "string" || !eventId) {
       return NextResponse.json({ error: "Invalid eventId" }, { status: 400 });
@@ -31,20 +35,20 @@ export async function POST(request: NextRequest) {
       ? status as typeof validStatuses[number]
       : "GOING";
 
-    const existing = await prisma.attendance.findUnique({
-      where: { userId_eventId: { userId, eventId } },
+    const existing = await prisma.attendance.findFirst({
+      where: { userId, eventId, timeSlot: timeSlot ?? null },
     });
 
     if (existing) {
       await prisma.attendance.delete({
-        where: { userId_eventId: { userId, eventId } },
+        where: { id: existing.id },
       });
       recomputeEventScore(prisma, eventId);
-      return NextResponse.json({ status: null });
+      return NextResponse.json({ status: null, timeSlot });
     }
 
     const attendance = await prisma.attendance.create({
-      data: { userId, eventId, status: finalStatus },
+      data: { userId, eventId, status: finalStatus, timeSlot },
     });
 
     if (finalStatus === "GOING" || finalStatus === "SAVED") {
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
       ));
     }
 
-    return NextResponse.json({ status: attendance.status });
+    return NextResponse.json({ status: attendance.status, timeSlot });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       if (e.code === "P2002") return NextResponse.json({ status: null });
@@ -120,7 +124,9 @@ export async function GET(request: NextRequest) {
     });
 
     const serialized = attendance.map((a) => ({
-      ...a,
+      id: a.id,
+      status: a.status,
+      timeSlot: a.timeSlot,
       event: {
         ...a.event,
         startDate: a.event.startDate.toISOString(),

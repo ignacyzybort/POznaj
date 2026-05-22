@@ -11,12 +11,13 @@ import { PinIcon, BookmarkIcon } from "@/components/icons";
 import { getVenueSlug } from "@/lib/slug";
 
 export default function EventCard({
-  event, onOpen, onSave, saved, dense = false, cardStyle = "gradient", className = "",
+  event, onOpen, onSave, saved, savedSlots, dense = false, cardStyle = "gradient", className = "",
 }: {
   event: EventData;
   onOpen?: () => void;
-  onSave?: (e: React.MouseEvent) => void;
+  onSave?: (timeSlot?: string) => void;
   saved?: boolean;
+  savedSlots?: string[];
   dense?: boolean;
   cardStyle?: "collage" | "gradient" | "typographic";
   className?: string;
@@ -56,9 +57,17 @@ export default function EventCard({
 
         {multiSeance && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 6 }}>
-            {showtimes.map((t) => (
-              <span key={t} className="pz-chip" style={{ fontSize: 11, padding: "3px 8px" }}>{t}</span>
-            ))}
+            {showtimes.map((t) => {
+              const isSlotSaved = savedSlots?.includes(t);
+              return (
+                <button key={t} className="pz-chip pz-chip-spring" aria-pressed={isSlotSaved}
+                        data-active={isSlotSaved ? "true" : undefined}
+                        onClick={(e) => { e.stopPropagation(); onSave?.(t); }}
+                        style={{ fontSize: 11, padding: "3px 8px", border: 0, cursor: "pointer" }}>
+                  {t}{isSlotSaved ? " ✓" : ""}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -82,7 +91,7 @@ export default function EventCard({
               </span>
             )}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onSave?.(e); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
+          <button onClick={(e) => { e.stopPropagation(); onSave?.(); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",
             cursor: "pointer", padding: 0, display: "inline-flex", width: 44, height: 44, alignItems: "center", justifyContent: "center",
           }}>
