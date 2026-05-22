@@ -262,7 +262,7 @@ export default function DistrictMap({
       {/* Back button — bottom-left, thumb-reachable */}
       {selectedDistrict && (
         <button onClick={handleBack} style={{
-          position: "absolute",           bottom: "calc(170px + var(--safe-b))", left: "calc(14px + var(--safe-l))",
+          position: "absolute",           bottom: "calc(230px + var(--safe-b))", left: "calc(14px + var(--safe-l))",
           zIndex: 1000, gap: 6, alignItems: "center",
           padding: "8px 18px", borderRadius: 99, border: 0,
           background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer",
