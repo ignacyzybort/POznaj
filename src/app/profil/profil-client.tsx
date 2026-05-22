@@ -13,7 +13,7 @@ import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
 import { SettingsIcon, EditIcon, SparkIcon, BellIcon } from "@/components/icons";
-import { computeChallenges } from "@/lib/challenges";
+import { CHALLENGES } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
   "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
@@ -59,11 +59,12 @@ export type InitialProfile = {
     friendCount: number;
     _count: { attendance: number; sentFriendships: number };
   };
-  attendance: { id: string; status: string; timeSlot: string | null; event: { id: string; title: string; placeName: string; startDate: string; category: string; district: string; imageUrl: string | null; vibes: string[] } }[];
+  attendance: { id: string; status: string; timeSlot: string | null; event: { id: string; title: string; placeName: string; startDate: string; category: string; district: string; imageUrl: string | null; outdoor: boolean; vibes: string[] } }[];
   friends: { id: string; name: string | null }[];
   activities: { id: string; type: string; createdAt: string; user: { id: string; name: string | null; image: string | null }; event: { id: string; title: string; startDate: string; category: string } }[];
   notifications: { id: string; eventId: string | null; type: string; title: string; body: string | null; createdAt: string }[];
   requests: { id: string; senderId: string; senderName: string; createdAt: string }[];
+  challenges: { challengeKey: string; tier: string; progress: number; maxProgress: number; done: boolean; completedAt: string | null; resetAt: string }[];
 };
 
 export default function ProfilClient({ initial }: { initial: InitialProfile }) {
@@ -80,6 +81,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   const [notifs, setNotifs] = useState(initial.notifications);
   const [pendingReqs, setPendingReqs] = useState(initial.requests);
   const [stats, setStats] = useState(initial.user._count);
+  const [challengeState, setChallengeState] = useState(initial.challenges);
+  const [challengeTab, setChallengeTab] = useState<"daily" | "weekly" | "monthly">("weekly");
 
   const [showQuiz, setShowQuiz] = useState(false);
   const [yirOpen, setYirOpen] = useState(false);
@@ -129,7 +132,6 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   const savedYear = attendanceData.filter((a) => a.status === "SAVED" && a.event?.startDate && new Date(a.event.startDate).getFullYear() === new Date().getFullYear());
   const weeksActive = Math.min(goingItems.length, 8);
   const badge = getBadge(goingItems.length);
-  const challenges = computeChallenges(goingItems);
 
   const catCount: Record<string, number> = {};
   const venueCount: Record<string, number> = {};
@@ -258,32 +260,75 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
 
       {/* Activity + Passport layout */}
       <div style={{ padding: "0 18px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {/* Left column: challenges + activity stats + streak */}
+        {/* Left column: challenges + streak */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {challenges.length > 0 && (
-            <div className="pz-card" style={{ padding: 14 }}>
-              <div className="pz-eyebrow" style={{ marginBottom: 10 }}>Wyzwania</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, height: "100%" }}>
-                {challenges.map((c) => (
-                  <div key={c.id}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 16 }}>{c.icon}</span>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{c.title}</span>
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: c.done ? "var(--sage)" : "var(--ink-3)" }}>
-                        {c.done ? "✅" : `${c.progress}/${c.max}`}
-                      </span>
-                    </div>
-                    <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
-                      <div style={{ width: `${(c.progress / c.max) * 100}%`, height: "100%", borderRadius: 99, background: c.done ? "var(--sage)" : "var(--ink-3)", transition: "width var(--dur-slow) var(--ease-out-quart)" }} />
-                    </div>
-                    <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{c.desc}</div>
+          {(() => {
+            const filtered = challengeState.filter((c) => c.tier === challengeTab);
+            const allInTier = CHALLENGES.filter((c) => c.tier === challengeTab);
+            const doneCount = filtered.filter((c) => c.done).length;
+            const tierBadge = doneCount >= allInTier.length ? { emoji: "💎", label: "Diamond" }
+              : doneCount >= allInTier.length * 0.8 ? { emoji: "🥇", label: "Złoto" }
+              : doneCount >= allInTier.length * 0.5 ? { emoji: "🥈", label: "Srebro" }
+              : doneCount >= 1 ? { emoji: "🥉", label: "Brąz" }
+              : null;
+
+            const tabDefs = CHALLENGES.filter((c) => c.tier === challengeTab);
+            const progressMap = new Map(filtered.map((f) => [f.challengeKey, f]));
+
+            return (
+              <div className="pz-card" style={{ padding: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div className="pz-eyebrow" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    Wyzwania
+                    {tierBadge && <span style={{ fontSize: 14 }}>{tierBadge.emoji}</span>}
                   </div>
-                ))}
+                  <div style={{ display: "flex", gap: 2 }}>
+                    {(["daily", "weekly", "monthly"] as const).map((t) => {
+                      const active = challengeTab === t;
+                      const td = CHALLENGES.filter((c) => c.tier === t);
+                      const fd = challengeState.filter((c) => c.tier === t && c.done);
+                      return (
+                        <button key={t} onClick={() => setChallengeTab(t)} style={{
+                          border: active ? "0.5px solid var(--ink)" : "0.5px solid var(--line-2)",
+                          borderRadius: 99, padding: "2px 10px", fontSize: 10, fontWeight: 600,
+                          background: active ? "var(--ink)" : "transparent",
+                          color: active ? "var(--bg)" : "var(--ink-4)",
+                          cursor: "pointer",
+                        }}>
+                          {t === "daily" ? "Dziś" : t === "weekly" ? "Tydzień" : "Miesiąc"}
+                          {fd.length > 0 ? ` ${fd.length}/${td.length}` : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {tabDefs.map((def) => {
+                    const p = progressMap.get(def.key);
+                    const progress = p?.progress ?? 0;
+                    const done = p?.done ?? false;
+                    return (
+                      <div key={def.key}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontSize: 16 }}>{def.icon}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{def.title}</span>
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: done ? "var(--sage)" : "var(--ink-3)" }}>
+                            {done ? "✅" : `${progress}/${def.maxProgress}`}
+                          </span>
+                        </div>
+                        <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
+                          <div style={{ width: `${(progress / def.maxProgress) * 100}%`, height: "100%", borderRadius: 99, background: done ? "var(--sage)" : "var(--ink-3)", transition: "width var(--dur-slow) var(--ease-out-quart)" }} />
+                        </div>
+                        <div style={{ fontSize: 11, color: "var(--ink-4)", marginTop: 2 }}>{def.desc}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
           <div className="pz-card" style={{ padding: 14 }}>
             <div className="pz-eyebrow" style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}><SparkIcon size={12} /> Aktywność</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

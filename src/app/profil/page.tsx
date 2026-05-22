@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { CHALLENGES, getResetDate } from "@/lib/challenges";
 import ProfilClient, { type InitialProfile } from "./profil-client";
 
 export default async function ProfilPage() {
@@ -53,6 +54,7 @@ export default async function ProfilPage() {
             category: true,
             district: true,
             imageUrl: true,
+            outdoor: true,
             vibes: { select: { vibe: true } },
           },
         },
@@ -86,6 +88,47 @@ export default async function ProfilPage() {
   if (!user) {
     return null;
   }
+
+  // Compute and persist challenge progress
+  const goingItemsRaw = attendance.map((a) => ({
+    event: {
+      startDate: a.event.startDate.toISOString(),
+      category: a.event.category,
+      district: a.event.district,
+      placeName: a.event.placeName,
+      outdoor: a.event.outdoor,
+      vibes: a.event.vibes.map((v) => v.vibe),
+    },
+    status: a.status,
+    createdAt: a.createdAt.toISOString(),
+  }));
+  const challengeRows: { challengeKey: string; tier: string; progress: number; maxProgress: number; done: boolean; completedAt: Date | null; resetAt: Date }[] = [];
+  for (const c of CHALLENGES) {
+    const result = c.check(goingItemsRaw, { preferredCategories: [], preferredDistricts: [] });
+    const completedAt = result.done ? new Date() : null;
+    const resetAt = getResetDate(c.tier);
+    challengeRows.push({
+      challengeKey: c.key, tier: c.tier, progress: result.progress,
+      maxProgress: c.maxProgress, done: result.done, completedAt, resetAt,
+    });
+  }
+
+  // Upsert UserChallenge rows
+  if (challengeRows.length > 0) {
+    for (const row of challengeRows) {
+      await prisma.userChallenge.upsert({
+        where: { userId_challengeKey_resetAt: { userId, challengeKey: row.challengeKey, resetAt: row.resetAt } },
+        create: { ...row, userId },
+        update: { progress: row.progress, done: row.done, completedAt: row.completedAt },
+      });
+    }
+  }
+
+  // Fetch current challenge state
+  const userChallenges = await prisma.userChallenge.findMany({
+    where: { userId, resetAt: { gte: new Date() } },
+    orderBy: { tier: "asc" },
+  });
 
   const friends = friendships.map((f) =>
     f.sender.id === userId ? f.receiver : f.sender,
@@ -128,6 +171,7 @@ export default async function ProfilPage() {
         category: a.event.category,
         district: a.event.district,
         imageUrl: a.event.imageUrl,
+        outdoor: a.event.outdoor,
         vibes: a.event.vibes.map((v) => v.vibe),
       },
     })),
@@ -157,6 +201,15 @@ export default async function ProfilPage() {
       senderId: r.senderId,
       senderName: r.sender.name ?? "Nieznajomy",
       createdAt: r.createdAt.toISOString(),
+    })),
+    challenges: userChallenges.map((c) => ({
+      challengeKey: c.challengeKey,
+      tier: c.tier,
+      progress: c.progress,
+      maxProgress: c.maxProgress,
+      done: c.done,
+      completedAt: c.completedAt?.toISOString() ?? null,
+      resetAt: c.resetAt.toISOString(),
     })),
   };
 

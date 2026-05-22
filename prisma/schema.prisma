@@ -78,8 +78,27 @@ model User {
   attendance      Attendance[]
   activities      Activity[]
   notifications   Notification[]
+  userChallenges UserChallenge[]
 
   @@index([email])
+}
+
+model UserChallenge {
+  id           String    @id @default(cuid())
+  userId       String
+  challengeKey String
+  tier         String
+  progress     Int       @default(0)
+  maxProgress  Int       @default(1)
+  done         Boolean   @default(false)
+  completedAt  DateTime?
+  resetAt      DateTime
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeKey, resetAt])
+  @@index([userId, tier])
 }
 
 model Account {
