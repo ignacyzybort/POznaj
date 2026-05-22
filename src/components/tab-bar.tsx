@@ -71,7 +71,8 @@ export default function TabBar() {
     };
     fetchCount();
     const interval = setInterval(fetchCount, 10000);
-    return () => clearInterval(interval);
+    window.addEventListener("notif-refetch", fetchCount);
+    return () => { clearInterval(interval); window.removeEventListener("notif-refetch", fetchCount); };
   }, [session]);
 
   if (pathname.startsWith("/event/") || pathname === "/login" || pathname === "/onboarding") return null;

@@ -289,7 +289,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           <div className="pz-card" style={{ padding: 16 }}>
             <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BellIcon size={12} /> Powiadomienia ({pendingReqs.length + notifs.length})</span>
-              <button onClick={async (e) => { e.stopPropagation(); await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ action: "markAllRead" }) }); fetchNotifs(); }} style={{ border: 0, background: "transparent", color: "var(--ink-4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Przeczytaj wszystkie</button>
+              <button onClick={async (e) => { e.stopPropagation(); await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ action: "markAllRead" }) }); fetchNotifs(); window.dispatchEvent(new Event("notif-refetch")); }} style={{ border: 0, background: "transparent", color: "var(--ink-4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Przeczytaj wszystkie</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
