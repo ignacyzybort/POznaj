@@ -8,7 +8,7 @@ export default function TiltCard({ children, maxTilt }: { children: React.ReactN
   return (
     <div
       ref={ref}
-      style={style}
+      style={{ ...style, height: "100%" }}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       onTouchMove={onMove}

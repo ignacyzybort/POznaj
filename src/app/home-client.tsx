@@ -359,7 +359,7 @@ export default function HomeClient({
             </div>
           )) : events.map((ev, i) => (
               <TiltCard key={ev.id} maxTilt={4}>
-                <div style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
+                <div style={{ '--i': Math.min(i, 8), height: "100%" } as React.CSSProperties}>
                   <EventCard event={ev}
                              onOpen={() => openEvent(ev)}
                              onSave={() => toggleSave(ev.id)}
