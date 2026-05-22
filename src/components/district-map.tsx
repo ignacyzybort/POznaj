@@ -374,7 +374,7 @@ export default function DistrictMap({
             >
               <Popup maxWidth={260} maxHeight={220}>
                 <div style={{ padding: 4, maxHeight: 200, overflowY: "auto" }}>
-                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", marginBottom: 6, position: "sticky", top: 0, background: "white", paddingBottom: 4 }}>{cluster.events.length} wydarzeń</div>
+                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", marginBottom: 6, position: "sticky", top: 0, background: "var(--bg-elev)", paddingBottom: 4 }}>{cluster.events.length} wydarzeń</div>
                   {cluster.events.map((ev) => (
                     <div key={ev.id} onClick={() => router.push(`/event/${ev.id}`)} style={{ padding: "6px 0", borderTop: "0.5px solid var(--line)", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
                       {ev.title}
