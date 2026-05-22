@@ -2,8 +2,8 @@
 
 import { useTilt } from "@/hooks/use-tilt";
 
-export default function TiltCard({ children }: { children: React.ReactNode }) {
-  const { ref, style, onMove, onLeave } = useTilt();
+export default function TiltCard({ children, maxTilt }: { children: React.ReactNode; maxTilt?: number }) {
+  const { ref, style, onMove, onLeave } = useTilt(maxTilt);
 
   return (
     <div

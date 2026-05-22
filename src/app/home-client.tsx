@@ -358,7 +358,7 @@ export default function HomeClient({
               <div className="pz-skeleton pz-skeleton-breath" style={{ height: 14, width: "70%" }} />
             </div>
           )) : events.map((ev, i) => (
-              <TiltCard key={ev.id}>
+              <TiltCard key={ev.id} maxTilt={4}>
                 <div style={{ '--i': Math.min(i, 8) } as React.CSSProperties}>
                   <EventCard event={ev}
                              onOpen={() => openEvent(ev)}

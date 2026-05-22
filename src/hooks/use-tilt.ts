@@ -2,10 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 
-const MAX_TILT = 12;
 const SPRING_DURATION = "0.5s var(--ease-spring)";
 
-export function useTilt() {
+export function useTilt(maxTilt = 12) {
   const [disabled, setDisabled] = useState(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0, active: false });
   const ref = useRef<HTMLDivElement>(null);
@@ -35,8 +34,8 @@ export function useTilt() {
     const cy = (clientY - rect.top) / rect.height - 0.5;
 
     setTilt({
-      x: Math.round(-cy * MAX_TILT * 10) / 10,
-      y: Math.round(cx * MAX_TILT * 10) / 10,
+      x: Math.round(-cy * maxTilt * 10) / 10,
+      y: Math.round(cx * maxTilt * 10) / 10,
       active: true,
     });
   }, []);
