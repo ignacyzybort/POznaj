@@ -164,22 +164,27 @@ export async function GET(request: NextRequest) {
     }
 
     if (budget === "free") {
-      const budgetOr: Record<string, any>[] = [
+      const priceOr: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { contains: "bezpł", mode: "insensitive" as any } },
         { price: { contains: "wolny", mode: "insensitive" as any } },
       ];
-      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
+      const titleOr: Record<string, any>[] = [
+        { title: { contains: "darmowe", mode: "insensitive" as any } },
+        { title: { contains: "bezpłatne", mode: "insensitive" as any } },
+        { title: { contains: "wolny wstęp", mode: "insensitive" as any } },
+      ];
+      where.AND = [...((where.AND as any[]) || []), { OR: [...priceOr, ...titleOr] }];
     } else if (budget === "cheap") {
-      const budgetOr: Record<string, any>[] = [
+      const priceOr: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { lte: "45" } },
       ];
-      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
+      where.AND = [...((where.AND as any[]) || []), { OR: priceOr }];
     } else if (budget === "student") {
-      const budgetOr: Record<string, any>[] = [
+      const priceLikeStudent: Record<string, any>[] = [
         { price: { startsWith: "0" } },
         { price: { contains: "free", mode: "insensitive" as any } },
         { price: { contains: "bezpł", mode: "insensitive" as any } },
@@ -187,7 +192,19 @@ export async function GET(request: NextRequest) {
         { price: { contains: "ulgow", mode: "insensitive" as any } },
         { price: { contains: "ulga", mode: "insensitive" as any } },
       ];
-      where.AND = [...((where.AND as any[]) || []), { OR: budgetOr }];
+      const studentTitleDesc: Record<string, any>[] = [
+        { title: { contains: "juwenalia", mode: "insensitive" as any } },
+        { title: { contains: "studen", mode: "insensitive" as any } },
+        { title: { contains: "akademicki", mode: "insensitive" as any } },
+        { description: { contains: "juwenalia", mode: "insensitive" as any } },
+        { description: { contains: "studen", mode: "insensitive" as any } },
+        { description: { contains: "akademicki", mode: "insensitive" as any } },
+        { description: { contains: "uczelnia", mode: "insensitive" as any } },
+        { description: { contains: "uniwersytet", mode: "insensitive" as any } },
+        { description: { contains: "politechnika", mode: "insensitive" as any } },
+        { description: { contains: "dzień otwarty", mode: "insensitive" as any } },
+      ];
+      where.AND = [...((where.AND as any[]) || []), { OR: [...priceLikeStudent, ...studentTitleDesc] }];
     }
 
     if (outdoor === "true") {
