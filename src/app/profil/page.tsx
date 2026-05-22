@@ -53,6 +53,7 @@ export default async function ProfilPage() {
             category: true,
             district: true,
             imageUrl: true,
+            vibes: { select: { vibe: true } },
           },
         },
       },
@@ -118,6 +119,7 @@ export default async function ProfilPage() {
     attendance: attendance.map((a) => ({
       id: a.id,
       status: a.status,
+      timeSlot: a.timeSlot,
       event: {
         id: a.event.id,
         title: a.event.title,
@@ -126,6 +128,7 @@ export default async function ProfilPage() {
         category: a.event.category,
         district: a.event.district,
         imageUrl: a.event.imageUrl,
+        vibes: a.event.vibes.map((v) => v.vibe),
       },
     })),
     friends: friends.map((f) => ({ id: f.id, name: f.name })),
