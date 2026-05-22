@@ -64,17 +64,14 @@ export default function TabBar() {
   useEffect(() => {
     if (!session?.user) return;
     const fetchCount = () => {
-      const ctrl = new AbortController();
-      fetch("/api/notifications?countOnly=true", { signal: ctrl.signal })
+      fetch("/api/notifications?countOnly=true")
         .then((r) => r.json())
         .then((d) => setNotifCount(d.count ?? 0))
         .catch(() => {});
-      return ctrl;
     };
-    const ctrl = fetchCount();
-    const onRefetch = () => fetchCount();
-    window.addEventListener("notif-refetch", onRefetch);
-    return () => { ctrl.abort(); window.removeEventListener("notif-refetch", onRefetch); };
+    fetchCount();
+    const interval = setInterval(fetchCount, 10000);
+    return () => clearInterval(interval);
   }, [session]);
 
   if (pathname.startsWith("/event/") || pathname === "/login" || pathname === "/onboarding") return null;

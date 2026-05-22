@@ -1,8 +1,9 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getCsrfToken } from "@/lib/csrf";
 import PassportCard from "@/components/passport-card";
 import StreakCard from "@/components/streak-card";
 import VibeQuiz from "@/components/vibe-quiz";
@@ -288,7 +289,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           <div className="pz-card" style={{ padding: 16 }}>
             <div className="pz-eyebrow" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between" }}>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}><BellIcon size={12} /> Powiadomienia ({pendingReqs.length + notifs.length})</span>
-              <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "markAllRead" }) }); fetchNotifs(); window.dispatchEvent(new Event("notif-refetch")); }} style={{ border: 0, background: "transparent", color: "var(--ink-4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Przeczytaj wszystkie</button>
+              <button onClick={async (e) => { e.stopPropagation(); await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ action: "markAllRead" }) }); fetchNotifs(); }} style={{ border: 0, background: "transparent", color: "var(--ink-4)", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>Przeczytaj wszystkie</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               {pendingReqs.map((req) => (
@@ -296,8 +297,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                   <div style={{ width: 36, height: 36, borderRadius: 99, background: COLORS[(req.senderId?.length ?? 0) % COLORS.length] ?? "#888", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "var(--text-base)", fontWeight: 800, flexShrink: 0 }}>{req.senderName?.[0]?.toUpperCase() ?? "?"}</div>
                   <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{req.senderName}</div><div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>chce być Twoim znajomym</div></div>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Akceptuj</button>
-                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Odrzuć</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ notificationId: req.id, action: "accept" }) }); setToast("✅ Znajomy dodany!"); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--sage)", color: "white", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Akceptuj</button>
+                    <button onClick={async () => { await fetch("/api/notifications", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ notificationId: req.id, action: "reject" }) }); fetchNotifs(); }} style={{ border: 0, padding: "0 14px", minHeight: 44, borderRadius: 99, fontSize: "var(--text-xs)", fontWeight: 600, background: "var(--bg-soft)", color: "var(--ink-3)", cursor: "pointer", display: "inline-flex", alignItems: "center" }}>Odrzuć</button>
                   </div>
                 </div>
               ))}
