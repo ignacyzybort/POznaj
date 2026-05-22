@@ -471,7 +471,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           catCount,
           vibeCount,
         }} />
-      <PassportBooklet open={passportOpen} onClose={() => setPassportOpen(false)} visits={districtVisits} userName={name} />
+      <PassportBooklet key={passportOpen ? "open" : "closed"} open={passportOpen} onClose={() => setPassportOpen(false)} visits={districtVisits} userName={name} />
       {inviteOpen && <InviteModal onClose={() => setInviteOpen(false)} />}
       {editOpen && (
         <EditProfile
