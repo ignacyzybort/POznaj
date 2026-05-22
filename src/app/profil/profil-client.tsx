@@ -8,6 +8,7 @@ import PassportCard from "@/components/passport-card";
 import StreakCard from "@/components/streak-card";
 import VibeQuiz from "@/components/vibe-quiz";
 import YearInReview from "@/components/year-in-review";
+import PassportBooklet from "@/components/passport-booklet";
 import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
@@ -86,6 +87,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
 
   const [showQuiz, setShowQuiz] = useState(false);
   const [yirOpen, setYirOpen] = useState(false);
+  const [passportOpen, setPassportOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -147,7 +149,15 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
     if (date) monthlyCount[date.getMonth()]++;
   }
 
-  // Real streak: consecutive weeks with >=1 event, counting back from today
+  const districtVisits = districts.filter((d) => d.value !== "Inny").map((d) => {
+    const evs = goingItems
+      .filter((a) => a.event?.district === d.value)
+      .map((a) => ({ date: new Date(a.event.startDate).toLocaleDateString("pl", { day: "numeric", month: "short" }), title: a.event.title }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    return { district: d.value, label: d.label, count: evs.length, events: evs };
+  });
+
+  // Real streak
   const eventDays = new Set(goingYear.map((a) => new Date(a.event.startDate).toLocaleDateString("pl")));
   let streakWeeks = 0;
   const now = new Date();
@@ -347,7 +357,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           </button>
         </div>
         {/* Right column: passport */}
-        <PassportCard stamps={stamps} />
+        <PassportCard visitedCount={districtVisits.filter((v) => v.count > 0).length} onClick={() => setPassportOpen(true)} />
       </div>
 
       {/* Notifications */}
@@ -461,6 +471,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
           catCount,
           vibeCount,
         }} />
+      <PassportBooklet open={passportOpen} onClose={() => setPassportOpen(false)} visits={districtVisits} userName={name} />
       {inviteOpen && <InviteModal onClose={() => setInviteOpen(false)} />}
       {editOpen && (
         <EditProfile
