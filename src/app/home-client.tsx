@@ -299,43 +299,39 @@ export default function HomeClient({
       )}
 
       {cleanHome && forYou.length > 0 && (
-        <div style={{ padding: "12px 18px 6px" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-            <h2 className="pz-h" style={{ margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
-              Polecane dla Ciebie
-            </h2>
-          </div>
-          <div style={{ margin: "0 -18px" }}>
-            <div style={{ display: "flex", gap: 12, padding: "0 0 14px 18px", overflowX: "auto" }}>
-              {forYou.map((ev, i) => (
-                <TiltCard key={ev.id}>
-                  <div
-                  onClick={() => openEvent(ev)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
-                  style={{
-                    width: "min(200px, 52vw)", flexShrink: 0, borderRadius: 22, overflow: "hidden",
-                    position: "relative", height: "min(200px, 52vw)", cursor: "pointer",
-                    transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
-                    boxShadow: "var(--shadow-sm)",
-                  }}
-                  className="pz-section-reveal"
-                >
-                  <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
-                  <div style={{
-                    position: "absolute", inset: 0,
-                    background: categoryGradient(ev.category),
-                  }}>
-                    <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                      <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
-                      <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
-                    </div>
+        <div style={{ padding: "12px 0 6px" }}>
+          <h2 className="pz-h" style={{ padding: "0 18px", margin: "0 0 10px", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
+            Polecane dla Ciebie
+          </h2>
+          <div style={{ display: "flex", gap: 14, padding: "0 18px 14px", overflowX: "auto", scrollSnapType: "x mandatory" }}>
+            {forYou.map((ev, i) => (
+              <TiltCard key={ev.id}>
+                <div
+                onClick={() => openEvent(ev)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEvent(ev); } }}
+                style={{
+                  width: "min(312px, 85vw)", flexShrink: 0, borderRadius: 22, overflow: "hidden",
+                  position: "relative", height: "min(200px, 52vw)", cursor: "pointer",
+                  transition: "transform 0.2s var(--ease-out-quart), box-shadow 0.2s var(--ease-out-quart)",
+                  boxShadow: "var(--shadow-sm)", scrollSnapAlign: "start",
+                }}
+                className="pz-section-reveal"
+              >
+                <EventArt event={ev} height={200} forceArt={!ev.imageUrl} />
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: categoryGradient(ev.category),
+                }}>
+                  <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
+                    <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
+                    <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
                   </div>
-                  </div>
-                </TiltCard>
-              ))}
-            </div>
+                </div>
+                </div>
+              </TiltCard>
+            ))}
           </div>
         </div>
       )}
