@@ -306,11 +306,15 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                   </div>
                 );
                 return n.eventId ? (
-                  <Link key={n.id} href={`/event/${n.eventId}`} style={{ textDecoration: "none", color: "inherit", borderBottom: "0.5px solid var(--line)" }}>
+                  <Link key={n.id} href={`/event/${n.eventId}`} style={{ textDecoration: "none", color: "inherit", borderBottom: "0.5px solid var(--line)", display: "block", cursor: "pointer", paddingRight: 20, position: "relative" }}>
                     {content}
+                    <span style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", color: "var(--ink-4)", fontSize: 14 }}>→</span>
                   </Link>
                 ) : (
-                  <div key={n.id} style={{ borderBottom: "0.5px solid var(--line)" }}>{content}</div>
+                  <div key={n.id} style={{ borderBottom: "0.5px solid var(--line)", paddingRight: 20, position: "relative" }}>
+                    {content}
+                    <Link href="/profil" style={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", color: "var(--ink-4)", fontSize: 14, textDecoration: "none" }}>→</Link>
+                  </div>
                 );
               })}
             </div>
