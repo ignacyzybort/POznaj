@@ -90,7 +90,11 @@ export default function EventDetailClient({
   };
 
   const onRemind = async () => {
-    if (reminded) return;
+    if (reminded) {
+      setReminded(false);
+      setToast("Przypomnienie wyłączone");
+      return;
+    }
     try {
       const perm = await Notification.requestPermission();
       if (perm === "granted") {
@@ -166,7 +170,7 @@ export default function EventDetailClient({
               <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Powiadom mnie</div>
               <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
             </div>
-            <button onClick={onRemind} style={{ border: 0, background: reminded ? "var(--sage)" : "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>{reminded ? "🔔 Ustawiono" : "Włącz"}</button>
+            <button onClick={onRemind} style={{ border: 0, background: reminded ? "var(--sage)" : "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>{reminded ? "✔️ Ustawione" : "Włącz"}</button>
           </div>
         </div>
 
