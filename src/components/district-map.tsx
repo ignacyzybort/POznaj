@@ -225,12 +225,17 @@ export default function DistrictMap({
 
   const maxCount = useMemo(() => Math.max(...Object.values(eventCounts), 1), [eventCounts]);
 
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+
+  // Collapse clusters when district changes
+  useEffect(() => { setExpandedKey(null); }, [selectedDistrict]);
+
   const filteredEvents = selectedDistrict
     ? events.filter((e) => mapDistrict(e.district) === selectedDistrict && e.coordsX)
     : [];
 
-  // Spread overlapping markers at same location
-  const spreadEvents = useMemo(() => {
+  // Group events by location into clusters
+  const eventClusters = useMemo(() => {
     const coordKey = (e: EventData) => `${e.coordsX!.toFixed(5)},${e.coordsY!.toFixed(5)}`;
     const groups = new Map<string, EventData[]>();
     for (const ev of filteredEvents) {
@@ -238,30 +243,32 @@ export default function DistrictMap({
       if (!groups.has(k)) groups.set(k, []);
       groups.get(k)!.push(ev);
     }
-    const result: { event: EventData; lat: number; lon: number }[] = [];
-    for (const [, group] of groups) {
-      if (group.length === 1) {
-        result.push({ event: group[0], lat: group[0].coordsX!, lon: group[0].coordsY! });
-      } else {
-        const step = 0.00025;
-        const offsets = [
-          [0, 0], [0, 1], [1, 0], [0, -1], [-1, 0],
-          [1, 1], [-1, 1], [1, -1], [-1, -1], [0, 2],
-          [2, 0], [0, -2], [-2, 0],
-        ];
-        for (let i = 0; i < group.length; i++) {
-          const [oy, ox] = offsets[i % offsets.length];
-          const ring = Math.floor(i / offsets.length) + 1;
-          result.push({
-            event: group[i],
-            lat: group[i].coordsX! + oy * step * ring,
-            lon: group[i].coordsY! + ox * step * ring,
-          });
-        }
-      }
-    }
-    return result;
+    return Array.from(groups.entries()).map(([k, group]) => ({ key: k, events: group, lat: group[0].coordsX!, lon: group[0].coordsY! }));
   }, [filteredEvents]);
+
+  // Spiral offsets for expanded clusters
+  const SPIRAL_OFFSETS: [number, number][] = [
+    [0, 0], [0, 1], [0.7, -0.7], [0, -1], [-0.7, 0.7],
+    [-1, 0], [1, 0], [0.7, 0.7], [-0.7, -0.7], [-1, 1],
+    [1, -1], [-1, -1], [1, 1],
+  ];
+  const SPIRAL_STEP = 0.00022;
+
+  function createClusterIcon(count: number, isExpanded: boolean) {
+    return L.divIcon({
+      html: `<span style="
+        display: inline-flex; align-items: center; justify-content: center;
+        width: ${isExpanded ? 36 : 48}px; height: ${isExpanded ? 36 : 48}px; border-radius: 99px;
+        background: var(--ink); color: var(--bg);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+        font-size: ${isExpanded ? 14 : 17}px; font-weight: 800; line-height: 1;
+        border: 3px solid white;
+        transition: all 0.25s var(--ease-out-quart);
+        transform: scale(${isExpanded ? 0.85 : 1});
+      ">${count}</span>`,
+      className: "", iconSize: [48, 48], iconAnchor: [24, 24],
+    });
+  }
 
   const onEachFeature = (feature: any, layer: L.Layer) => {
     const id = getId(feature);
@@ -337,28 +344,81 @@ export default function DistrictMap({
             }}
           />
         )}
-        {spreadEvents.map(({ event: ev, lat, lon }, i) => (
-          <Marker
-            key={ev.id}
-            position={[lat, lon]}
-            icon={createCategoryMarker(ev.category, i)}
-          >
-            <Popup>
-              <div
-                onClick={() => router.push(`/event/${ev.id}`)}
-                style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)", cursor: "pointer", textDecoration: "none" }}>
-                {ev.title}
-              </div>
-              <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>
-                {ev.placeName} · {ev.time ?? ""}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {eventClusters.map((cluster) => {
+          const isExpanded = expandedKey === cluster.key;
+          if (cluster.events.length === 1) {
+            const ev = cluster.events[0];
+            return (
+              <Marker key={ev.id} position={[cluster.lat, cluster.lon]} icon={createCategoryMarker(ev.category, 0)}>
+                <Popup>
+                  <div onClick={() => router.push(`/event/${ev.id}`)} style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)", cursor: "pointer", textDecoration: "none" }}>
+                    {ev.title}
+                  </div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>
+                    {ev.placeName} · {ev.time ?? ""}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          }
+
+          // Cluster marker
+          return (
+            <Marker
+              key={cluster.key}
+              position={[cluster.lat, cluster.lon]}
+              icon={createClusterIcon(cluster.events.length, isExpanded)}
+              eventHandlers={{
+                click: () => setExpandedKey(isExpanded ? null : cluster.key),
+              }}
+            >
+              <Popup>
+                <div style={{ padding: 4 }}>
+                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", marginBottom: 6 }}>{cluster.events.length} wydarzeń</div>
+                  {cluster.events.map((ev) => (
+                    <div key={ev.id} onClick={() => router.push(`/event/${ev.id}`)} style={{ padding: "6px 0", borderTop: "0.5px solid var(--line)", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                      {ev.title}
+                      <div style={{ fontSize: 11, color: "var(--ink-3)", marginTop: 1 }}>{ev.time ?? ""} · {ev.category}</div>
+                    </div>
+                  ))}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {/* Expanded spiral markers */}
+        {expandedKey && eventClusters.filter(c => c.key === expandedKey).map(cluster =>
+          cluster.events.map((ev, i) => {
+            const [oy, ox] = SPIRAL_OFFSETS[i % SPIRAL_OFFSETS.length];
+            const ring = Math.floor(i / SPIRAL_OFFSETS.length) + 1;
+            const lat = cluster.lat + oy * SPIRAL_STEP * ring;
+            const lon = cluster.lon + ox * SPIRAL_STEP * ring;
+            return (
+              <Marker
+                key={ev.id}
+                position={[lat, lon]}
+                icon={createCategoryMarker(ev.category, i)}
+                eventHandlers={{
+                  click: () => { router.push(`/event/${ev.id}`); },
+                }}
+              >
+                <Popup>
+                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)" }}>
+                    {ev.title}
+                  </div>
+                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>
+                    {ev.placeName} · {ev.time ?? ""}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })
+        )}
       </MapContainer>
 
       {/* Empty district message */}
-      {selectedDistrict && spreadEvents.length === 0 && (
+      {selectedDistrict && eventClusters.length === 0 && (
         <div style={{ position: "absolute", bottom: 40, left: "50%", transform: "translateX(-50%)", zIndex: 1000 }}>
           <span style={{ padding: "8px 16px", borderRadius: 99, background: "var(--bg-elev)", color: "var(--ink-3)", fontSize: 13, fontWeight: 600, boxShadow: "var(--shadow-md)" }}>
             Brak wydarzeń w tej dzielnicy
