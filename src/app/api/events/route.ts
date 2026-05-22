@@ -214,7 +214,23 @@ export async function GET(request: NextRequest) {
       skip: offset,
     });
 
-    const total = await prisma.event.count({ where });
+    // Filter out today's events whose times have all passed
+    const nowTime = new Intl.DateTimeFormat("en-CA", {
+      timeZone: PL_TZ, hour: "2-digit", minute: "2-digit", hour12: false,
+    }).format(new Date()).replace("-", ":").replace("-", ":");
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: PL_TZ }).format(new Date());
+
+    function remainingTimeSlots(event: { startDate: Date; time: string | null }): boolean {
+      if (!event.time) return true; // all-day events stay
+      const eventDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: PL_TZ }).format(event.startDate);
+      if (eventDateStr !== todayStr) return true; // not today
+      return event.time.split(",").some((t) => t.trim() > nowTime);
+    }
+
+    const before = events.length;
+    const filtered = events.filter(remainingTimeSlots);
+
+    const total = (await prisma.event.count({ where })) - (before - filtered.length);
 
     const session = await auth();
     let friendGoingMap: Map<string, { name: string; image?: string }[]> = new Map();
@@ -235,7 +251,7 @@ export async function GET(request: NextRequest) {
         const goingAttendances = await prisma.attendance.findMany({
           where: {
             userId: { in: friendIds },
-            eventId: { in: events.map((e) => e.id) },
+            eventId: { in: filtered.map((e) => e.id) },
             status: "GOING",
           },
           select: {
@@ -251,7 +267,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const serialized = events.map((e) => ({
+    const serialized = filtered.map((e) => ({
       id: e.id,
       title: e.title,
       description: e.description,
