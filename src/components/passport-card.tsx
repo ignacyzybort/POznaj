@@ -1,7 +1,5 @@
 "use client";
 
-import { PassportIcon } from "@/components/icons";
-
 export default function PassportCard({
   visitedCount, onClick,
 }: {
@@ -10,49 +8,94 @@ export default function PassportCard({
 }) {
   return (
     <button onClick={onClick} style={{
-      padding: 16, borderRadius: 22, border: "none", cursor: "pointer",
-      background: "linear-gradient(145deg, #3D0C1A 0%, #4A0B23 30%, #5C0F2B 60%, #3D0C1A 100%)",
-      color: "white", textAlign: "left",
-      boxShadow: "0 4px 20px rgba(61,12,26,0.5), inset 0 0 0 1px rgba(255,255,255,0.06)",
+      padding: 0, borderRadius: 22, border: "none", cursor: "pointer",
+      color: "white", textAlign: "center",
       position: "relative", overflow: "hidden",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 0,
     }}>
-      {/* Subtle texture lines */}
-      <div style={{ position: "absolute", inset: 0, opacity: 0.03, background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.5) 2px, rgba(255,255,255,0.5) 3px)" }} />
-      {/* Spine accent */}
-      <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 6, background: "linear-gradient(90deg, rgba(0,0,0,0.4), transparent)" }} />
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-          <div>
-            <div style={{ fontSize: 8, fontWeight: 700, opacity: 0.4, letterSpacing: "0.15em", textTransform: "uppercase" }}>
-              Paszport
-            </div>
-            <div className="pz-h" style={{
-              fontSize: 15, fontWeight: 800, letterSpacing: "-0.015em", marginTop: 2,
-              background: "linear-gradient(135deg, #C5A86D, #E8D5A3, #C5A86D)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>
-              POznaj
-            </div>
-          </div>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(197,168,109,0.4)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
-            🏛️
-          </div>
+      {/* Outer shadow (book depth) */}
+      <div style={{
+        position: "absolute", inset: 0, borderRadius: 22,
+        boxShadow: "0 2px 0 #3A0612, 0 4px 0 #2D050E, 0 6px 16px rgba(0,0,0,0.35)",
+      }} />
+
+      {/* Burgundy background */}
+      <div style={{
+        position: "absolute", inset: 0, borderRadius: 22,
+        background: "linear-gradient(145deg, #4E0A1C 0%, #5C0A1E 30%, #6B0C23 55%, #4E0A1C 100%)",
+        border: "1.5px solid rgba(197,168,109,0.3)",
+      }} />
+
+      {/* Grain texture */}
+      <div style={{ position: "absolute", inset: 0, borderRadius: 22, opacity: 0.05,
+        backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
+        backgroundSize: "200px 200px",
+      }} />
+
+      {/* Spine (left) */}
+      <div style={{
+        position: "absolute", left: 0, top: 0, bottom: 0, width: 14,
+        background: "linear-gradient(90deg, #2D050E 0%, #3A0612 50%, #4E0A1C 100%)",
+        borderRight: "1px solid rgba(197,168,109,0.15)",
+        borderRadius: "22px 0 0 22px",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <span style={{
+          writingMode: "vertical-rl" as any, fontSize: 6, fontWeight: 700,
+          letterSpacing: "0.06em", color: "rgba(197,168,109,0.3)",
+          padding: "4px 2px",
+        }}>
+          POZNAJ
+        </span>
+      </div>
+
+      {/* Content */}
+      <div style={{ position: "relative", zIndex: 1, padding: "14px 12px 12px 26px", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {/* Emblem */}
+        <div style={{
+          width: 40, height: 40, borderRadius: "50%",
+          border: "1.5px solid rgba(197,168,109,0.35)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          marginBottom: 8, fontSize: 18,
+          background: "radial-gradient(circle, rgba(197,168,109,0.1), transparent 70%)",
+        }}>
+          🏛️
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 }}>
-          {["Centrum", "Stare Miasto", "Nowe Miasto", "Jeżyce", "Grunwald", "Wilda"].map((name, i) => (
-            <div key={name} style={{
-              aspectRatio: "1.5", borderRadius: 10,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: i < visitedCount ? "rgba(197,168,109,0.15)" : "rgba(255,255,255,0.03)",
-              border: i < visitedCount ? "0.5px solid rgba(197,168,109,0.3)" : "0.5px solid rgba(255,255,255,0.06)",
-              fontSize: 9, fontWeight: 600, color: i < visitedCount ? "rgba(197,168,109,0.8)" : "rgba(255,255,255,0.15)",
-              animation: i < visitedCount ? `pz-stamp-in 0.3s var(--ease-spring) ${i * 0.08}s both` : undefined,
-            }}>
-              {name.substring(0, 3)}
-            </div>
+
+        {/* Gold text */}
+        <div style={{
+          fontSize: 7, fontWeight: 700, letterSpacing: "0.18em",
+          color: "rgba(197,168,109,0.55)", textTransform: "uppercase",
+          marginBottom: 2, textShadow: "0 1px 1px rgba(0,0,0,0.4)",
+        }}>
+          Paszport
+        </div>
+        <div className="pz-h" style={{
+          fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, letterSpacing: "-0.015em",
+          background: "linear-gradient(180deg, #D4B87A 0%, #A88B4A 100%)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+          filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.3))",
+          marginBottom: 10,
+        }}>
+          POznaj
+        </div>
+
+        {/* District dots */}
+        <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} style={{
+              width: 12, height: 12, borderRadius: "50%",
+              background: i < visitedCount ? "rgba(197,168,109,0.7)" : "transparent",
+              border: `1px solid ${i < visitedCount ? "rgba(197,168,109,0.6)" : "rgba(255,255,255,0.12)"}`,
+              animation: i < visitedCount ? `pz-stamp-in 0.35s var(--ease-spring) ${i * 0.1}s both` : undefined,
+              boxShadow: i < visitedCount ? "inset 0 1px 2px rgba(0,0,0,0.2)" : "none",
+            }} />
           ))}
         </div>
-        <div style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", marginTop: 8 }}>{visitedCount}/6 dzielnic</div>
+
+        <div style={{ fontSize: 8, fontWeight: 600, color: "rgba(255,255,255,0.22)" }}>
+          {visitedCount}/6
+        </div>
       </div>
     </button>
   );
