@@ -1,11 +1,11 @@
-import { getEvents } from "@/lib/events-server";
+import { getMapEvents } from "@/lib/events-server";
 import { PL_DAY_FULL, fmtFullDate } from "@/lib/date";
 import MapaClient from "./mapa-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function MapaPage() {
-  const events = await getEvents({ limit: 200 });
+  const events = await getMapEvents();
   const today = new Date();
 
   return (

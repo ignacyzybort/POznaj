@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from "react-leaflet";
 import L from "leaflet";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { BackIcon } from "@/components/icons";
 import type { EventData } from "@/lib/data";
@@ -206,17 +206,16 @@ export default function DistrictMap({
   onSelect: (id: string) => void;
   onBack: () => void;
 }) {
-  const [tilesVisible, setTilesVisible] = useState(false);
   const geoRef = useRef<L.GeoJSON | null>(null);
   const router = useRouter();
 
-  const handleSelect = (id: string) => { onSelect(id); setTilesVisible(true); };
-  const handleBack = () => { onBack(); setTilesVisible(false); };
+  const handleSelect = (id: string) => { onSelect(id); };
+  const handleBack = () => { onBack(); };
 
   const eventCounts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const e of events) {
-      if (!e.coordsX) continue;
+      if (typeof e.coordsX !== "number" || typeof e.coordsY !== "number") continue;
       const d = mapDistrict(e.district);
       c[d] = (c[d] ?? 0) + 1;
     }
@@ -225,13 +224,8 @@ export default function DistrictMap({
 
   const maxCount = useMemo(() => Math.max(...Object.values(eventCounts), 1), [eventCounts]);
 
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
-
-  // Collapse clusters when district changes
-  useEffect(() => { setExpandedKey(null); }, [selectedDistrict]);
-
   const filteredEvents = selectedDistrict
-    ? events.filter((e) => mapDistrict(e.district) === selectedDistrict && e.coordsX)
+    ? events.filter((e) => mapDistrict(e.district) === selectedDistrict && typeof e.coordsX === "number" && typeof e.coordsY === "number")
     : [];
 
   // Group events by location into clusters
@@ -246,25 +240,15 @@ export default function DistrictMap({
     return Array.from(groups.entries()).map(([k, group]) => ({ key: k, events: group, lat: group[0].coordsX!, lon: group[0].coordsY! }));
   }, [filteredEvents]);
 
-  // Spiral offsets for expanded clusters
-  const SPIRAL_OFFSETS: [number, number][] = [
-    [0, 0], [0, 1], [0.7, -0.7], [0, -1], [-0.7, 0.7],
-    [-1, 0], [1, 0], [0.7, 0.7], [-0.7, -0.7], [-1, 1],
-    [1, -1], [-1, -1], [1, 1],
-  ];
-  const SPIRAL_STEP = 0.00022;
-
-  function createClusterIcon(count: number, isExpanded: boolean) {
+  function createClusterIcon(count: number) {
     return L.divIcon({
       html: `<span style="
         display: inline-flex; align-items: center; justify-content: center;
-        width: ${isExpanded ? 36 : 48}px; height: ${isExpanded ? 36 : 48}px; border-radius: 99px;
+        width: 48px; height: 48px; border-radius: 99px;
         background: var(--ink); color: var(--bg);
         box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-        font-size: ${isExpanded ? 14 : 17}px; font-weight: 800; line-height: 1;
+        font-size: 17px; font-weight: 800; line-height: 1;
         border: 3px solid white;
-        transition: all 0.25s var(--ease-out-quart);
-        transform: scale(${isExpanded ? 0.85 : 1});
       ">${count}</span>`,
       className: "", iconSize: [48, 48], iconAnchor: [24, 24],
     });
@@ -324,12 +308,10 @@ export default function DistrictMap({
         zoomControl={true}
       >
         <DistrictBoundary />
-        {tilesVisible && (
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-        )}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        />
         <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} />
         {districtGeojson && (
           <GeoJSON
@@ -345,7 +327,6 @@ export default function DistrictMap({
           />
         )}
         {eventClusters.map((cluster) => {
-          const isExpanded = expandedKey === cluster.key;
           if (cluster.events.length === 1) {
             const ev = cluster.events[0];
             return (
@@ -367,10 +348,7 @@ export default function DistrictMap({
             <Marker
               key={cluster.key}
               position={[cluster.lat, cluster.lon]}
-              icon={createClusterIcon(cluster.events.length, isExpanded)}
-              eventHandlers={{
-                click: () => setExpandedKey(isExpanded ? null : cluster.key),
-              }}
+              icon={createClusterIcon(cluster.events.length)}
             >
               <Popup maxWidth={260} maxHeight={220}>
                 <div style={{ padding: 4, maxHeight: 200, overflowY: "auto" }}>
@@ -387,34 +365,6 @@ export default function DistrictMap({
           );
         })}
 
-        {/* Expanded spiral markers */}
-        {expandedKey && eventClusters.filter(c => c.key === expandedKey).map(cluster =>
-          cluster.events.map((ev, i) => {
-            const [oy, ox] = SPIRAL_OFFSETS[i % SPIRAL_OFFSETS.length];
-            const ring = Math.floor(i / SPIRAL_OFFSETS.length) + 1;
-            const lat = cluster.lat + oy * SPIRAL_STEP * ring;
-            const lon = cluster.lon + ox * SPIRAL_STEP * ring;
-            return (
-              <Marker
-                key={ev.id}
-                position={[lat, lon]}
-                icon={createCategoryMarker(ev.category, i)}
-                eventHandlers={{
-                  click: () => { router.push(`/event/${ev.id}`); },
-                }}
-              >
-                <Popup>
-                  <div style={{ fontWeight: 700, fontSize: "var(--text-sm)", color: "var(--ink)" }}>
-                    {ev.title}
-                  </div>
-                  <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)", marginTop: 2 }}>
-                    {ev.placeName} · {ev.time ?? ""}
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })
-        )}
       </MapContainer>
 
       {/* Empty district message */}
