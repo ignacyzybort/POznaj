@@ -260,8 +260,9 @@ export async function saveEvents(
           updated++;
           existing.push({ id: best.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
         } else {
-          await prisma.event.create({ data: createData(ev, vibes) });
+          const createdEvent = await prisma.event.create({ data: createData(ev, vibes) });
           created++;
+          existing.push({ id: createdEvent.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
         }
       } catch (e) {
         console.warn(`[saveEvents] Failed for "${ev.title}" (${ev.sourceId}):`, (e as Error).message?.slice(0, 100));
