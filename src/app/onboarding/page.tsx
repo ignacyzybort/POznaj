@@ -14,6 +14,7 @@ export default function OnboardingPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedVibes, setSelectedVibes] = useState<string[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [finishing, setFinishing] = useState(false);
 
   const steps: Step[] = ["welcome", "categories", "vibes", "district", "ready"];
   const currentIdx = steps.indexOf(step);
@@ -29,22 +30,28 @@ export default function OnboardingPage() {
     if (currentIdx > 0) setStep(steps[currentIdx - 1]);
   };
 
-  const finish = () => {
+  const finish = async () => {
+    if (finishing) return;
+    setFinishing(true);
     localStorage.setItem("poznaj-onboarded", "true");
     if (selectedCategories.length) localStorage.setItem("poznaj-preferredCategories", JSON.stringify(selectedCategories));
     if (selectedVibes.length) localStorage.setItem("poznaj-preferredVibes", JSON.stringify(selectedVibes));
     if (selectedDistrict) localStorage.setItem("poznaj-district", selectedDistrict);
-    router.push("/");
     const csrf = getCsrfToken();
-    fetch("/api/user/preferences", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
-      body: JSON.stringify({
-        preferredCategories: selectedCategories.length ? selectedCategories : undefined,
-        preferredVibes: selectedVibes.length ? selectedVibes : undefined,
-        district: selectedDistrict || undefined,
-      }),
-    });
+    try {
+      await fetch("/api/user/preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrf },
+        body: JSON.stringify({
+          preferredCategories: selectedCategories.length ? selectedCategories : undefined,
+          preferredVibes: selectedVibes.length ? selectedVibes : undefined,
+          district: selectedDistrict || undefined,
+          onboardingComplete: true,
+        }),
+      });
+    } catch {
+    }
+    router.replace("/");
   };
 
   return (
@@ -175,8 +182,9 @@ export default function OnboardingPage() {
               Dalej <ArrowIcon size={16} />
             </button>
           ) : (
-            <button onClick={finish} style={{
-              flex: 1, height: 48, borderRadius: 28, border: 0, cursor: "pointer",
+            <button onClick={finish} disabled={finishing} style={{
+              flex: 1, height: 48, borderRadius: 28, border: 0, cursor: finishing ? "default" : "pointer",
+              opacity: finishing ? 0.7 : 1,
               fontSize: 15, fontWeight: 700, letterSpacing: "-0.01em",
               background: "var(--sage)", color: "white",
               display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,

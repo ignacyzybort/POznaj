@@ -15,10 +15,24 @@ export default function OnboardingGate() {
     if (status !== "authenticated") return;
     if (SKIP_PATHS.some((p) => pathname.startsWith(p))) return;
 
-    const onboarded = localStorage.getItem("poznaj-onboarded");
-    if (!onboarded) {
-      router.push("/onboarding");
-    }
+    if (localStorage.getItem("poznaj-onboarded") === "true") return;
+
+    let cancelled = false;
+    fetch("/api/user/preferences")
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (d?.user?.onboardedAt) {
+          localStorage.setItem("poznaj-onboarded", "true");
+          return;
+        }
+        router.replace("/onboarding");
+      })
+      .catch(() => {
+        if (!cancelled) router.replace("/onboarding");
+      });
+
+    return () => { cancelled = true; };
   }, [status, pathname, router]);
 
   return null;

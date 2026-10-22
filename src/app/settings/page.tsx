@@ -26,6 +26,26 @@ export default function SettingsPage() {
   const [emailReminders, setEmailReminders] = useState(true);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
+      setNotificationsOn(false);
+      return;
+    }
+    let cancelled = false;
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => {
+        if (cancelled) return;
+        const active = !!sub && Notification.permission === "granted";
+        setNotificationsOn(active);
+        localStorage.setItem("poznaj-notifications", String(active));
+      })
+      .catch(() => {
+        if (!cancelled) setNotificationsOn(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     fetch("/api/user/preferences")
       .then((r) => r.json())

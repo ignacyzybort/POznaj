@@ -22,6 +22,7 @@ export async function PUT(request: NextRequest) {
     reminderMinutes?: unknown;
     emailReminders?: unknown;
     name?: unknown;
+    onboardingComplete?: unknown;
   };
   try {
     body = await request.json();
@@ -38,6 +39,7 @@ export async function PUT(request: NextRequest) {
     preferredVibes?: string[];
     reminderMinutes?: number;
     emailReminders?: boolean;
+    onboardedAt?: Date;
   } = {};
 
   if (body.district === null) {
@@ -59,6 +61,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "reminderMinutes must be 5-1440" }, { status: 400 });
     }
     data.reminderMinutes = Math.round(body.reminderMinutes);
+  }
+
+  if (body.onboardingComplete === true) {
+    data.onboardedAt = new Date();
   }
 
   if (body.emailReminders !== undefined && body.emailReminders !== null) {
