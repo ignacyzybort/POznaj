@@ -51,6 +51,8 @@ export default async function ProfilPage() {
             title: true,
             placeName: true,
             startDate: true,
+            time: true,
+            price: true,
             category: true,
             district: true,
             imageUrl: true,
@@ -90,9 +92,21 @@ export default async function ProfilPage() {
   }
 
   // Compute and persist challenge progress
+  const friendIdsForChallenges = friendships.map((f) => (f.senderId === userId ? f.receiverId : f.senderId));
+  const friendGoing = friendIdsForChallenges.length > 0
+    ? await prisma.attendance.findMany({
+        where: { userId: { in: friendIdsForChallenges }, status: "GOING" },
+        select: { eventId: true },
+      })
+    : [];
+  const challengeContext = { friendEventIds: Array.from(new Set(friendGoing.map((a) => a.eventId))) };
+
   const goingItemsRaw = attendance.map((a) => ({
     event: {
+      id: a.event.id,
       startDate: a.event.startDate.toISOString(),
+      time: a.event.time,
+      price: a.event.price,
       category: a.event.category,
       district: a.event.district,
       placeName: a.event.placeName,
@@ -104,7 +118,7 @@ export default async function ProfilPage() {
   }));
   const challengeRows: { challengeKey: string; tier: string; progress: number; maxProgress: number; done: boolean; completedAt: Date | null; resetAt: Date }[] = [];
   for (const c of CHALLENGES) {
-    const result = c.check(goingItemsRaw, { preferredCategories: [], preferredDistricts: [] });
+    const result = c.check(goingItemsRaw, { preferredCategories: [], preferredDistricts: [] }, challengeContext);
     const completedAt = result.done ? new Date() : null;
     const resetAt = getResetDate(c.tier);
     challengeRows.push({

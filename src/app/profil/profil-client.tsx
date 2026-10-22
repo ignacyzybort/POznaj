@@ -13,8 +13,8 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
-import { SettingsIcon, EditIcon, SparkIcon, BellIcon } from "@/components/icons";
-import { CHALLENGES } from "@/lib/challenges";
+import { SettingsIcon, EditIcon, SparkIcon, BellIcon, SunIcon, MoonIcon, MapIcon, CalIcon, UsersIcon, FireIcon } from "@/components/icons";
+import { CHALLENGES, computeStreaks } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
   "linear-gradient(135deg, var(--c-muzyka), #FFB627)",
@@ -39,6 +39,23 @@ function timeAgo(d: Date): string {
 }
 
 const MONTHS = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
+
+const CHALLENGE_ICONS: Record<string, React.ReactNode> = {
+  leaf: <SunIcon size={16} />,
+  ticket: <SparkIcon size={16} />,
+  moon: <MoonIcon size={16} />,
+  party: <SparkIcon size={16} />,
+  palette: <SparkIcon size={16} />,
+  compass: <MapIcon size={16} />,
+  calendar: <CalIcon size={16} />,
+  owl: <MoonIcon size={16} />,
+  users: <UsersIcon size={16} />,
+  trophy: <FireIcon size={16} />,
+  mask: <SparkIcon size={16} />,
+  map: <MapIcon size={16} />,
+  date: <CalIcon size={16} />,
+  tree: <SunIcon size={16} />,
+};
 
 function getBadge(count: number): { emoji: string; title: string } {
   if (count === 0) return { emoji: "🌱", title: "Nowicjusz" };
@@ -132,7 +149,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   const goingItems = attendanceData.filter((a) => a.status === "GOING");
   const goingYear = goingItems.filter((a) => a.event?.startDate && new Date(a.event.startDate).getFullYear() === new Date().getFullYear());
   const savedYear = attendanceData.filter((a) => a.status === "SAVED" && a.event?.startDate && new Date(a.event.startDate).getFullYear() === new Date().getFullYear());
-  const weeksActive = Math.min(goingItems.length, 8);
+  const streaks = computeStreaks(goingItems.map((a) => new Date(a.event.startDate)));
+  const streakWeeks = streaks.current;
   const badge = getBadge(goingItems.length);
 
   const catCount: Record<string, number> = {};
@@ -156,22 +174,6 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       .sort((a, b) => a.date.localeCompare(b.date));
     return { district: d.value, label: d.label, count: evs.length, events: evs };
   });
-
-  // Real streak
-  const eventDays = new Set(goingYear.map((a) => new Date(a.event.startDate).toLocaleDateString("pl")));
-  let streakWeeks = 0;
-  const now = new Date();
-  for (let i = 0; i < 52; i++) {
-    const weekStart = new Date(now);
-    weekStart.setDate(weekStart.getDate() - i * 7);
-    let hasEvent = false;
-    for (let d = 0; d < 7; d++) {
-      const day = new Date(weekStart); day.setDate(day.getDate() - d);
-      if (eventDays.has(day.toLocaleDateString("pl"))) { hasEvent = true; break; }
-    }
-    if (hasEvent) streakWeeks++;
-    else break;
-  }
 
   for (const d of districts) { if (!stamps[d.value]) stamps[d.value] = 0; }
   const topCategory = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0];
@@ -321,7 +323,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                       <div key={def.key}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <span style={{ fontSize: 16 }}>{def.icon}</span>
+                            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>{CHALLENGE_ICONS[def.icon] ?? <SparkIcon size={16} />}</span>
                             <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{def.title}</span>
                           </div>
                           <span style={{ fontSize: 11, fontWeight: 600, color: done ? "var(--sage)" : "var(--ink-3)" }}>
@@ -347,7 +349,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
               {topVenue && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-sm)" }}><span style={{ color: "var(--ink-2)" }}>Miejsce</span><span style={{ fontWeight: 700, color: "var(--ink)", textAlign: "right", maxWidth: "50%" }}>{topVenue[0]}</span></div>}
             </div>
           </div>
-          <StreakCard weeks={weeksActive} longest={Math.max(weeksActive, 1)} />
+          <StreakCard weeks={streakWeeks} longest={streaks.longest} />
           <button onClick={() => setShowQuiz(true)} className="pz-card" style={{ padding: 12, textAlign: "left", cursor: "pointer", border: "none", background: "var(--bg-elev)", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg,#C8FF2E,#2EC36B)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#0F1A0A", fontSize: "var(--text-lg)", fontWeight: 800, flexShrink: 0 }}>?</div>
             <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania · odpalimy świeży feed</div></div>
