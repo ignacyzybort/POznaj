@@ -55,9 +55,11 @@ export async function GET(
         friendshipStatus =
           friendship.status === "ACCEPTED"
             ? "ACCEPTED"
-            : friendship.senderId === session.user.id
-              ? "PENDING_SENT"
-              : "PENDING_RECEIVED";
+            : friendship.status === "PENDING"
+              ? friendship.senderId === session.user.id
+                ? "PENDING_SENT"
+                : "PENDING_RECEIVED"
+              : null;
       }
     }
 

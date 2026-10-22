@@ -55,7 +55,8 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ friends, requests: requests.map((r) => r.sender) });
-  } catch {
+  } catch (e) {
+    console.error("[friends] error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -95,8 +96,16 @@ export async function POST(request: NextRequest) {
       });
       if (existing) {
         if (existing.status === "ACCEPTED") return NextResponse.json({ error: "Already friends" });
-        if (existing.status === "REJECTED") return NextResponse.json({ error: "Request was rejected" });
-        if (existing.status === "PENDING") {
+        if (existing.status === "REJECTED") {
+          await prisma.friendship.deleteMany({
+            where: {
+              OR: [
+                { senderId: userId, receiverId: friendId },
+                { senderId: friendId, receiverId: userId },
+              ],
+            },
+          });
+        } else if (existing.status === "PENDING") {
           if (existing.senderId === friendId && existing.receiverId === userId) {
             await prisma.friendship.updateMany({
               where: { senderId: friendId, receiverId: userId, status: "PENDING" },
@@ -120,7 +129,7 @@ export async function POST(request: NextRequest) {
           body: "Odpowiedz na zaproszenie w profilu",
         },
       });
-      sendPushNotification(friendId, {
+      await sendPushNotification(friendId, {
         title: `${sender?.name ?? "Ktoś"} chce być Twoim znajomym`,
         body: "Odpowiedz na zaproszenie w profilu",
         url: "/profil",
@@ -128,12 +137,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "PENDING" });
     }
 
-    if (action === "accept") {
-      await prisma.friendship.updateMany({
+    if (action === "accept" || action === "reject") {
+      const pending = await prisma.friendship.findFirst({
         where: { senderId: friendId, receiverId: userId, status: "PENDING" },
-        data: { status: "ACCEPTED" },
+        select: { id: true },
       });
-      return NextResponse.json({ status: "ACCEPTED" });
+      if (!pending) {
+        return NextResponse.json({ error: "No pending request" }, { status: 404 });
+      }
+      await prisma.friendship.update({
+        where: { id: pending.id },
+        data: { status: action === "accept" ? "ACCEPTED" : "REJECTED" },
+      });
+      await prisma.notification.updateMany({
+        where: { userId, type: "FRIEND_REQUEST", read: false },
+        data: { read: true },
+      });
+      return NextResponse.json({ status: action === "accept" ? "ACCEPTED" : "REJECTED" });
     }
 
     if (action === "unfriend") {
@@ -149,7 +169,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch {
+  } catch (e) {
+    console.error("[friends] error:", e);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

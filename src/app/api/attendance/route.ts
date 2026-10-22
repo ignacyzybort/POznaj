@@ -51,7 +51,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (finalStatus === "GOING" || finalStatus === "SAVED") {
-      await prisma.activity.create({ data: { userId, eventId, type: finalStatus } });
+      const recent = await prisma.activity.findFirst({
+        where: {
+          userId,
+          eventId,
+          type: finalStatus,
+          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+        select: { id: true },
+      });
+      if (!recent) {
+        await prisma.activity.create({ data: { userId, eventId, type: finalStatus } });
+      }
     }
 
     await recomputeEventScore(prisma, eventId);
