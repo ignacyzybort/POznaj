@@ -34,6 +34,14 @@ jobs:
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
 
+      - name: Sync email reminders
+        if: always()
+        run: npm run reminders:sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AUTH_RESEND_KEY: ${{ secrets.AUTH_RESEND_KEY }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+
       - name: Summary
         if: always()
         run: echo "Scrape run finished at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"

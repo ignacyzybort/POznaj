@@ -68,6 +68,9 @@ model User {
   preferredCategories String[] @default([])
   preferredVibes      String[] @default([])
   pushSubscription String?
+  reminderMinutes Int      @default(30)
+  emailReminders  Boolean  @default(true)
+  onboardedAt     DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -79,8 +82,28 @@ model User {
   activities      Activity[]
   notifications   Notification[]
   userChallenges UserChallenge[]
+  reminders      Reminder[]
 
   @@index([email])
+}
+
+model Reminder {
+  id            String   @id @default(cuid())
+  userId        String
+  eventId       String
+  remindAt      DateTime
+  eventStartAt  DateTime
+  status        String   @default("PENDING")
+  resendEmailId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([status, remindAt])
+  @@index([eventId])
 }
 
 model UserChallenge {
@@ -226,6 +249,7 @@ model Event {
   attendance  Attendance[]
   activities  Activity[]
   notifications Notification[]
+  reminders   Reminder[]
 
   @@unique([title, startDate, placeName])
   @@index([district])

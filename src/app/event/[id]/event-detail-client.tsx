@@ -48,18 +48,20 @@ export default function EventDetailClient({
   initialSimilar,
   initialSaved = false,
   initialGoing = false,
+  initialReminded = false,
 }: {
   initial: InitialEvent;
   initialSimilar: InitialEvent[];
   initialSaved?: boolean;
   initialGoing?: boolean;
+  initialReminded?: boolean;
 }) {
   const router = useRouter();
   const [event, setEvent] = useState(initial);
   const [saved, setSaved] = useState(initialSaved);
   const [going, setGoing] = useState(initialGoing);
   const [toast, setToast] = useState<string | null>(null);
-  const [reminded, setReminded] = useState(false);
+  const [reminded, setReminded] = useState(initialReminded);
   const [animatingSave, setAnimatingSave] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const [similar, setSimilar] = useState<InitialEvent[]>(initialSimilar);
@@ -94,20 +96,31 @@ export default function EventDetailClient({
   };
 
   const onRemind = async () => {
-    if (reminded) {
-      setReminded(false);
-      setToast("Przypomnienie wyłączone");
-      return;
-    }
+    const prev = reminded;
+    const next = !reminded;
+    setReminded(next);
     try {
-      const perm = await Notification.requestPermission();
-      if (perm === "granted") {
-        setReminded(true);
-        setToast("🔔 Przypomnienie włączone");
-      } else {
-        setToast("🔔 Powiadomienia zablokowane");
+      const res = next
+        ? await fetch("/api/reminders", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id }) })
+        : await fetch(`/api/reminders?eventId=${encodeURIComponent(event.id)}`, { method: "DELETE", headers: { "x-csrf-token": getCsrfToken() } });
+
+      if (res.status === 401) {
+        setReminded(prev);
+        router.push("/login");
+        return;
       }
-    } catch { setToast("🔔 Powiadomienia niedostępne"); }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setReminded(prev);
+        setToast(data?.error === "Email reminders are disabled" ? "Włącz przypomnienia w ustawieniach" : "Nie udało się ustawić przypomnienia");
+        return;
+      }
+
+      setToast(next ? "Przypomnimy e-mailem" : "Przypomnienie wyłączone");
+    } catch {
+      setReminded(prev);
+      setToast("Nie udało się ustawić przypomnienia");
+    }
   };
 
   const toggleSave = async () => {
@@ -185,7 +198,7 @@ export default function EventDetailClient({
               <div className="pz-eyebrow" style={{ marginBottom: 4 }}>Powiadom mnie</div>
               <div style={{ fontSize: 13, color: "var(--ink-3)" }}>30 min przed startem</div>
             </div>
-            <button onClick={onRemind} style={{ border: 0, background: reminded ? "var(--sage)" : "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>{reminded ? "✔️ Ustawione" : "Włącz"}</button>
+            <button onClick={onRemind} style={{ border: 0, background: reminded ? "var(--sage)" : "var(--ink)", color: "var(--bg)", padding: "8px 14px", borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: 44 }}>{reminded ? "Ustawione" : "Włącz"}</button>
           </div>
         </div>
 

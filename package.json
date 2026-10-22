@@ -11,6 +11,7 @@
     "seed": "tsx scripts/seed.ts",
     "scrape": "tsx --env-file-if-exists=.env src/lib/scrapers/run.ts",
     "recompute-scores": "tsx --env-file-if-exists=.env scripts/recompute-scores.ts",
+    "reminders:sync": "tsx --env-file-if-exists=.env scripts/reminders-sync.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

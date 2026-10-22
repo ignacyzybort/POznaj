@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { syncReminders } from "@/lib/reminders";
 import { District } from "@prisma/client";
 
 const HANDLE_REGEX = /^[a-z0-9_]{2,30}$/;
@@ -12,20 +13,57 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { district?: unknown; handle?: unknown; bio?: unknown; preferredCategories?: unknown; preferredVibes?: unknown };
+  let body: {
+    district?: unknown;
+    handle?: unknown;
+    bio?: unknown;
+    preferredCategories?: unknown;
+    preferredVibes?: unknown;
+    reminderMinutes?: unknown;
+    emailReminders?: unknown;
+  };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const data: { district?: District; handle?: string; bio?: string; preferredCategories?: string[]; preferredVibes?: string[] } = {};
+  const data: {
+    district?: District | null;
+    handle?: string;
+    bio?: string;
+    preferredCategories?: string[];
+    preferredVibes?: string[];
+    reminderMinutes?: number;
+    emailReminders?: boolean;
+  } = {};
 
-  if (body.district !== undefined && body.district !== null) {
+  if (body.district === null) {
+    data.district = null;
+  } else if (body.district !== undefined) {
     if (typeof body.district !== "string" || !(body.district in District)) {
       return NextResponse.json({ error: "Invalid district" }, { status: 400 });
     }
     data.district = body.district as District;
+  }
+
+  if (body.reminderMinutes !== undefined && body.reminderMinutes !== null) {
+    if (
+      typeof body.reminderMinutes !== "number" ||
+      !Number.isFinite(body.reminderMinutes) ||
+      body.reminderMinutes < 5 ||
+      body.reminderMinutes > 1440
+    ) {
+      return NextResponse.json({ error: "reminderMinutes must be 5-1440" }, { status: 400 });
+    }
+    data.reminderMinutes = Math.round(body.reminderMinutes);
+  }
+
+  if (body.emailReminders !== undefined && body.emailReminders !== null) {
+    if (typeof body.emailReminders !== "boolean") {
+      return NextResponse.json({ error: "emailReminders must be boolean" }, { status: 400 });
+    }
+    data.emailReminders = body.emailReminders;
   }
 
   if (body.preferredCategories !== undefined && body.preferredCategories !== null) {
@@ -67,6 +105,11 @@ export async function PUT(request: NextRequest) {
       where: { id: session.user.id },
       data,
     });
+
+    if (data.reminderMinutes !== undefined || data.emailReminders !== undefined) {
+      await syncReminders(prisma, session.user.id);
+    }
+
     return NextResponse.json({ user });
   } catch (err: unknown) {
     if (

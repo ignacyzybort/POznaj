@@ -30,12 +30,18 @@ export default async function EventDetailPage({
   });
 
   const session = await auth();
-  const attendance = session?.user?.id
-    ? await prisma.attendance.findMany({
-        where: { userId: session.user.id, eventId: id },
-        select: { status: true, timeSlot: true },
-      })
-    : [];
+  const [attendance, reminder] = session?.user?.id
+    ? await Promise.all([
+        prisma.attendance.findMany({
+          where: { userId: session.user.id, eventId: id },
+          select: { status: true, timeSlot: true },
+        }),
+        prisma.reminder.findUnique({
+          where: { userId_eventId: { userId: session.user.id, eventId: id } },
+          select: { status: true },
+        }),
+      ])
+    : [[], null];
 
   const initial: InitialEvent = {
     id: event.id,
@@ -87,6 +93,7 @@ export default async function EventDetailPage({
       initialSimilar={initialSimilar}
       initialSaved={attendance.some((a) => a.status === "SAVED")}
       initialGoing={attendance.some((a) => a.status === "GOING")}
+      initialReminded={Boolean(reminder && !["CANCELLED", "EXPIRED", "FAILED"].includes(reminder.status))}
     />
   );
 }

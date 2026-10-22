@@ -23,6 +23,21 @@ export default function SettingsPage() {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("poznaj-notifications") === "true";
   });
+  const [emailReminders, setEmailReminders] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/user/preferences")
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled || !d?.user) return;
+        if (typeof d.user.reminderMinutes === "number") setNotifyBefore(d.user.reminderMinutes);
+        if (d.user.district) setSavedDistrict(d.user.district);
+        if (typeof d.user.emailReminders === "boolean") setEmailReminders(d.user.emailReminders);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("poznaj-notify-minutes", String(notifyBefore));
@@ -32,6 +47,30 @@ export default function SettingsPage() {
     if (savedDistrict) localStorage.setItem("poznaj-district", savedDistrict);
     else localStorage.removeItem("poznaj-district");
   }, [savedDistrict]);
+
+  const savePreferences = (patch: Record<string, unknown>) => {
+    fetch("/api/user/preferences", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
+      body: JSON.stringify(patch),
+    }).catch(() => {});
+  };
+
+  const updateMinutes = (minutes: number) => {
+    setNotifyBefore(minutes);
+    savePreferences({ reminderMinutes: minutes });
+  };
+
+  const updateDistrict = (district: string) => {
+    setSavedDistrict(district);
+    savePreferences({ district: district || null });
+  };
+
+  const toggleEmailReminders = () => {
+    const next = !emailReminders;
+    setEmailReminders(next);
+    savePreferences({ emailReminders: next });
+  };
 
   const toggleNotifications = async () => {
     if (!notificationsOn) {
@@ -112,7 +151,25 @@ export default function SettingsPage() {
       <div style={{ padding: "6px 18px 96px" }}>
         {toggleRow("Wygląd", theme === "dark" ? "Tryb ciemny" : "Tryb jasny", theme === "dark", toggleTheme, "var(--c-kino)")}
 
-        {toggleRow("Powiadomienia", `Przypomnij ${notifyBefore} min przed wydarzeniem`, notificationsOn, toggleNotifications)}
+        {toggleRow("Powiadomienia push", "Aktywność znajomych i zaproszenia", notificationsOn, toggleNotifications)}
+
+        {toggleRow("Przypomnienia e-mail", `Wyślij e-mail ${notifyBefore} min przed wydarzeniem`, emailReminders, toggleEmailReminders)}
+
+        {/* Czas przypomnienia */}
+        <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>Czas przypomnienia</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {[15, 30, 60, 120].map((minutes) => {
+              const active = notifyBefore === minutes;
+              return (
+                <button key={minutes} className="pz-chip" data-active={active ? "true" : undefined}
+                  onClick={() => updateMinutes(minutes)}>
+                  {minutes < 60 ? `${minutes} min` : `${minutes / 60} godz.`}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Domyślna dzielnica */}
         <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
@@ -122,7 +179,7 @@ export default function SettingsPage() {
               const active = savedDistrict === d.value;
               return (
                 <button key={d.value} className="pz-chip" data-active={active ? "true" : undefined}
-                  onClick={() => setSavedDistrict(active ? "" : d.value)}>
+                  onClick={() => updateDistrict(active ? "" : d.value)}>
                   {d.label}
                 </button>
               );
