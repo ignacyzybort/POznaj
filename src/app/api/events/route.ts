@@ -3,9 +3,61 @@ import { prisma } from "@/lib/prisma";
 import { Prisma, District, Category, Vibe } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { getRecommendations } from "@/lib/recommendations";
+import { districts as districtOptions } from "@/lib/data";
+import { warsawToUtc } from "@/lib/warsaw-time";
 
 const SEARCH_MAX = 100;
 const PL_TZ = "Europe/Warsaw";
+
+function warsawWeekday(date: Date): number {
+  const short = new Intl.DateTimeFormat("en-US", { timeZone: PL_TZ, weekday: "short" }).format(date);
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(short);
+}
+
+function parseTimeTokens(time: string | null | undefined): number[] {
+  if (!time) return [];
+  const tokens: number[] = [];
+  for (const raw of time.split(",")) {
+    const match = raw.trim().match(/^(\d{1,2})[:.](\d{2})/);
+    if (!match) continue;
+    const minutes = Number(match[1]) * 60 + Number(match[2]);
+    if (minutes >= 0 && minutes < 24 * 60) tokens.push(minutes);
+  }
+  return tokens;
+}
+
+function parsePriceNumbers(price: string | null | undefined): number[] {
+  if (!price) return [];
+  const matches = price.replace(/\s/g, "").match(/\d+(?:[.,]\d+)?/g) ?? [];
+  return matches.map((m) => Number(m.replace(",", "."))).filter((n) => Number.isFinite(n));
+}
+
+function looksFree(price: string | null | undefined, title: string, description?: string | null): boolean {
+  const haystack = `${price ?? ""} ${title} ${description ?? ""}`.toLowerCase();
+  if (/bezpłat|darmow|wolny wstęp|free entry|wstęp wolny/.test(haystack)) return true;
+  return parsePriceNumbers(price).some((n) => n === 0);
+}
+
+function looksCheap(price: string | null | undefined, title: string, description?: string | null): boolean {
+  if (looksFree(price, title, description)) return true;
+  const numbers = parsePriceNumbers(price);
+  return numbers.length > 0 && Math.min(...numbers) <= 45;
+}
+
+function looksStudent(price: string | null | undefined, title: string, description?: string | null): boolean {
+  return /studen|uczeln|akademick|juwenali|ulgow|ulga/.test(
+    `${price ?? ""} ${title} ${description ?? ""}`.toLowerCase()
+  );
+}
+
+function plDayStart(raw: string): Date | null {
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  return warsawToUtc(Number(match[1]), Number(match[2]), Number(match[3]), 0, 0);
+}
 
 function plMidnight(baseDate: Date, daysOffset = 0): Date {
   const d = new Date(baseDate);
@@ -123,10 +175,16 @@ export async function GET(request: NextRequest) {
       where.vibes = { some: { vibe: { in: vibes } } };
     }
     if (search) {
+      const query = search.toLowerCase();
+      const matchedDistricts = districtOptions
+        .filter((d) => d.label.toLowerCase().includes(query) || d.value.toLowerCase() === query)
+        .map((d) => d.value as District);
+
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
         { placeName: { contains: search, mode: "insensitive" } },
+        ...(matchedDistricts.length > 0 ? [{ district: { in: matchedDistricts } }] : []),
       ];
     }
 
@@ -134,73 +192,30 @@ export async function GET(request: NextRequest) {
       where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date()) };
     } else if (quick === "tonight") {
       where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date()) };
-      where.time = { gte: "18:00" };
     } else if (quick === "tomorrow") {
       where.startDate = { gte: plMidnight(new Date(), 1), lte: plEndOfDay(new Date(), 1) };
     } else if (quick === "weekend") {
-      const fri = plMidnight(new Date());
-      const dayOfWeek = fri.getUTCDay();
-      const daysToFri = (5 - dayOfWeek + 7) % 7;
-      fri.setUTCDate(fri.getUTCDate() + daysToFri);
-      where.startDate = { gte: fri, lte: plEndOfDay(fri, 2) };
+      const weekday = warsawWeekday(new Date());
+      const offsetToFriday = weekday === 5 ? 0 : weekday === 6 ? -1 : weekday === 0 ? -2 : 5 - weekday;
+      const friday = plMidnight(new Date(), offsetToFriday);
+      where.startDate = { gte: friday, lte: plEndOfDay(new Date(), offsetToFriday + 2) };
     } else if (quick === "week") {
       where.startDate = { gte: plMidnight(new Date()), lte: plEndOfDay(new Date(), 7) };
     }
 
     if (dateFromRaw) {
-      const from = new Date(dateFromRaw);
-      if (isNaN(from.getTime())) {
+      const from = plDayStart(dateFromRaw);
+      if (!from) {
         return NextResponse.json({ error: "Invalid dateFrom" }, { status: 400 });
       }
       where.startDate = { ...(where.startDate as any || {}), gte: from };
     }
     if (dateToRaw) {
-      const to = new Date(dateToRaw);
-      if (isNaN(to.getTime())) {
+      const toStart = plDayStart(dateToRaw);
+      if (!toStart) {
         return NextResponse.json({ error: "Invalid dateTo" }, { status: 400 });
       }
-      to.setHours(23, 59, 59, 999);
-      where.startDate = { ...(where.startDate as any || {}), lte: to };
-    }
-
-    if (budget === "free") {
-      const priceOr: Record<string, any>[] = [
-        { price: { startsWith: "0" } },
-        { price: { contains: "free", mode: "insensitive" as any } },
-        { price: { contains: "bezpł", mode: "insensitive" as any } },
-        { price: { contains: "wolny", mode: "insensitive" as any } },
-      ];
-      const titleOr: Record<string, any>[] = [
-        { title: { contains: "darmowe", mode: "insensitive" as any } },
-        { title: { contains: "bezpłatne", mode: "insensitive" as any } },
-        { title: { contains: "wolny wstęp", mode: "insensitive" as any } },
-      ];
-      where.AND = [...((where.AND as any[]) || []), { OR: [...priceOr, ...titleOr] }];
-    } else if (budget === "cheap") {
-      const priceOr: Record<string, any>[] = [
-        { price: { startsWith: "0" } },
-        { price: { contains: "free", mode: "insensitive" as any } },
-        { price: { lte: "45" } },
-      ];
-      where.AND = [...((where.AND as any[]) || []), { OR: priceOr }];
-    } else if (budget === "student") {
-      const priceLikeStudent: Record<string, any>[] = [
-        { price: { contains: "studen", mode: "insensitive" as any } },
-        { price: { contains: "ulgow", mode: "insensitive" as any } },
-        { price: { contains: "ulga", mode: "insensitive" as any } },
-      ];
-      const studentTitleDesc: Record<string, any>[] = [
-        { title: { contains: "juwenalia", mode: "insensitive" as any } },
-        { title: { contains: "studen", mode: "insensitive" as any } },
-        { title: { contains: "akademicki", mode: "insensitive" as any } },
-        { description: { contains: "juwenalia", mode: "insensitive" as any } },
-        { description: { contains: "studen", mode: "insensitive" as any } },
-        { description: { contains: "akademicki", mode: "insensitive" as any } },
-        { description: { contains: "uczelnia", mode: "insensitive" as any } },
-        { description: { contains: "uniwersytet", mode: "insensitive" as any } },
-        { description: { contains: "politechnika", mode: "insensitive" as any } },
-      ];
-      where.AND = [...((where.AND as any[]) || []), { OR: [...priceLikeStudent, ...studentTitleDesc] }];
+      where.startDate = { ...(where.startDate as any || {}), lte: new Date(toStart.getTime() + 86_399_999) };
     }
 
     if (outdoor === "true") {
@@ -216,34 +231,61 @@ export async function GET(request: NextRequest) {
         ? [{ score: "desc" }, { startDate: "asc" }]
         : [{ startDate: "asc" }, { score: "desc" }];
 
-    const events = await prisma.event.findMany({
+    const candidates = await prisma.event.findMany({
       where,
-      include: {
-        vibes: { select: { vibe: true } },
-        _count: { select: { attendance: { where: { status: "GOING" } } } },
-      },
+      select: { id: true, title: true, description: true, price: true, time: true, startDate: true },
       orderBy,
-      take: limit,
-      skip: offset,
     });
 
-    // Filter out today's events whose times have all passed
-    const nowTime = new Intl.DateTimeFormat("en-CA", {
-      timeZone: PL_TZ, hour: "2-digit", minute: "2-digit", hour12: false,
-    }).format(new Date()).replace("-", ":").replace("-", ":");
+    const nowParts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: PL_TZ,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(new Date()).split(":");
+    const nowMinutes = Number(nowParts[0]) * 60 + Number(nowParts[1] ?? 0);
     const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: PL_TZ }).format(new Date());
 
-    function remainingTimeSlots(event: { startDate: Date; time: string | null }): boolean {
-      if (!event.time) return true; // all-day events stay
-      const eventDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: PL_TZ }).format(event.startDate);
-      if (eventDateStr !== todayStr) return true; // not today
-      return event.time.split(",").some((t) => t.trim() > nowTime);
-    }
+    const isToday = (date: Date) =>
+      new Intl.DateTimeFormat("en-CA", { timeZone: PL_TZ }).format(date) === todayStr;
 
-    const before = events.length;
-    const filtered = events.filter(remainingTimeSlots);
+    const filtered = candidates.filter((event) => {
+      const slots = parseTimeTokens(event.time);
 
-    const total = (await prisma.event.count({ where })) - (before - filtered.length);
+      // Today's events whose showtimes have all passed are not bookable anymore.
+      if (slots.length > 0 && isToday(event.startDate) && !slots.some((m) => m > nowMinutes)) {
+        return false;
+      }
+
+      if (quick === "tonight") {
+        const evening = slots.filter(
+          (m) => m >= 18 * 60 && (!isToday(event.startDate) || m > nowMinutes)
+        );
+        if (evening.length === 0) return false;
+      }
+
+      if (budget === "free" && !looksFree(event.price, event.title, event.description)) return false;
+      if (budget === "cheap" && !looksCheap(event.price, event.title, event.description)) return false;
+      if (budget === "student" && !looksStudent(event.price, event.title, event.description)) return false;
+
+      return true;
+    });
+
+    const total = filtered.length;
+    const pageIds = filtered.slice(offset, offset + limit).map((e) => e.id);
+
+    const pageEvents = pageIds.length
+      ? await prisma.event.findMany({
+          where: { id: { in: pageIds } },
+          include: {
+            vibes: { select: { vibe: true } },
+            _count: { select: { attendance: { where: { status: "GOING" } } } },
+          },
+        })
+      : [];
+
+    const byId = new Map(pageEvents.map((e) => [e.id, e]));
+    const events = pageIds.map((id) => byId.get(id)).filter((e): e is NonNullable<typeof e> => Boolean(e));
 
     const session = await auth();
     let friendGoingMap: Map<string, { name: string; image?: string }[]> = new Map();
@@ -264,7 +306,7 @@ export async function GET(request: NextRequest) {
         const goingAttendances = await prisma.attendance.findMany({
           where: {
             userId: { in: friendIds },
-            eventId: { in: filtered.map((e) => e.id) },
+            eventId: { in: events.map((e) => e.id) },
             status: "GOING",
           },
           select: {
@@ -280,7 +322,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const serialized = filtered.map((e) => ({
+    const serialized = events.map((e) => ({
       id: e.id,
       title: e.title,
       description: e.description,
@@ -323,7 +365,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { events: serialized, total, recommended },
-      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
+      {
+        headers: {
+          "Cache-Control": currentUserId
+            ? "private, no-store"
+            : "public, max-age=60, stale-while-revalidate=300",
+        },
+      },
     );
   } catch (e) {
     console.error("[events] fetch error:", e);

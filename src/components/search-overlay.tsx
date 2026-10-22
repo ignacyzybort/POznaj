@@ -20,15 +20,38 @@ export default function SearchOverlay({
 }) {
   const [q, setQ] = useState(initial ?? "");
   const [exiting, setExiting] = useState(false);
+  const [results, setResults] = useState<EventData[] | null>(null);
+  const [loading, setLoading] = useState(false);
   useEscape(onClose);
   const focusTrapRef = useFocusTrap(true);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 2) {
+      setResults(null);
+      setLoading(false);
+      return;
+    }
+
+    const ctrl = new AbortController();
+    setLoading(true);
+    const timer = setTimeout(() => {
+      fetch(`/api/events?q=${encodeURIComponent(term)}&limit=8&sort=score`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => { if (d?.events) setResults(d.events); })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, 250);
+
+    return () => { clearTimeout(timer); ctrl.abort(); };
+  }, [q]);
 
   const close = () => {
     setExiting(true);
     setTimeout(onClose, 200);
   };
 
-  const filtered = events.filter((e) => {
+  const localFiltered = events.filter((e) => {
     if (!q) return true;
     const needle = q.toLowerCase();
     return (
@@ -36,7 +59,8 @@ export default function SearchOverlay({
       e.placeName.toLowerCase().includes(needle) ||
       e.district.toLowerCase().includes(needle)
     );
-  }).slice(0, 8);
+  });
+  const filtered = (results ?? localFiltered).slice(0, 8);
 
   return (
     <div
@@ -60,6 +84,9 @@ export default function SearchOverlay({
           <input
             id="search-overlay-input" autoFocus value={q}
             onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { onCommit(q); close(); }
+            }}
             placeholder="Szukaj wydarzeń, miejsc, dzielnic…"
             style={{
               flex: 1, border: 0, background: "transparent",
@@ -68,7 +95,7 @@ export default function SearchOverlay({
             }}
           />
         </div>
-        <button onClick={() => { onCommit(q); close(); }} style={{
+        <button onClick={close} style={{
           border: 0, background: "transparent", color: "var(--ink-2)",
           fontSize: 15, fontWeight: 600, cursor: "pointer",
         }}>Anuluj</button>
@@ -76,10 +103,10 @@ export default function SearchOverlay({
 
       <div className="pz-scroll" style={{ flex: 1, padding: "6px 18px 16px" }}>
 
-        <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{q ? "Wyniki" : "Popularne dziś"}</div>
+        <div className="pz-eyebrow" style={{ marginBottom: 10 }}>{q ? (loading ? "Szukam…" : "Wyniki") : "Popularne dziś"}</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {filtered.map((ev) => (
-            <button key={ev.id} onClick={() => { onCommit(q); onOpen(ev); close(); }} style={{
+            <button key={ev.id} onClick={() => { onOpen(ev); close(); }} style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "10px 4px", border: 0, background: "transparent",
               cursor: "pointer", textAlign: "left",

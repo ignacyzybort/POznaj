@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
 import { SunIcon, RainIcon, TramIcon } from "@/components/icons";
+import { getEventSlots, icalDate } from "@/lib/warsaw-time";
 
 const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
   Centrum: { lat: 52.406, lon: 16.918 },
@@ -17,20 +18,43 @@ const DISTRICT_COORDS: Record<string, { lat: number; lon: number }> = {
 export default function DetailExtras({ event, onToast }: { event: EventData; onToast: (msg: string) => void }) {
   const [showCal, setShowCal] = useState(false);
   const [weather, setWeather] = useState<{ temp: number; condition: string; icon: string; rain: boolean } | null>(null);
+  const [weatherStatus, setWeatherStatus] = useState<"loading" | "ok" | "unavailable" | "error">("loading");
 
   const fullAddress = `${event.placeName}, ${event.address || "Poznań"}`;
-  const coords = DISTRICT_COORDS[event.district] ?? DISTRICT_COORDS.Inny;
+  const hasCoords = typeof event.coordsX === "number" && typeof event.coordsY === "number";
+  const coords = hasCoords
+    ? { lat: event.coordsX as number, lon: event.coordsY as number }
+    : (DISTRICT_COORDS[event.district] ?? DISTRICT_COORDS.Inny);
+
+  const slots = getEventSlots(new Date(event.startDate), event.time);
+  const slot = slots[0];
+  const eventTs = slot.allDay ? slot.start.getTime() + 9 * 3_600_000 : slot.start.getTime();
 
   useEffect(() => {
-    const eventTs = new Date(event.startDate).getTime();
-    fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}&time=${eventTs}`)
+    const ctrl = new AbortController();
+    setWeatherStatus("loading");
+    fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}&time=${eventTs}`, { signal: ctrl.signal })
       .then((r) => r.json())
-      .then((d) => { if (d.temp !== undefined) setWeather(d); })
-      .catch(() => {});
-  }, [coords.lat, coords.lon]);
+      .then((d) => {
+        if (d.temp !== undefined && d.available !== false) {
+          setWeather(d);
+          setWeatherStatus("ok");
+        } else {
+          setWeather(null);
+          setWeatherStatus(d.available === false ? "unavailable" : "error");
+        }
+      })
+      .catch((e) => {
+        if (e?.name !== "AbortError") setWeatherStatus("error");
+      });
+    return () => ctrl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coords.lat, coords.lon, event.id, eventTs]);
 
-  const calGoogle = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(fullAddress)}`;
-  const calApple = `https://calendar.apple.com/?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${event.startDate.replace(/[-:]/g, "").slice(0, 15)}Z/${event.endDate.replace(/[-:]/g, "").slice(0, 15)}Z&location=${encodeURIComponent(fullAddress)}`;
+  const calStart = icalDate(slot.start);
+  const calEnd = icalDate(slot.end);
+  const calGoogle = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calStart}/${calEnd}&details=${encodeURIComponent(event.description ?? "")}&location=${encodeURIComponent(fullAddress)}`;
+  const calApple = `/api/ical/${event.id}?minutes=30`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -50,8 +74,12 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
                 {weather.rain ? <>Możliwy deszcz <RainIcon size={16} /></> : "Bez opadów"}
               </div>
             </>
-          ) : (
+          ) : weatherStatus === "loading" ? (
             <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Ładowanie...</div>
+          ) : weatherStatus === "unavailable" ? (
+            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Prognoza bliżej terminu</div>
+          ) : (
+            <div style={{ fontSize: 13, color: "var(--ink-3)" }}>Brak danych pogodowych</div>
           )}
         </div>
         <a href={`https://maps.google.com/?daddr=${encodeURIComponent(fullAddress)}&dir_action=transit`}
