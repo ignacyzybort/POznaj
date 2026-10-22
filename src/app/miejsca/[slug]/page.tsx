@@ -1,10 +1,7 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import VenueClient from "./venue-client";
-
-function slugToSearch(slug: string) {
-  return slug.replace(/-/g, " ").replace(/\s+/g, " ").trim();
-}
+import { getVenueLabel, getVenueSearch } from "@/lib/slug";
 
 function slugToLabel(slug: string): string {
   return slug
@@ -14,14 +11,13 @@ function slugToLabel(slug: string): string {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const label = slugToLabel(slug);
+  const label = getVenueLabel(slug) ?? slugToLabel(slug);
   return { title: `${label} | POznaj`, description: `Nadchodzace wydarzenia w ${label}, Poznan` };
 }
 
 export default async function VenuePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const search = slugToSearch(slug);
-  const label = slugToLabel(slug);
+  const search = getVenueSearch(slug);
 
   const events = await prisma.event.findMany({
     where: { endDate: { gte: new Date() }, placeName: { contains: search, mode: "insensitive" } },
@@ -58,6 +54,7 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
 
   const districts = [...new Set(events.map((e) => e.district).filter(Boolean))];
   const categories = [...new Set(events.map((e) => e.category))];
+  const label = events[0]?.placeName ?? getVenueLabel(slug) ?? slugToLabel(slug);
 
   return <VenueClient slug={slug} label={label} events={serialized} districts={districts} categories={categories} />;
 }

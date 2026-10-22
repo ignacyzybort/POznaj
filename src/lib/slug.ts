@@ -68,3 +68,20 @@ export function getVenueSlug(placeName: string): string {
   const normalized = placeName.toLowerCase().trim();
   return PLACE_SLUG_MAP[normalized] ?? toSlug(normalized);
 }
+
+const SLUG_TO_SEARCH: Record<string, string> = {};
+for (const [name, slug] of Object.entries(PLACE_SLUG_MAP)) {
+  if (!SLUG_TO_SEARCH[slug] || name.length < SLUG_TO_SEARCH[slug].length) {
+    SLUG_TO_SEARCH[slug] = name;
+  }
+}
+
+export function getVenueSearch(slug: string): string {
+  return SLUG_TO_SEARCH[slug] ?? slug.replace(/-/g, " ").trim();
+}
+
+export function getVenueLabel(slug: string): string | null {
+  const name = SLUG_TO_SEARCH[slug];
+  if (!name) return null;
+  return name.replace(/\b\w/g, (c) => c.toUpperCase());
+}
