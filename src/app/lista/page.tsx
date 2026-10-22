@@ -15,7 +15,6 @@ export default async function ListaPage() {
           </span>
         </div>
         <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🔖</div>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, color: "var(--ink-3)" }}>
             Zaloguj się, aby zapisywać wydarzenia
           </p>
@@ -26,14 +25,17 @@ export default async function ListaPage() {
   }
 
   const attendance = await prisma.attendance.findMany({
-    where: { userId: session.user.id },
-    include: {
+    where: { userId: session.user.id, event: { endDate: { gte: new Date() } } },
+    select: {
+      status: true,
+      timeSlot: true,
       event: {
         select: {
           id: true,
           title: true,
           placeName: true,
           startDate: true,
+          time: true,
           category: true,
           imageUrl: true,
         },
@@ -42,18 +44,34 @@ export default async function ListaPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const items = attendance.map((a) => ({
-    id: a.id,
-    status: a.status,
-    event: {
-      id: a.event.id,
-      title: a.event.title,
-      placeName: a.event.placeName,
-      startDate: a.event.startDate.toISOString(),
-      category: a.event.category,
-      imageUrl: a.event.imageUrl,
-    },
-  }));
+  const grouped = new Map<string, {
+    eventId: string;
+    status: "SAVED" | "GOING" | "INTERESTED";
+    timeSlots: string[];
+    event: { id: string; title: string; placeName: string; startDate: string; time?: string; category: string; imageUrl?: string | null };
+  }>();
+
+  for (const a of attendance) {
+    const key = `${a.event.id}:${a.status}`;
+    const item = grouped.get(key) ?? {
+      eventId: a.event.id,
+      status: a.status,
+      timeSlots: [],
+      event: {
+        id: a.event.id,
+        title: a.event.title,
+        placeName: a.event.placeName,
+        startDate: a.event.startDate.toISOString(),
+        time: a.event.time ?? undefined,
+        category: a.event.category,
+        imageUrl: a.event.imageUrl,
+      },
+    };
+    if (a.timeSlot && !item.timeSlots.includes(a.timeSlot)) item.timeSlots.push(a.timeSlot);
+    grouped.set(key, item);
+  }
+
+  const items = Array.from(grouped.values()).sort((a, b) => a.event.startDate.localeCompare(b.event.startDate));
 
   return <ListaClient items={items} />;
 }
