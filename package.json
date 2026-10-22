@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/seed.ts",
-    "scrape": "tsx --env-file=.env src/lib/scrapers/run.ts",
-    "recompute-scores": "tsx --env-file=.env scripts/recompute-scores.ts",
+    "scrape": "tsx --env-file-if-exists=.env src/lib/scrapers/run.ts",
+    "recompute-scores": "tsx --env-file-if-exists=.env scripts/recompute-scores.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
