@@ -23,9 +23,13 @@ import { getCsrfToken } from "@/lib/csrf";
 export default function HomeClient({
   initialEvents,
   initialTotal,
+  initialSavedIds = [],
+  initialSavedSlots = {},
 }: {
   initialEvents: EventData[];
   initialTotal: number;
+  initialSavedIds?: string[];
+  initialSavedSlots?: Record<string, string[]>;
 }) {
   const [events, setEvents] = useState<EventData[]>(initialEvents);
   const [total, setTotal] = useState(initialTotal);
@@ -33,8 +37,11 @@ export default function HomeClient({
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quick, setQuick] = useState<string | null>(null);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
-  const [savedSlots, setSavedSlots] = useState<Record<string, Set<string>>>({});
+  const [savedIds, setSavedIds] = useState<string[]>(initialSavedIds);
+  const [savedSlots, setSavedSlots] = useState<Record<string, Set<string>>>(() =>
+    Object.fromEntries(Object.entries(initialSavedSlots).map(([id, slots]) => [id, new Set(slots)]))
+  );
+  const { data: session } = useSession();
   const [budget, setBudget] = useState<Budget>(null);
   const [outdoorOn, setOutdoorOn] = useState(false);
   const [surpriseOpen, setSurpriseOpen] = useState(false);
@@ -65,6 +72,29 @@ export default function HomeClient({
     return params.toString();
   };
 
+  const hydrateSaved = (ids: string[]) => {
+    if (!session?.user || ids.length === 0) return;
+    fetch(`/api/attendance?eventIds=${encodeURIComponent(ids.slice(0, 200).join(","))}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const savedRows = (d?.attendance ?? []).filter(
+          (row: { status: string }) => row.status === "SAVED"
+        ) as { eventId: string; timeSlot: string }[];
+        if (savedRows.length === 0) return;
+
+        setSavedIds((prev) => Array.from(new Set([...prev, ...savedRows.map((r) => r.eventId)])));
+        setSavedSlots((prev) => {
+          const next = { ...prev };
+          for (const row of savedRows) {
+            if (!row.timeSlot) continue;
+            next[row.eventId] = new Set([...(next[row.eventId] ?? []), row.timeSlot]);
+          }
+          return next;
+        });
+      })
+      .catch(() => {});
+  };
+
   const fetchEvents = (signal?: AbortSignal, append = false) => {
     if (append) setLoadingMore(true);
     else { setLoading(true); offsetRef.current = 0; }
@@ -81,6 +111,7 @@ export default function HomeClient({
         setEvents(d.events ?? []);
         offsetRef.current = fetched;
       }
+      hydrateSaved((d.events ?? []).map((e: EventData) => e.id));
       setTotal(d.total ?? 0);
       setLoading(false);
       setLoadingMore(false);
@@ -132,7 +163,12 @@ export default function HomeClient({
     return () => observer.disconnect();
   }, []);
 
-  const { data: session } = useSession();
+  // Hydrate saved state once the session is known (and for events loaded client-side)
+  useEffect(() => {
+    if (!session?.user) return;
+    hydrateSaved(events.map((e) => e.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   // Fetch personalized recommendations for logged-in users
   useEffect(() => {
@@ -140,10 +176,16 @@ export default function HomeClient({
     const ctrl = new AbortController();
     fetch("/api/events?recommended=true&limit=6", { signal: ctrl.signal })
       .then((r) => r.json())
-      .then((d) => { if (d.recommended) setRecommended(d.recommended); })
+      .then((d) => {
+        if (d.recommended) {
+          setRecommended(d.recommended);
+          hydrateSaved((d.recommended as EventData[]).map((e) => e.id));
+        }
+      })
       .catch(() => {});
     return () => ctrl.abort();
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
 
   // Scroll progress bar

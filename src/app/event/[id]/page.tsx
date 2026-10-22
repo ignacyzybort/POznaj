@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import EventDetailClient, { type InitialEvent } from "./event-detail-client";
 
@@ -27,6 +28,14 @@ export default async function EventDetailPage({
     orderBy: { score: "desc" },
     take: 4,
   });
+
+  const session = await auth();
+  const attendance = session?.user?.id
+    ? await prisma.attendance.findMany({
+        where: { userId: session.user.id, eventId: id },
+        select: { status: true, timeSlot: true },
+      })
+    : [];
 
   const initial: InitialEvent = {
     id: event.id,
@@ -72,5 +81,12 @@ export default async function EventDetailPage({
     coordsY: e.coordsY ?? undefined,
   }));
 
-  return <EventDetailClient initial={initial} initialSimilar={initialSimilar} />;
+  return (
+    <EventDetailClient
+      initial={initial}
+      initialSimilar={initialSimilar}
+      initialSaved={attendance.some((a) => a.status === "SAVED")}
+      initialGoing={attendance.some((a) => a.status === "GOING")}
+    />
+  );
 }

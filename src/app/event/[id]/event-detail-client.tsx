@@ -46,14 +46,18 @@ function districtLabel(value: string) {
 export default function EventDetailClient({
   initial,
   initialSimilar,
+  initialSaved = false,
+  initialGoing = false,
 }: {
   initial: InitialEvent;
   initialSimilar: InitialEvent[];
+  initialSaved?: boolean;
+  initialGoing?: boolean;
 }) {
   const router = useRouter();
   const [event, setEvent] = useState(initial);
-  const [saved, setSaved] = useState(false);
-  const [going, setGoing] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
+  const [going, setGoing] = useState(initialGoing);
   const [toast, setToast] = useState<string | null>(null);
   const [reminded, setReminded] = useState(false);
   const [animatingSave, setAnimatingSave] = useState(false);
@@ -107,25 +111,36 @@ export default function EventDetailClient({
   };
 
   const toggleSave = async () => {
-    if (!saved) {
-      try {
-        const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "SAVED" }) });
-        if (!res.ok) { setToast("Błąd zapisu"); return; }
-        setToast("Zapisano ✅");
-      } catch { setToast("Błąd zapisu"); }
+    const prev = saved;
+    const next = !saved;
+    setSaved(next);
+    try {
+      const res = next
+        ? await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "SAVED" }) })
+        : await fetch(`/api/attendance?eventId=${encodeURIComponent(event.id)}&status=SAVED`, { method: "DELETE", headers: { "x-csrf-token": getCsrfToken() } });
+      if (!res.ok) throw new Error();
+      setToast(next ? "Zapisano" : "Usunięto z zapisanych");
+    } catch {
+      setSaved(prev);
+      setToast("Błąd zapisu");
     }
-    setSaved((s) => !s);
   };
 
   const toggleGoing = async () => {
     const prev = going;
-    setGoing(!going);
-    if (!going) setConfetti(true);
+    const next = !going;
+    setGoing(next);
+    if (next) setConfetti(true);
     try {
-      const res = await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "GOING" }) });
+      const res = next
+        ? await fetch("/api/attendance", { method: "POST", headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() }, body: JSON.stringify({ eventId: event.id, status: "GOING" }) })
+        : await fetch(`/api/attendance?eventId=${encodeURIComponent(event.id)}&status=GOING`, { method: "DELETE", headers: { "x-csrf-token": getCsrfToken() } });
       if (!res.ok) throw new Error();
-      setToast(going ? "Nie idziesz" : "Idziesz 🎉");
-    } catch { setGoing(prev); setToast("Błąd"); }
+      setToast(next ? "Idziesz" : "Nie idziesz");
+    } catch {
+      setGoing(prev);
+      setToast("Błąd");
+    }
   };
 
   return (

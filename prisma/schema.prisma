@@ -157,13 +157,13 @@ model Attendance {
   userId    String
   eventId   String
   status    AttendStatus @default(GOING)
-  timeSlot  String?
+  timeSlot  String       @default("")
   createdAt DateTime     @default(now())
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, eventId, timeSlot])
+  @@unique([userId, eventId, timeSlot, status])
   @@index([eventId])
 }
 
