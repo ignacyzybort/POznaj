@@ -1,6 +1,6 @@
 import Supermemory from 'supermemory';
 
-const client = new Supermemory({ apiKey: 'sm_DguiyMYbEunvdTxdAWHR3R_2FXYGSEpEBlyRcMApB4YHOrITN4rGJXYBwm2iEODOcLDIzEhVULNvdSHVlJxlJB9' });
+const client = new Supermemory({ apiKey: process.env.SUPERMEMORY_API_KEY });
 
 const updates = [
   {

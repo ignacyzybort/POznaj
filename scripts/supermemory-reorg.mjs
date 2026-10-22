@@ -1,6 +1,6 @@
 import Supermemory from 'supermemory';
 
-const client = new Supermemory({ apiKey: 'sm_DguiyMYbEunvdTxdAWHR3R_2FXYGSEpEBlyRcMApB4YHOrITN4rGJXYBwm2iEODOcLDIzEhVULNvdSHVlJxlJB9' });
+const client = new Supermemory({ apiKey: process.env.SUPERMEMORY_API_KEY });
 
 // Step 1: Delete old doc
 await client.documents.delete('jY5j5uZThebM3eJrnwZbtx');

@@ -7,23 +7,27 @@ Find the best events happening in Poznań — filtered by district, category, an
 ## Features
 
 - **5 tabs**: Dziś (Home), Mapa (Map), Plan (Calendar), Lista (Saved/Going), Ja (Profile)
-- **Event discovery**: Browse, search, and filter by district, category, vibe, budget, and date
-- **Interactive map**: GeoJSON district polygons → Leaflet per-district view with category-colored markers
+- **Event discovery**: Browse, search, and filter by district, category, vibe, budget, date, and outdoor. 50 events per page with infinite scroll
+- **Interactive map**: GeoJSON district polygons → Leaflet per-district view with category-colored markers, count-badge clusters that expand into a spiral
 - **Score engine**: Real-time freshness + completeness + attendance popularity scoring, drives recommendations
 - **Social**: Friends, friend requests, mutual friends, activity feed, going/saved tracking
 - **In-app sharing**: Send events to friends — creates notification + push alert
 - **Push notifications**: Web Push API (VAPID) for friend activity and event reminders
-- **Notifications**: Clickable in-app notifications (links directly to events)
+- **Notifications**: Clickable in-app notifications (links directly to events), mark-all-read, live badge
 - **Email magic link**: Resend provider, branded UX, error handling
 - **Vibe Quiz**: 4 questions → personalized event recommendations
 - **Surprise Me**: Random event picker (slot machine with spring animations)
 - **Heat meter**: Animated waveform popularity indicator
-- **Passport**: District stamp collection gamification
+- **Per-time saves**: Multi-seance events (cinema) save individual screening times
+- **Calendar export**: Download any event as an `.ics` file
+- **Venue pages**: `/miejsca/[slug]` with upcoming events, district and category tags
+- **Challenges**: 15 daily/weekly/monthly challenges with DB-persisted progress and tier badges
+- **Passport**: Interactive 3D district-stamp booklet with swipe/tap page flips
 - **Streak**: Weekly event-going tracking
-- **POznaj Wrapped**: Year in review (Spotify Wrapped style)
+- **POznaj Wrapped**: Spotify-style 7-slide year in review
 - **Dark mode**: Full theme toggle
 - **PWA**: Installable, offline support, push notifications
-- **Real events**: Scraped from PIK Poznań and Kultura Poznań with venue geocoding
+- **Real events**: Scraped from PIK Poznań, Kultura Poznań, poznan.pl cinema, Muzeum Narodowe, and PUT — with venue geocoding, TMDB posters, and vibe tagging
 
 ## Tech Stack
 
@@ -34,7 +38,7 @@ Find the best events happening in Poznań — filtered by district, category, an
 - **ORM**: Prisma 7
 - **Auth**: NextAuth.js v5 (Google, Email magic link via Resend)
 - **Maps**: Leaflet + OpenStreetMap
-- **Scraping**: Axios + Cheerio (pik.poznan.pl, kultura.poznan.pl)
+- **Scraping**: Axios + Cheerio (pik.poznan.pl, kultura.poznan.pl, poznan.pl cinema, mnp.art.pl, put.poznan.pl) + TMDB posters
 - **Push**: web-push + VAPID + service worker
 - **Animation**: motion library (page transitions), CSS keyframes (micro-interactions)
 - **Deployment**: Vercel (auto-deploy from GitHub)
@@ -108,6 +112,7 @@ src/
 │   │   ├── friends/      # Friends + going endpoint
 │   │   └── ...
 │   ├── event/[id]/       # Event detail
+│   ├── miejsca/[slug]/   # Venue detail
 │   ├── user/[id]/        # External profile
 │   ├── profil/           # Own profile
 │   ├── mapa/             # Map view
@@ -115,15 +120,20 @@ src/
 │   ├── lista/            # Saved/Going list
 │   ├── login/            # Auth page
 │   └── onboarding/       # First-run wizard
-├── components/           # React components (30+)
+├── components/           # React components (35+)
 │   ├── tab-bar.tsx       # Bottom nav with sliding pill
 │   ├── share-modal.tsx   # Send event to friend
 │   ├── nearby-now.tsx    # "Znajomi · idą" rail
 │   ├── district-map.tsx  # Leaflet map wrapper
+│   ├── passport-*.tsx    # 3D passport booklet + card
+│   ├── year-in-review.tsx # Wrapped slides
 │   └── ...
 ├── lib/                  # Utilities
-│   ├── scrapers/         # pikpoznan, kultura-poznan, facebook
+│   ├── scrapers/         # pikpoznan, kultura-poznan, cinema-poznan, mnp, put, facebook
 │   ├── scoring.ts        # Event scoring algorithm
+│   ├── tmdb.ts           # Movie poster lookup (v3 api_key)
+│   ├── vibes.ts          # Shared vibe assignment
+│   ├── challenges.ts     # 15 challenge definitions
 │   ├── push.ts           # Web push notification sender
 │   ├── csrf.ts           # CSRF token helper
 │   ├── auth.ts           # NextAuth config
