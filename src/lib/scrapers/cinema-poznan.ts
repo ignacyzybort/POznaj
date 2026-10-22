@@ -132,17 +132,31 @@ export class PoznanCinemaScraper implements Scraper {
 
     const events = Array.from(allGrouped.values());
 
-    // Resolve TMDB posters — 1 API call per unique film title
-    const uniqueTitles = new Set(events.map((e) => e.title));
-    for (const title of uniqueTitles) {
-      const poster = await fetchMoviePoster(title);
-      if (poster) {
-        for (const e of events) {
-          if (e.title === title) e.imageUrl = poster;
+    // Resolve TMDB posters — 1 API call per unique film title, bounded concurrency
+    const uniqueTitles = Array.from(new Set(events.map((e) => e.title)));
+    console.log(`[Cinema] ${events.length} events, ${uniqueTitles.length} unique titles; fetching posters...`);
+
+    const posters = new Map<string, string | null>();
+    let cursor = 0;
+    const WORKERS = 8;
+    await Promise.all(
+      Array.from({ length: WORKERS }, async () => {
+        while (cursor < uniqueTitles.length) {
+          const title = uniqueTitles[cursor++];
+          posters.set(title, await fetchMoviePoster(title));
+          if (cursor % 100 === 0) {
+            console.log(`[Cinema] posters ${cursor}/${uniqueTitles.length}`);
+          }
         }
-      }
+      })
+    );
+
+    for (const e of events) {
+      const poster = posters.get(e.title);
+      if (poster) e.imageUrl = poster;
     }
 
+    console.log(`[Cinema] Posters resolved: ${Array.from(posters.values()).filter(Boolean).length}/${uniqueTitles.length}`);
     return events;
   }
 }

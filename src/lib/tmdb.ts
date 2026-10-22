@@ -12,6 +12,7 @@ export async function fetchMoviePoster(title: string): Promise<string | null> {
   try {
     const res = await fetch(
       `${BASE}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(title)}&language=pl`,
+      { signal: AbortSignal.timeout(8000) },
     );
     if (!res.ok) { cache.set(key, null); return null; }
     const data = await res.json() as any;
