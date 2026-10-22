@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { CloseIcon } from "@/components/icons";
-import { categories, vibes, vibeEmoji } from "@/lib/data";
+import { categories, districts, vibes } from "@/lib/data";
 
 const SLIDE_DURATION = 3000;
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
@@ -37,27 +37,29 @@ export default function YearInReview({ open, onClose, stats }: {
 }) {
   const [card, setCard] = useState(0);
   const [exiting, setExiting] = useState(false);
+  const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const close = () => { setExiting(true); setTimeout(onClose, 300); };
   useEscape(close);
   const focusTrapRef = useFocusTrap(true);
 
-  const nextCard = () => setCard((c) => (c + 1) % slides.length);
   const slides = buildSlides(stats);
 
   useEffect(() => {
     if (!open) return;
     setCard(0);
-    timerRef.current = setInterval(nextCard, SLIDE_DURATION);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    setPaused(false);
+    setExiting(false);
   }, [open]);
 
-  const handleTap = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    nextCard();
-    timerRef.current = setInterval(nextCard, SLIDE_DURATION);
-  };
+  useEffect(() => {
+    if (!open || paused) return;
+    timerRef.current = setInterval(() => setCard((c) => (c + 1) % slides.length), SLIDE_DURATION);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [open, paused, slides.length]);
+
+  const handleTap = () => setCard((c) => (c + 1) % slides.length);
 
   if (!open) return null;
 
@@ -75,13 +77,20 @@ export default function YearInReview({ open, onClose, stats }: {
             <span key={i} style={{ flex: 1, height: 3, borderRadius: 99, background: i <= card ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.25)", transition: "background 0.3s" }} />
           ))}
         </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); setPaused((p) => !p); }}
+          aria-label={paused ? "Wznów pokaz" : "Zatrzymaj pokaz"}
+          style={{ position: "absolute", top: 48, left: 12, background: "none", border: "1px solid rgba(255,255,255,0.35)", borderRadius: 99, color: "rgba(255,255,255,0.85)", cursor: "pointer", minHeight: 36, padding: "0 12px", fontSize: 12, fontWeight: 700, zIndex: 2 }}
+        >
+          {paused ? "Wznów" : "Pauza"}
+        </button>
         {/* Close button */}
         <button onClick={(e) => { e.stopPropagation(); close(); }} aria-label="Zamknij" style={{ position: "absolute", top: 48, right: 12, background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", width: 44, height: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>
           <CloseIcon size={20} />
         </button>
 
         {/* Slide content */}
-        <div key={card} style={{ width: "100%", color: "white", animation: "pz-slide-up 0.45s var(--ease-out-quart) both" }}>
+        <div key={card} aria-live="polite" style={{ width: "100%", color: "white", animation: "pz-slide-up 0.45s var(--ease-out-quart) both" }}>
           {s.type === "hero" && (
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 14, fontWeight: 700, opacity: 0.6, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>POznaj Wrapped</div>
@@ -169,16 +178,20 @@ function buildSlides(stats: { events: number; saved: number; friends: number; to
   const catMax = Object.values(stats.catCount).length > 0 ? Math.max(...Object.values(stats.catCount)) : 1;
   const vibeMax = Object.values(stats.vibeCount).length > 0 ? Math.max(...Object.values(stats.vibeCount)) : 1;
   const topCatLabel = categories.find((c) => c.value === stats.topCategory)?.label ?? stats.topCategory;
-  const topVibes = Object.entries(stats.vibeCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v], i) => ({ label: k, emoji: vibeEmoji[k] ?? "", count: v, _i: i }));
+  const vibeLabel = (value: string) => vibes.find((v) => v.value === value)?.label ?? value;
+  const districtLabel = (value: string) => districts.find((d) => d.value === value)?.label ?? value;
+  const topVibes = Object.entries(stats.vibeCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v], i) => ({ label: vibeLabel(k), emoji: undefined as string | undefined, count: v, _i: i }));
   const topCats = Object.entries(stats.catCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v], i) => ({ label: categories.find((c) => c.value === k)?.label ?? k, emoji: undefined as string | undefined, count: v, _i: i }));
+  const bestMonth = stats.monthlyCount.indexOf(Math.max(...stats.monthlyCount));
+  const streakLabel = stats.streak === 1 ? "tydzień z rzędu" : "tygodnie z rzędu";
 
   return [
-    { type: "hero" as const, bg: SLIDE_BGS[0], big: `${new Date().getFullYear()}`, label: "POznaj Wrapped", sub: `${stats.events} wydarzeń · ${stats.saved} zapisanych · ${stats.friends} znajomych` },
-    { type: "bars" as const, bg: SLIDE_BGS[1], big: `${stats.events}`, title: "wydarzeń w tym roku", sub: stats.events > 0 ? `Najaktywniejszy: ${MONTHS[stats.monthlyCount.indexOf(stats.maxMonth)]}` : undefined, bars: stats.monthlyCount, max: stats.maxMonth },
+    { type: "hero" as const, bg: SLIDE_BGS[0], big: `${new Date().getFullYear()}`, label: "Twój rok w POznaj", sub: `${stats.events} wydarzeń · ${stats.saved} zapisanych · ${stats.friends} znajomych` },
+    { type: "bars" as const, bg: SLIDE_BGS[1], big: `${stats.events}`, title: "wydarzeń w tym roku", sub: stats.events > 0 && bestMonth >= 0 ? `Najaktywniejszy: ${MONTHS[bestMonth]}` : undefined, bars: stats.monthlyCount, max: stats.maxMonth },
     { type: "breakdown" as const, bg: SLIDE_BGS[2], big: "Kategorie", items: topCats, max: catMax, sub: `Top: ${topCatLabel}` },
-    { type: "breakdown" as const, bg: SLIDE_BGS[3], big: "Nastrój", items: topVibes, max: vibeMax, sub: stats.topVibe ? `Twój vibe to ${stats.topVibe}` : undefined },
-    { type: "bigtext" as const, bg: SLIDE_BGS[4], big: stats.topVenue || "Poznań", label: "Twoje ulubione miejsce", sub: stats.topDistrict !== "Inny" ? `Najwięcej czasu w ${stats.topDistrict}` : undefined },
-    { type: "bigtext" as const, bg: SLIDE_BGS[5], big: `${stats.streak}`, label: "tygodnie z rzędu", sub: stats.streak > 3 ? "Utrzymujesz formę!" : stats.streak > 0 ? "To już coś!" : "Zacznij swój streak!" },
+    { type: "breakdown" as const, bg: SLIDE_BGS[3], big: "Nastrój", items: topVibes, max: vibeMax, sub: stats.topVibe ? `Twój vibe to ${vibeLabel(stats.topVibe)}` : undefined },
+    { type: "bigtext" as const, bg: SLIDE_BGS[4], big: stats.topVenue || "Poznań", label: "Twoje ulubione miejsce", sub: stats.topDistrict !== "Inny" ? `Najwięcej czasu w ${districtLabel(stats.topDistrict)}` : undefined },
+    { type: "bigtext" as const, bg: SLIDE_BGS[5], big: `${stats.streak}`, label: streakLabel, sub: stats.streak > 3 ? "Utrzymujesz formę!" : stats.streak > 0 ? "To już coś!" : "Zacznij swój streak!" },
     { type: "recap" as const, bg: SLIDE_BGS[6], title: "Twój rok w liczbach", items: [{ count: stats.events, label: "wydarzeń", _i: 0 }, { count: stats.saved, label: "zapisanych", _i: 1 }, { count: stats.friends, label: "znajomych", _i: 2 }, { count: stats.streak, label: "tyg. streak", _i: 3 }] },
   ];
 }

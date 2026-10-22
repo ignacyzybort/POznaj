@@ -9,7 +9,7 @@ import PassportPage from "@/components/passport-page";
 
 export interface DistrictVisit {
   district: string; label: string; count: number;
-  events: { date: string; title: string }[];
+  events: { date: string; iso?: string; title: string }[];
 }
 
 const FLIP_DURATION = 500;
@@ -182,7 +182,7 @@ export default function PassportBooklet({
           left: "50%", transform: "translateX(-50%)",
           display: "flex", alignItems: "center", gap: 12,
         }}>
-          <button onClick={prevPage} disabled={spread === 0 || !!flipping} style={{
+          <button onClick={prevPage} aria-label="Poprzednia strona" disabled={spread === 0 || !!flipping} style={{
             background: "none", border: "none", cursor: spread === 0 ? "default" : "pointer",
             opacity: spread === 0 ? 0.2 : 0.5, padding: 8, color: "white",
           }}>
@@ -197,7 +197,7 @@ export default function PassportBooklet({
               }} />
             ))}
           </div>
-          <button onClick={nextPage} disabled={spread >= totalSpreads - 1 || !!flipping} style={{
+          <button onClick={nextPage} aria-label="Następna strona" disabled={spread >= totalSpreads - 1 || !!flipping} style={{
             background: "none", border: "none", cursor: spread >= totalSpreads - 1 ? "default" : "pointer",
             opacity: spread >= totalSpreads - 1 ? 0.2 : 0.5, padding: 8, color: "white",
           }}>

@@ -170,8 +170,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   const districtVisits = districts.filter((d) => d.value !== "Inny").map((d) => {
     const evs = goingItems
       .filter((a) => a.event?.district === d.value)
-      .map((a) => ({ date: new Date(a.event.startDate).toLocaleDateString("pl", { day: "numeric", month: "short" }), title: a.event.title }))
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .map((a) => ({ date: new Date(a.event.startDate).toLocaleDateString("pl", { day: "numeric", month: "short" }), iso: a.event.startDate, title: a.event.title }))
+      .sort((a, b) => a.iso.localeCompare(b.iso));
     return { district: d.value, label: d.label, count: evs.length, events: evs };
   });
 

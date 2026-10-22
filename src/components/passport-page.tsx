@@ -12,7 +12,7 @@ export default function PassportPage({
   if (isFirst) {
     const visitedCount = visits.filter((v) => v.count > 0).length;
     const totalEvents = visits.reduce((s, v) => s + v.count, 0);
-    const first = visits.filter((v) => v.count > 0).sort((a, b) => a.events[0].date.localeCompare(b.events[0].date))[0];
+    const first = visits.filter((v) => v.count > 0).sort((a, b) => (a.events[0].iso ?? a.events[0].date).localeCompare(b.events[0].iso ?? b.events[0].date))[0];
     return (
       <div style={{ display: "flex", width: "100%", height: "100%" }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 16 }}>
