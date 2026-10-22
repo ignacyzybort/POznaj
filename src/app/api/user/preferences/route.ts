@@ -21,6 +21,7 @@ export async function PUT(request: NextRequest) {
     preferredVibes?: unknown;
     reminderMinutes?: unknown;
     emailReminders?: unknown;
+    name?: unknown;
   };
   try {
     body = await request.json();
@@ -31,7 +32,8 @@ export async function PUT(request: NextRequest) {
   const data: {
     district?: District | null;
     handle?: string;
-    bio?: string;
+    bio?: string | null;
+    name?: string | null;
     preferredCategories?: string[];
     preferredVibes?: string[];
     reminderMinutes?: number;
@@ -90,7 +92,9 @@ export async function PUT(request: NextRequest) {
     data.handle = body.handle;
   }
 
-  if (body.bio !== undefined && body.bio !== null) {
+  if (body.bio === null) {
+    data.bio = null;
+  } else if (body.bio !== undefined) {
     if (typeof body.bio !== "string" || body.bio.length > BIO_MAX) {
       return NextResponse.json(
         { error: `Bio must be a string up to ${BIO_MAX} chars` },
@@ -98,6 +102,15 @@ export async function PUT(request: NextRequest) {
       );
     }
     data.bio = body.bio;
+  }
+
+  if (body.name === null) {
+    data.name = null;
+  } else if (body.name !== undefined) {
+    if (typeof body.name !== "string" || body.name.length > 80) {
+      return NextResponse.json({ error: "Name must be a string up to 80 chars" }, { status: 400 });
+    }
+    data.name = body.name.trim() || null;
   }
 
   try {

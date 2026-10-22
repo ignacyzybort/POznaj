@@ -27,7 +27,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
     }
 
-    const ext = file.name?.split(".").pop() || "jpg";
+    const extFromMime: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/avif": "avif",
+    };
+    const ext = extFromMime[file.type] ?? "jpg";
     const filename = `${type}-${session.user.id}-${Date.now()}.${ext}`;
     let url: string;
 

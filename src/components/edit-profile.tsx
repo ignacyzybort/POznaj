@@ -5,6 +5,7 @@ import { districts } from "@/lib/data";
 import CropModal from "@/components/crop-modal";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
+import { getCsrfToken } from "@/lib/csrf";
 import { CameraIcon, CoverIcon, CloseIcon } from "@/components/icons";
 
 export default function EditProfile({
@@ -43,7 +44,11 @@ export default function EditProfile({
       const form = new FormData();
       form.append("file", blob, `${type}.jpg`);
       form.append("type", type);
-      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "x-csrf-token": getCsrfToken() },
+        body: form,
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.url) {
@@ -79,20 +84,30 @@ export default function EditProfile({
   const save = async () => {
     setSaving(true);
     try {
-      await fetch("/api/user/preferences", {
+      const res = await fetch("/api/user/preferences", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
         body: JSON.stringify({
-          name: name.trim() || undefined,
+          name: name.trim() || null,
           handle: handle.trim() || undefined,
-          bio: bio.trim() || undefined,
-          district: district || undefined,
+          bio: bio.trim() || null,
+          district: district || null,
         }),
       });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data?.error === "Handle already taken" ? "Ta nazwa użytkownika jest już zajęta" : "Nie udało się zapisać profilu");
+        return;
+      }
+
       onSaved();
       close();
-    } catch {}
-    setSaving(false);
+    } catch {
+      alert("Nie udało się zapisać profilu");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
