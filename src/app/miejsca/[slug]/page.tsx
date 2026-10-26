@@ -19,15 +19,36 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
   const { slug } = await params;
   const search = getVenueSearch(slug);
 
-  const events = await prisma.event.findMany({
-    where: { endDate: { gte: new Date() }, placeName: { contains: search, mode: "insensitive" } },
-    orderBy: { startDate: "asc" },
-    take: 100,
-    include: {
-      _count: { select: { attendance: { where: { status: "GOING" } } } },
-      vibes: { select: { vibe: true } },
-    },
-  });
+  const query = (where: Record<string, unknown>) =>
+    prisma.event.findMany({
+      where: { endDate: { gte: new Date() }, ...where } as never,
+      orderBy: { startDate: "asc" },
+      take: 100,
+      include: {
+        _count: { select: { attendance: { where: { status: "GOING" } } } },
+        vibes: { select: { vibe: true } },
+      },
+    });
+
+  let events = await query({ placeName: { contains: search, mode: "insensitive" } });
+
+  // Fallback for place names whose punctuation/entities/diacritics do not
+  // survive the slug round-trip: match on significant tokens instead of the
+  // whole string, so new venues keep working without new slug overrides.
+  if (events.length === 0) {
+    const tokens = search
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((t) => t.length >= 3)
+      .slice(0, 4);
+    const labelTokens = (getVenueLabel(slug) ?? "")
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((t) => t.length >= 3)
+      .slice(0, 4);
+    const allTokens = [...new Set([...tokens, ...labelTokens])].slice(0, 4);
+    if (allTokens.length > 0) {
+      events = await query({ AND: allTokens.map((t) => ({ placeName: { contains: t, mode: "insensitive" } })) });
+    }
+  }
 
   const serialized = events.map((e) => ({
     id: e.id,

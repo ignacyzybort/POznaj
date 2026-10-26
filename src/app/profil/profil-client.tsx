@@ -147,11 +147,18 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   }, [refreshKey]);
 
   const goingItems = attendanceData.filter((a) => a.status === "GOING");
-  const goingYear = goingItems.filter((a) => a.event?.startDate && new Date(a.event.startDate).getFullYear() === new Date().getFullYear());
-  const savedYear = attendanceData.filter((a) => a.status === "SAVED" && a.event?.startDate && new Date(a.event.startDate).getFullYear() === new Date().getFullYear());
-  const streaks = computeStreaks(goingItems.map((a) => new Date(a.event.startDate)));
+  // "Visited" means the event already started — future GOING rows are plans,
+  // not passport stamps / wrapped history (audit: future events were counted).
+  const [nowMs] = useState(() => Date.now());
+  const attendedItems = goingItems.filter(
+    (a) => a.event?.startDate && new Date(a.event.startDate).getTime() <= nowMs,
+  );
+  const currentYear = new Date(nowMs).getFullYear();
+  const goingYear = attendedItems.filter((a) => a.event?.startDate && new Date(a.event.startDate).getFullYear() === currentYear);
+  const savedYear = attendanceData.filter((a) => a.status === "SAVED" && a.event?.startDate && new Date(a.event.startDate).getFullYear() === currentYear);
+  const streaks = computeStreaks(attendedItems.map((a) => new Date(a.event.startDate)));
   const streakWeeks = streaks.current;
-  const badge = getBadge(goingItems.length);
+  const badge = getBadge(attendedItems.length);
 
   const catCount: Record<string, number> = {};
   const venueCount: Record<string, number> = {};
@@ -167,8 +174,8 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
     if (date) monthlyCount[date.getMonth()]++;
   }
 
-  const districtVisits = districts.filter((d) => d.value !== "Inny").map((d) => {
-    const evs = goingItems
+  const districtVisits = districts.map((d) => {
+    const evs = attendedItems
       .filter((a) => a.event?.district === d.value)
       .map((a) => ({ date: new Date(a.event.startDate).toLocaleDateString("pl", { day: "numeric", month: "short" }), iso: a.event.startDate, title: a.event.title }))
       .sort((a, b) => a.iso.localeCompare(b.iso));
@@ -254,7 +261,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
         <div className="pz-card" style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div><span className="pz-eyebrow" style={{ marginRight: 8 }}>Ranga</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
-            <span className="pz-num" style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
+            <span className="pz-num" style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>{attendedItems.length} wydarzeń</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
             {monthlyCount.map((val, i) => {
@@ -355,7 +362,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
             <div style={{ minWidth: 0 }}><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.02em" }}>Tune-up nastroju</div><div style={{ fontSize: 10, color: "var(--ink-3)", marginTop: 1 }}>4 pytania · odpalimy świeży feed</div></div>
           </button>
           <button onClick={() => setYirOpen(true)} style={{ padding: 14, flex: 1, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 22, color: "white", background: "linear-gradient(135deg,#6E3DFF 0%,#FF3D7F 60%,#FF6B2C 100%)", boxShadow: "0 8px 24px rgba(110,61,255,0.22)" }}>
-            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój 2026</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingYear.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {streakWeeks} tyg. streak</div>
+            <div style={{ fontSize: 10, fontWeight: 700, opacity: 0.85, letterSpacing: "0.06em", textTransform: "uppercase" }}>POznaj wrapped</div><div className="pz-h" style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.025em", lineHeight: 1.1, marginTop: 2 }}>Twój {currentYear}</div><div style={{ fontSize: 10.5, opacity: 0.9, marginTop: 4 }}>{goingYear.length} wydarzeń · {Object.values(stamps).filter(Boolean).length} dzielnic · {streakWeeks} tyg. streak</div>
           </button>
         </div>
         {/* Right column: passport */}
