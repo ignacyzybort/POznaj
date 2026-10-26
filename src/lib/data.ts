@@ -54,28 +54,6 @@ export const vibes = [
   { value: "Aktywne", label: "Aktywne" },
 ];
 
-export const vibeEmoji: Record<string, string> = {
-  Randka: "💕",
-  Impreza: "🥳",
-  WyjscieZeZnajomymi: "👥",
-  Rodzinne: "🧸",
-  Spokojne: "🌙",
-  Kulturalne: "🎭",
-  Aktywne: "⚡",
-};
-
-export const categoryEmoji: Record<string, string> = {
-  Kino: "🎬",
-  Sztuka: "🎨",
-  Muzyka: "🎵",
-  Sport: "⚡",
-  Teatr: "🎭",
-  Warsztaty: "🔧",
-  Konferencje: "💼",
-  Jedzenie: "🍕",
-  Inne: "📌",
-};
-
 export const categoryColors: Record<string, { bg: string; fg: string }> = {
   Muzyka: { bg: "var(--c-muzyka)", fg: "var(--c-muzyka-ink)" },
   Kino: { bg: "var(--c-kino)", fg: "var(--c-kino-ink)" },

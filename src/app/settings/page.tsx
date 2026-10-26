@@ -20,16 +20,13 @@ export default function SettingsPage() {
     return localStorage.getItem("poznaj-district") ?? "";
   });
   const [notificationsOn, setNotificationsOn] = useState(() => {
-    if (typeof window === "undefined") return false;
+    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) return false;
     return localStorage.getItem("poznaj-notifications") === "true";
   });
   const [emailReminders, setEmailReminders] = useState(true);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
-      setNotificationsOn(false);
-      return;
-    }
+    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) return;
     let cancelled = false;
     navigator.serviceWorker.ready
       .then((reg) => reg.pushManager.getSubscription())
@@ -193,7 +190,7 @@ export default function SettingsPage() {
 
         {/* Domyślna dzielnica */}
         <div className="pz-card" style={{ padding: 16, marginBottom: 12 }}>
-          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>📍 Dzielnica</div>
+          <div className="pz-h" style={{ fontSize: 15, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>Dzielnica</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {districts.map((d) => {
               const active = savedDistrict === d.value;

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { EventData } from "@/lib/data";
-import { relDay } from "@/lib/date";
+import { EventData, categoryColors } from "@/lib/data";
+import { relWhen } from "@/lib/date";
 import HeatMeter from "@/components/heat-meter";
 import AvStack from "@/components/av-stack";
 import EventArt from "@/components/event-art";
@@ -11,7 +11,7 @@ import { PinIcon, BookmarkIcon } from "@/components/icons";
 import { getVenueSlug } from "@/lib/slug";
 
 export default function EventCard({
-  event, onOpen, onSave, saved, savedSlots, dense = false, cardStyle = "gradient", className = "",
+  event, onOpen, onSave, saved, savedSlots, dense = false, cardStyle = "typographic", className = "",
 }: {
   event: EventData;
   onOpen?: () => void;
@@ -28,11 +28,10 @@ export default function EventCard({
   const multiSeance = showtimes.length > 1;
 
   const [bouncing, setBouncing] = useState(false);
-  useEffect(() => {
+  const pop = () => {
     setBouncing(true);
-    const t = setTimeout(() => setBouncing(false), 350);
-    return () => clearTimeout(t);
-  }, [saved]);
+    setTimeout(() => setBouncing(false), 350);
+  };
 
   return (
     <div onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(); } }} className={`pz-card pz-card-lift ${className}`} style={{ cursor: "pointer", height: "100%", display: "flex", flexDirection: "column" }}>
@@ -42,16 +41,17 @@ export default function EventCard({
 
       <div style={{ padding: dense ? "12px 14px 14px" : "14px 16px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-          <span className="pz-eyebrow">
-            {relDay(new Date(event.startDate))}
+          <span className="pz-eyebrow" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 99, background: (categoryColors[event.category] ?? categoryColors.Inne).bg, flexShrink: 0 }} />
+            {relWhen(event.startDate, event.endDate)}
             {multiSeance ? ` · ${showtimes.length} ${showtimes.length === 1 ? "seans" : showtimes.length < 5 ? "seanse" : "seansów"}` : event.time ? ` · ${event.time}` : " · cały dzień"}
           </span>
           <HeatMeter score={event.score} />
         </div>
 
-        <h3 className="pz-h" style={{
-          fontSize: dense ? 16 : 18, fontWeight: 700, letterSpacing: "-0.025em",
-          margin: 0, lineHeight: 1.18, cursor: "pointer",
+        <h3 className="pz-display" style={{
+          fontSize: dense ? 18 : 22, fontWeight: 400, letterSpacing: "-0.025em",
+          margin: 0, lineHeight: 1.05, cursor: "pointer",
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
         }}>{event.title}</h3>
 
@@ -91,7 +91,7 @@ export default function EventCard({
               </span>
             )}
           </div>
-          <button onClick={(e) => { e.stopPropagation(); onSave?.(); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
+          <button onClick={(e) => { e.stopPropagation(); pop(); onSave?.(); }} aria-label="Zapisz" className={bouncing ? "pz-bookmark-bounce" : ""} style={{
             border: 0, background: "transparent", color: saved ? "var(--ink)" : "var(--ink-4)",
             cursor: "pointer", padding: 0, display: "inline-flex", width: 44, height: 44, alignItems: "center", justifyContent: "center",
           }}>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { EventData } from "@/lib/data";
-import { relDay } from "@/lib/date";
+import { relWhen } from "@/lib/date";
 import EventArt from "@/components/event-art";
 import CategoryTag from "@/components/category-tag";
 import { SearchIcon } from "@/components/icons";
@@ -120,7 +120,7 @@ export default function SearchOverlay({
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}>{ev.title}</div>
                 <div style={{ fontSize: 11.5, color: "var(--ink-3)", marginTop: 2 }}>
-                  {relDay(new Date(ev.startDate))} · {ev.placeName}
+                  {relWhen(ev.startDate, ev.endDate)} · {ev.placeName}
                 </div>
               </div>
               <CategoryTag cat={ev.category} />

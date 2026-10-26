@@ -58,7 +58,7 @@ export default function LoginPage() {
 
           {emailSent ? (
             <div style={{ textAlign: "center", padding: "16px 0" }}>
-              <span style={{ fontSize: 28 }}>📧</span>
+              <span className="pz-eyebrow">E-mail</span>
               <p style={{ fontSize: 13, fontWeight: 600, marginTop: 8, color: "var(--ink-2)" }}>Sprawdź skrzynkę</p>
               <p style={{ fontSize: 12, marginTop: 4, color: "var(--ink-3)" }}>Wysłaliśmy magiczny link na {email}</p>
               <button onClick={() => { setEmailSent(false); setError(null); }} style={{ fontSize: 12, textDecoration: "underline", marginTop: 12, cursor: "pointer", border: 0, background: "none", color: "var(--ink-4)" }}>Inny adres</button>

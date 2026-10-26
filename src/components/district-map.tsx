@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { BackIcon } from "@/components/icons";
 import type { EventData } from "@/lib/data";
 import { categoryColors } from "@/lib/data";
+import { useTheme } from "@/components/theme-provider";
+import { relWhen } from "@/lib/date";
 import districtGeojson from "@/lib/poznan-districts.json";
 
 const CAT_INITIAL: Record<string, string> = {
@@ -45,33 +47,6 @@ function getId(feature: any): string {
   return GEO_NAME_TO_ID[feature?.properties?.name] ?? feature?.properties?.name ?? "";
 }
 
-/** Compute approximate Poznań outer boundary from all district polygons */
-function computeCityBoundary(): [number, number][] {
-  const all: [number, number][] = [];
-  for (const f of (districtGeojson as any).features ?? []) {
-    const g = f.geometry;
-    if (g?.coordinates) {
-      const coords = g.type === "Polygon" ? g.coordinates[0] : g.coordinates.flat()[0];
-      for (const c of coords) all.push([c[1], c[0]]);
-    }
-  }
-  if (all.length < 3) return [];
-  // Simple convex hull (Graham scan)
-  const start = all.reduce((a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] < b[1]) ? a : b);
-  const sorted = all.filter((p) => p !== start).sort((a, b) => {
-    const cross = (a[0] - start[0]) * (b[1] - start[1]) - (a[1] - start[1]) * (b[0] - start[0]);
-    return cross !== 0 ? -cross : (a[0] - start[0]) ** 2 + (a[1] - start[1]) ** 2 - (b[0] - start[0]) ** 2 - (b[1] - start[1]) ** 2;
-  });
-  const hull: [number, number][] = [start];
-  for (const p of sorted) {
-    while (hull.length > 1 && (hull[hull.length - 1][0] - hull[hull.length - 2][0]) * (p[1] - hull[hull.length - 2][1]) - (hull[hull.length - 1][1] - hull[hull.length - 2][1]) * (p[0] - hull[hull.length - 2][0]) >= 0) hull.pop();
-    hull.push(p);
-  }
-  return hull;
-}
-
-const CITY_BOUNDARY = computeCityBoundary();
-
 function createCategoryMarker(category: string, index: number) {
   const colors = categoryColors[category] ?? categoryColors.Inne;
   return L.divIcon({
@@ -89,16 +64,16 @@ function createCategoryMarker(category: string, index: number) {
   });
 }
 
-function getStyle(id: string, isSelected: boolean, hasSelection: boolean, count: number, maxCount: number) {
+function getStyle(id: string, isSelected: boolean, hasSelection: boolean, count: number, maxCount: number, isDark = true) {
   const ratio = maxCount > 0 ? count / maxCount : 0;
   const hue = DISTRICT_HUES[id] ?? 0;
   const sat = isSelected ? 40 : 50 + Math.round(25 * ratio);
-  const lit = isSelected ? 50 : 48 - Math.round(18 * ratio);
-  const opacity = isSelected ? 0.06 : hasSelection ? 0.08 : 0.28;
+  const lit = isDark ? (isSelected ? 50 : 48 - Math.round(18 * ratio)) : (isSelected ? 46 : 58 - Math.round(12 * ratio));
+  const opacity = isSelected ? 0.06 : hasSelection ? 0.08 : isDark ? 0.28 : 0.18;
   return {
     fillColor: `hsl(${hue}, ${sat}%, ${lit}%)`,
     fillOpacity: opacity,
-    color: isSelected ? "white" : "rgba(255,255,255,0.45)",
+    color: isSelected ? (isDark ? "white" : "#14130F") : (isDark ? "rgba(255,255,255,0.45)" : "rgba(20,19,15,0.28)"),
     weight: isSelected ? 3 : 1.2,
   };
 }
@@ -107,7 +82,7 @@ function getHue(id: string): number {
   return DISTRICT_HUES[id] ?? 0;
 }
 
-function MapController({ selected, eventCounts, geoRef }: { selected: string | null; eventCounts: Record<string, number>; geoRef: React.RefObject<L.GeoJSON | null> }) {
+function MapController({ selected, eventCounts, geoRef, isDark }: { selected: string | null; eventCounts: Record<string, number>; geoRef: React.RefObject<L.GeoJSON | null>; isDark: boolean }) {
   const map = useMap();
   const prevSelected = useRef(selected);
   const glowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -166,36 +141,11 @@ function MapController({ selected, eventCounts, geoRef }: { selected: string | n
       const id = getId(feat);
       const isSelected = id === selected;
       const count = eventCounts[id] ?? 0;
-      (layer as L.Path).setStyle(getStyle(id, isSelected, !!selected && !isSelected, count, maxCount));
+      (layer as L.Path).setStyle(getStyle(id, isSelected, !!selected && !isSelected, count, maxCount, isDark));
     });
-  }, [selected, eventCounts, geoRef]);
+  }, [selected, eventCounts, geoRef, isDark]);
 
   return null;
-}
-
-function DistrictBoundary() {
-  const map = useMap();
-  useEffect(() => {
-    const dark = L.polygon(
-      [[-90, -180], [-90, 180], [90, 180], [90, -180]],
-      { color: "#111", fillColor: "#111", fillOpacity: 0.75, weight: 0, interactive: false }
-    );
-    if (CITY_BOUNDARY.length > 2) {
-      // Add the city boundary as a hole
-      (dark as any).setLatLngs([[[-90, -180], [-90, 180], [90, 180], [90, -180]], CITY_BOUNDARY]);
-    }
-    dark.addTo(map);
-    return () => { dark.remove(); };
-  }, [map]);
-  return null;
-}
-
-function relDay(d: Date): string {
-  const now = new Date();
-  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
-  if (d.toDateString() === now.toDateString()) return "Dziś";
-  if (d.toDateString() === tomorrow.toDateString()) return "Jutro";
-  return d.toLocaleDateString("pl", { day: "numeric", month: "short" });
 }
 
 export default function DistrictMap({
@@ -208,6 +158,7 @@ export default function DistrictMap({
 }) {
   const geoRef = useRef<L.GeoJSON | null>(null);
   const router = useRouter();
+  const { theme } = useTheme();
 
   const handleSelect = (id: string) => { onSelect(id); };
   const handleBack = () => { onBack(); };
@@ -264,14 +215,14 @@ export default function DistrictMap({
       mouseover: (e) => { (e.target as L.Path).setStyle({ weight: 4, color: "white" }); },
       mouseout: (e) => {
         const isSelected = id === selectedDistrict;
-        (e.target as L.Path).setStyle(getStyle(id, isSelected, !!selectedDistrict && !isSelected, count, maxCount));
+        (e.target as L.Path).setStyle(getStyle(id, isSelected, !!selectedDistrict && !isSelected, count, maxCount, theme === "dark"));
       },
     });
 
     // Permanent district label with event count, colored by district hue
     if (id && !selectedDistrict) {
       const hue = DISTRICT_HUES[id] ?? 0;
-      const labelColor = `hsl(${hue}, 60%, 72%)`;
+      const labelColor = theme === "dark" ? `hsl(${hue}, 60%, 72%)` : `hsl(${hue}, 55%, 30%)`;
       const label = count > 0
         ? `<span style="font-size: var(--text-sm); font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}<span style="font-size: var(--text-xs); font-weight: 600; opacity: 0.7; margin-left: 4px;">${count}</span></span>`
         : `<span style="font-size: var(--text-sm); font-weight: 700; color: ${labelColor}; text-shadow: 0 0 6px var(--bg);">${name}</span>`;
@@ -304,17 +255,20 @@ export default function DistrictMap({
         zoom={11}
         minZoom={10}
         maxBounds={[[52.30, 16.75], [52.50, 17.10]]}
-        style={{ width: "100%", height: "100%", background: "#111" }}
+        style={{ width: "100%", height: "100%", background: theme === "dark" ? "#1a1a1c" : "#ececea" }}
         zoomControl={true}
       >
-        <DistrictBoundary />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          key={`tiles-${theme}`}
+          attribution='Tiles &copy; <a href="https://www.esri.com/">Esri</a>'
+          url={theme === "dark"
+            ? "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+            : "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"}
         />
-        <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} />
+        <MapController selected={selectedDistrict} eventCounts={eventCounts} geoRef={geoRef} isDark={theme === "dark"} />
         {districtGeojson && (
           <GeoJSON
+            key={`districts-${theme}`}
             ref={geoRef}
             data={districtGeojson as any}
             onEachFeature={onEachFeature}
@@ -322,7 +276,7 @@ export default function DistrictMap({
               const id = getId(feature ?? {});
               const isSelected = id === selectedDistrict;
               const count = eventCounts[id] ?? 0;
-              return getStyle(id, isSelected, !!selectedDistrict && !isSelected, count, maxCount);
+              return getStyle(id, isSelected, !!selectedDistrict && !isSelected, count, maxCount, theme === "dark");
             }}
           />
         )}
@@ -404,7 +358,7 @@ export default function DistrictMap({
                 )}
                 <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: "8px 10px 6px", background: "linear-gradient(180deg, transparent, rgba(20,19,15,0.8))" }}>
                   <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "white", lineHeight: 1.15, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.time ?? relDay(new Date(ev.startDate))} · {ev.placeName}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(255,255,255,0.75)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.time ?? relWhen(ev.startDate, ev.endDate)} · {ev.placeName}</p>
                 </div>
               </div>
             ))}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PL_DAY_FULL, PL_MONTH_FULL, relDay, fmtFullDate } from "@/lib/date";
+import { relWhen, fmtFullDate, fmtShortDate } from "@/lib/date";
 import { districts } from "@/lib/data";
 import HeatMeter from "@/components/heat-meter";
 import EventArt from "@/components/event-art";
@@ -13,7 +13,6 @@ import Toast from "@/components/toast";
 import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
 import ShareModal from "@/components/share-modal";
-import { DUR } from "@/lib/duration";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon, SendIcon } from "@/components/icons";
 import { getCsrfToken } from "@/lib/csrf";
 
@@ -57,14 +56,14 @@ export default function EventDetailClient({
   initialReminded?: boolean;
 }) {
   const router = useRouter();
-  const [event, setEvent] = useState(initial);
+  const [event] = useState(initial);
   const [saved, setSaved] = useState(initialSaved);
   const [going, setGoing] = useState(initialGoing);
   const [toast, setToast] = useState<string | null>(null);
   const [reminded, setReminded] = useState(initialReminded);
   const [animatingSave, setAnimatingSave] = useState(false);
   const [confetti, setConfetti] = useState(false);
-  const [similar, setSimilar] = useState<InitialEvent[]>(initialSimilar);
+  const [similar] = useState<InitialEvent[]>(initialSimilar);
   const [showShare, setShowShare] = useState(false);
   const [glowVisible, setGlowVisible] = useState(false);
   const [actionBarVisible, setActionBarVisible] = useState(false);
@@ -91,7 +90,7 @@ export default function EventDetailClient({
       await navigator.share({ title: event.title, url: window.location.href });
     } catch {
       await navigator.clipboard.writeText(window.location.href);
-      setToast("Skopiowano link 🔗");
+      setToast("Skopiowano link");
     }
   };
 
@@ -176,14 +175,14 @@ export default function EventDetailClient({
             <CategoryTag cat={event.category} size="md" />
             {event.vibes?.map((v: string) => <VibePill key={v} vibe={v} />)}
           </div>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 6.4vw, 30px)", fontWeight: 700, letterSpacing: "-0.015em", lineHeight: 1.12 }}>{event.title}</h1>
+          <h1 className="pz-display" style={{ margin: 0, fontSize: "clamp(30px, 8.2vw, 38px)", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1.02, textWrap: "balance" }}>{event.title}</h1>
 
           <div style={{ marginTop: 16, padding: 14, borderRadius: 22, background: "var(--bg-soft)", boxShadow: "var(--shadow-sm)" }}>
             <HeatMeter score={event.score} size="md" />
           </div>
 
           <div className="pz-detail-stats" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
-            <StatCard icon={<CalIcon size={14} />} label="Kiedy" title={`${relDay(new Date(event.startDate))}, ${event.time ?? "cały dzień"}`} sub={fmtFullDate(new Date(event.startDate))} />
+            <StatCard icon={<CalIcon size={14} />} label="Kiedy" title={`${relWhen(event.startDate, event.endDate)}${event.time ? `, ${event.time}` : ""}`} sub={relWhen(event.startDate, event.endDate) === "Trwa" ? `Do ${fmtShortDate(new Date(event.endDate))}` : fmtFullDate(new Date(event.startDate))} />
             <StatCard icon={<PinIcon size={14} />} label="Gdzie" title={event.placeName} sub={`${districtLabel(event.district)}${event.address ? ` · ${event.address}` : ""}`} />
             <StatCard icon={<UsersIcon size={14} />} label="Popularność" title={event.score >= 70 ? "Bardzo popularne" : event.score >= 40 ? "Rośnie" : "Nowość"} sub={`${event.score} pkt · na podstawie dopasowania`} />
              <StatCard icon={<SparkIcon size={14} />} label="Bilet" title={event.price ? (event.price === "0 zł" ? "Wstęp wolny" : event.price) : "Sprawdź"} sub={event.price ? (event.price === "0 zł" ? "Za darmo" : "Kup u źródła") : "Skontaktuj się z organizatorem"} />

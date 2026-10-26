@@ -34,7 +34,7 @@ export default function TrendingRail() {
   return (
     <div style={{ padding: "0 16px 10px" }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
-        <h2 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>🔥 Hottest venues</h2>
+        <h2 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>Najgorętsze miejsca</h2>
         <span className="pz-eyebrow">Top w tym tygodniu</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

@@ -29,7 +29,10 @@ export default function MapaClient({ events }: { events: EventData[] }) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowKey = tomorrow.toDateString();
 
+    const MAP_DISTRICTS = new Set(["Centrum", "StareMiasto", "NoweMiasto", "Jezyce", "Grunwald", "Wilda"]);
+
     return events.filter((e) => {
+      if (!MAP_DISTRICTS.has(e.district)) return false;
       if (category && e.category !== category) return false;
       if (outdoorOnly && !e.outdoor) return false;
       const d = new Date(e.startDate);

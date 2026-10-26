@@ -7,7 +7,7 @@ import HeatMeter from "@/components/heat-meter";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
 import { pl } from "date-fns/locale";
 
-export default function PlanClient({ events }: { events: EventData[] }) {
+export default function PlanClient({ events, personal = false }: { events: EventData[]; personal?: boolean }) {
   const today = startOfDay(new Date());
   const days = useMemo(
     () => Array.from({ length: 14 }, (_, i) => addDays(today, i)),
@@ -25,9 +25,9 @@ export default function PlanClient({ events }: { events: EventData[] }) {
 
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 100px" }}>
-      <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Kalendarz</div>
-      <h1 className="pz-h" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em" }}>
-        Następne dwa tygodnie.
+      <div className="pz-eyebrow" style={{ marginBottom: 6 }}>{personal ? "Twój kalendarz" : "Kalendarz"}</div>
+      <h1 className="pz-display" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 400, letterSpacing: "-0.035em" }}>
+        {personal ? "Twój plan." : "Następne dwa tygodnie."}
       </h1>
 
       {/* Day strip */}
@@ -56,25 +56,32 @@ export default function PlanClient({ events }: { events: EventData[] }) {
       {/* Events for selected day */}
       {dayEvents.length === 0 ? (
         <div style={{ padding: "64px 0", textAlign: "center", color: "var(--ink-4)" }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>🌙</div>
-          <p style={{ fontSize: 15, fontWeight: 700 }}>Luz</p>
-          <p style={{ fontSize: 13, marginTop: 4 }}>Idź na spacer na Cytadelę</p>
+          <div className="pz-display" style={{ fontSize: 40, marginBottom: 12 }}>—</div>
+          <p style={{ fontSize: 15, fontWeight: 700 }}>{personal ? "Pusto w kalendarzu" : "Luz"}</p>
+          <p style={{ fontSize: 13, marginTop: 4 }}>{personal ? "Zapisz wydarzenie, a pojawi się tutaj" : "Idź na spacer na Cytadelę"}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {dayEvents
             .sort((a, b) => (a.time ?? "00:00").localeCompare(b.time ?? "00:00"))
-            .map((ev) => (
+            .map((ev) => {
+              const showtimes = ev.time?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
+              return (
               <Link
                 key={ev.id}
                 href={`/event/${ev.id}`}
-                style={{ display: "flex", gap: 16, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit", position: "relative", overflow: "hidden" }}
+                style={{ display: "flex", gap: 14, padding: 12, borderRadius: 22, background: "var(--bg-elev)", boxShadow: "var(--shadow-sm)", textDecoration: "none", color: "inherit", position: "relative", overflow: "hidden" }}
               >
                 <div style={{ position: "absolute", left: 0, top: 0, width: 4, height: "100%", background: (categoryColors[ev.category]?.bg ?? "#888") }} />
-                <div style={{ textAlign: "center", minWidth: 44, paddingLeft: 4 }}>
+                <div style={{ textAlign: "center", minWidth: 52, paddingLeft: 4, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div className="pz-num" style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-3)" }}>
-                    {ev.time ?? "--:--"}
+                    {showtimes[0] ?? "--:--"}
                   </div>
+                  {showtimes.length > 1 && (
+                    <div className="pz-mono" style={{ fontSize: 9.5, color: "var(--ink-4)", marginTop: 3 }}>
+                      +{showtimes.length - 1}
+                    </div>
+                  )}
                 </div>
                 <div style={{ width: 2, flexShrink: 0, alignSelf: "stretch", borderRadius: 99, background: "var(--line)" }} />
                 <div style={{ minWidth: 0, flex: 1 }}>
@@ -82,7 +89,7 @@ export default function PlanClient({ events }: { events: EventData[] }) {
                     <span className="pz-pill" style={{ fontSize: 10 }}>{ev.category}</span>
                     <HeatMeter score={ev.score} />
                   </div>
-                  <p className="pz-h" style={{ fontSize: 13, fontWeight: 700, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <p className="pz-display" style={{ fontSize: 17, fontWeight: 400, lineHeight: 1.05, marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {ev.title}
                   </p>
                   <p style={{ fontSize: 12, marginTop: 2, color: "var(--ink-3)" }}>
@@ -90,7 +97,8 @@ export default function PlanClient({ events }: { events: EventData[] }) {
                   </p>
                 </div>
               </Link>
-            ))}
+              );
+            })}
         </div>
       )}
     </div>

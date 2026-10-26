@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { categories, vibes as vibeOpts, districts, categoryEmoji, vibeEmoji } from "@/lib/data";
+import { categories, vibes as vibeOpts, districts } from "@/lib/data";
 import { getCsrfToken } from "@/lib/csrf";
 import { BackIcon, ArrowIcon, PinIcon } from "@/components/icons";
 
@@ -74,7 +74,7 @@ export default function OnboardingPage() {
         {/* Welcome */}
         {step === "welcome" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 24 }}>🏙️</div>
+            <div className="pz-display" style={{ fontSize: 72, lineHeight: 0.8, marginBottom: 22, letterSpacing: "-0.05em" }}>P.</div>
             <h1 className="pz-h" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.035em", margin: "0 0 12px", lineHeight: 1.05, color: "var(--ink)" }}>
               Cześć,<br />Poznaniaku.
             </h1>
@@ -100,7 +100,7 @@ export default function OnboardingPage() {
                 return (
                   <button key={c.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedCategories(toggle(selectedCategories, c.value))}>
-                    {categoryEmoji[c.value]} {c.label}
+                    {c.label}
                   </button>
                 );
               })}
@@ -123,7 +123,7 @@ export default function OnboardingPage() {
                 return (
                   <button key={v.value} className="pz-chip" aria-pressed={active} data-active={active ? "true" : undefined}
                     onClick={() => setSelectedVibes(toggle(selectedVibes, v.value))}>
-                    {vibeEmoji[v.value]} {v.label}
+                    {v.label}
                   </button>
                 );
               })}
@@ -157,7 +157,7 @@ export default function OnboardingPage() {
         {/* Ready */}
         {step === "ready" && (
           <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 24 }}>✅</div>
+            <div className="pz-display" style={{ fontSize: 72, lineHeight: 0.8, marginBottom: 22, letterSpacing: "-0.05em" }}>OK.</div>
             <h1 className="pz-h" style={{ fontSize: "var(--text-3xl)", fontWeight: 800, letterSpacing: "-0.035em", margin: "0 0 12px", color: "var(--ink)" }}>
               Gotowe.
             </h1>

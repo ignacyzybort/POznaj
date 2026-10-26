@@ -13,8 +13,9 @@ export default async function MapaPage() {
       {/* Header */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0,
-        padding: "calc(16px + var(--safe-t)) 18px 10px",
+        padding: "calc(16px + var(--safe-t)) 18px 34px",
         zIndex: 1000, pointerEvents: "none",
+        background: "linear-gradient(180deg, var(--bg) 0%, var(--bg) 62%, transparent 100%)",
       }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>
           <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>

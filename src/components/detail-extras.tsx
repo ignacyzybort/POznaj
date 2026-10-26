@@ -32,7 +32,6 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
 
   useEffect(() => {
     const ctrl = new AbortController();
-    setWeatherStatus("loading");
     fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lon}&time=${eventTs}`, { signal: ctrl.signal })
       .then((r) => r.json())
       .then((d) => {
@@ -48,7 +47,6 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
         if (e?.name !== "AbortError") setWeatherStatus("error");
       });
     return () => ctrl.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coords.lat, coords.lon, event.id, eventTs]);
 
   const calStart = icalDate(slot.start);
@@ -124,19 +122,19 @@ export default function DetailExtras({ event, onToast }: { event: EventData; onT
               <a href={calApple} target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)", borderBottom: "0.5px solid var(--line)" }}
                 onClick={() => setShowCal(false)}>
-                <span style={{ fontSize: 18 }}>🍎</span>
+                <span className="pz-mono" style={{ fontSize: 10, width: 24, height: 24, borderRadius: 6, background: "var(--bg-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>ICS</span>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Apple Calendar</span>
               </a>
               <a href={calGoogle} target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)", borderBottom: "0.5px solid var(--line)" }}
                 onClick={() => setShowCal(false)}>
-                <span style={{ fontSize: 18 }}>📅</span>
+                <span className="pz-mono" style={{ fontSize: 10, width: 24, height: 24, borderRadius: 6, background: "var(--bg-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>G</span>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Google Calendar</span>
               </a>
               <a href={`/api/ical/${event.id}`} target="_blank" rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none", color: "var(--ink)" }}
                 onClick={() => { setShowCal(false); onToast("Dodano do kalendarza"); }}>
-                <span style={{ fontSize: 18 }}>📥</span>
+                <span className="pz-mono" style={{ fontSize: 10, width: 24, height: 24, borderRadius: 6, background: "var(--bg-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>ICS</span>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Pobierz .ics</span>
               </a>
             </div>

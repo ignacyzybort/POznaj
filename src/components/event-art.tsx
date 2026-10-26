@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { EventData, categoryColors } from "@/lib/data";
 
 const CAT_GLYPH: Record<string, string> = {
@@ -61,28 +61,24 @@ export default function EventArt({
   const seed = hashStr(event.id);
   const glyph = CAT_GLYPH[event.category] ?? "✶";
   const label = CATEGORY_LABEL[event.category] ?? event.category;
-  const gradientBg = useMemo(
-    () => `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`,
-    [seed, tone.bg],
-  );
-  const gradientOverlay = useMemo(
-    () => `radial-gradient(circle at ${rnd(seed, 3) * 100}% ${rnd(seed, 4) * 100}%, white, transparent 40%)`,
-    [seed],
-  );
+  const gradientBg = `radial-gradient(circle at ${20 + rnd(seed, 1) * 60}% ${20 + rnd(seed, 2) * 60}%, ${tone.bg}, ${tone.bg} 40%, color-mix(in oklab, ${tone.bg} 60%, black))`;
+  const gradientOverlay = `radial-gradient(circle at ${rnd(seed, 3) * 100}% ${rnd(seed, 4) * 100}%, white, transparent 40%)`;
 
 
   if (style === "typographic") {
+    const words = event.title.split(" ").slice(0, 4).join(" ");
+    const size = height < 150 ? 26 : height < 200 ? 34 : 46;
     return (
       <div className="pz-art pz-art-noise" style={{
         height, background: tone.bg, color: tone.fg,
-        padding: "14px 16px", display: "flex", alignItems: "flex-end",
+        padding: "14px 16px", display: "flex", alignItems: "flex-end", overflow: "hidden",
       }}>
-        <div style={{ position: "relative", zIndex: 2, lineHeight: 0.88 }}>
-          <div className="pz-display" style={{ fontSize: 44, letterSpacing: "-0.04em" }}>
-            {event.title.split(" ").slice(0, 3).join(" ")}
+        <div style={{ position: "relative", zIndex: 2, lineHeight: 0.92, overflow: "hidden", maxHeight: "100%" }}>
+          <div className="pz-display" style={{ fontSize: size, letterSpacing: "-0.04em", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {words}
           </div>
-          <div className="pz-mono" style={{ fontSize: 11, marginTop: 10, opacity: 0.75 }}>
-            {label.toUpperCase()} · {event.time ?? ""}
+          <div className="pz-mono" style={{ fontSize: 9.5, marginTop: 8, opacity: 0.7, letterSpacing: "0.08em" }}>
+            {label.toUpperCase()}{event.time ? ` · ${event.time}` : ""}
           </div>
         </div>
       </div>
@@ -105,22 +101,18 @@ export default function EventArt({
           position: "absolute", right: 14, top: 12, fontSize: 50, opacity: 0.5,
           fontFamily: "var(--font-display)", lineHeight: 1,
         }}>{glyph}</div>
-        <div style={{
-          position: "absolute", left: 14, bottom: 12, fontSize: 13,
-          fontWeight: 700, letterSpacing: "-0.01em",
-        }}>{label}</div>
       </div>
     );
   }
 
   // collage (default)
-  const shapes = useMemo(() => Array.from({ length: 4 }, (_, i) => ({
+  const shapes = Array.from({ length: 4 }, (_, i) => ({
     x: rnd(seed, i * 7 + 1) * 100,
     y: rnd(seed, i * 7 + 2) * 100,
     r: 20 + rnd(seed, i * 7 + 3) * 30,
     shape: (["circle", "square", "tri", "half"] as const)[i % 4],
     rot: rnd(seed, i * 7 + 4) * 90,
-  })), [event.id, seed]);
+  }));
 
   return (
     <div className={`pz-art pz-art-noise ${className}`} style={{
@@ -175,14 +167,6 @@ export default function EventArt({
         fontSize: Math.max(64, height * 0.55), lineHeight: 1, fontFamily: "var(--font-display)",
         opacity: 0.92, mixBlendMode: "multiply",
       }}>{glyph}</div>
-      <div style={{
-        position: "absolute", left: 12, bottom: 12,
-        background: "rgba(255,255,255,0.95)", color: "var(--ink)",
-        padding: "5px 10px", borderRadius: 999,
-        fontSize: 11, fontWeight: 700, letterSpacing: "-0.005em",
-        transform: "rotate(-2deg)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-      }}>{label}</div>
     </div>
   );
 }

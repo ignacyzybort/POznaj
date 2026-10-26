@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import type { EventData } from "@/lib/data";
 import { useEscape } from "@/hooks/use-escape";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
@@ -12,9 +11,9 @@ const questions = [
     id: "energy",
     question: "Jak masz energię?",
     options: [
-      { value: "chill", label: "Chill, niski klucz 😌" },
-      { value: "medium", label: "Średnio, ale mogę wyjść 😐" },
-      { value: "high", label: "W pełni gotowy! 🔋" },
+      { value: "chill", label: "Chill, niski klucz" },
+      { value: "medium", label: "Średnio, ale mogę wyjść" },
+      { value: "high", label: "W pełni gotowy!" },
     ],
   },
   {
@@ -30,19 +29,19 @@ const questions = [
     id: "company",
     question: "Z kim idziesz?",
     options: [
-      { value: "solo", label: "Sam/sama 🧘" },
-      { value: "date", label: "Na randkę 💕" },
-      { value: "friends", label: "Ze znajomymi 🎉" },
-      { value: "family", label: "Rodzinnie 👨‍👩‍👧‍👦" },
+      { value: "solo", label: "Sam/sama" },
+      { value: "date", label: "Na randkę" },
+      { value: "friends", label: "Ze znajomymi" },
+      { value: "family", label: "Rodzinnie" },
     ],
   },
   {
     id: "distance",
     question: "Jak daleko?",
     options: [
-      { value: "nearby", label: "Blisko domu 🏠" },
-      { value: "center", label: "Centrum 🏙️" },
-      { value: "anywhere", label: "Wszystko jedno 🌍" },
+      { value: "nearby", label: "Blisko domu" },
+      { value: "center", label: "Centrum" },
+      { value: "anywhere", label: "Wszystko jedno" },
     ],
   },
 ];
@@ -65,7 +64,6 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
   const [exiting, setExiting] = useState(false);
   useEscape(onClose);
   const focusTrapRef = useFocusTrap(true);
-  const router = useRouter();
 
   const close = () => {
     setExiting(true);
@@ -94,7 +92,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
 
       try {
         const params = new URLSearchParams();
-        if (vibeParams.length) params.append("vibe", vibeParams[0]);
+        for (const v of new Set(vibeParams)) params.append("vibe", v);
         const res = await fetch(`/api/events?limit=3&${params.toString()}`);
         const data = await res.json();
         setRecommendations(data.events?.slice(0, 3) ?? []);
@@ -122,7 +120,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
     return overlay(
       <div style={{ margin: "0 16px", maxWidth: 384, width: "100%", padding: 24, borderRadius: 28, background: "var(--bg-elev)", maxHeight: "80%", overflow: "auto" }}>
         <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <span style={{ fontSize: 32 }}>🎯</span>
+          <span className="pz-eyebrow">Wyniki</span>
           <h2 className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, marginTop: 8, color: "var(--ink)" }}>Dopasowaliśmy dla Ciebie</h2>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>Najlepsze wydarzenia na dziś</p>
         </div>
@@ -144,7 +142,7 @@ export default function VibeQuiz({ onClose }: { onClose: () => void }) {
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: "var(--text-sm)", fontWeight: 700, color: "var(--ink)", margin: 0, lineClamp: 2, WebkitLineClamp: 2, display: "-webkit-box", WebkitBoxOrient: "vertical", overflow: "hidden" }}>{ev.title}</p>
                   <p style={{ fontSize: "var(--text-xs)", marginTop: 4, color: "var(--ink-3)" }}>
-                    📍 {ev.placeName} · {ev.time ?? ""}
+                    {ev.placeName} · {ev.time ?? ""}
                   </p>
                 </div>
               </a>

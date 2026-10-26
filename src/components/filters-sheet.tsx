@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { categories, districts, vibes, vibeEmoji } from "@/lib/data";
+import { categories, districts, vibes } from "@/lib/data";
 import { CloseIcon } from "@/components/icons";
 import { DUR } from "@/lib/duration";
 import { useEscape } from "@/hooks/use-escape";
@@ -73,10 +73,10 @@ export default function FiltersSheet({
 
   if (!show) return null;
 
-  const sections: { key: keyof ActiveFilters; title: string; opts: { v: string; label: string; emoji?: string }[] }[] = [
+  const sections: { key: keyof ActiveFilters; title: string; opts: { v: string; label: string }[] }[] = [
     { key: "category", title: "Kategorie", opts: categories.map((c) => ({ v: c.value, label: c.label })) },
     { key: "district", title: "Dzielnice", opts: districts.map((d) => ({ v: d.value, label: d.label })) },
-    { key: "vibe", title: "Nastrój", opts: vibes.map((v) => ({ v: v.value, label: v.label, emoji: vibeEmoji[v.value] })) },
+    { key: "vibe", title: "Nastrój", opts: vibes.map((v) => ({ v: v.value, label: v.label })) },
   ];
 
   return (
@@ -117,7 +117,7 @@ export default function FiltersSheet({
                     <button key={o.v} className="pz-chip" aria-pressed={isActive}
                             data-active={isActive ? "true" : undefined}
                             onClick={() => onToggle(s.key, o.v)}>
-                      {o.emoji && <span>{o.emoji}</span>}{o.label}
+                      {o.label}
                     </button>
                   );
                 })}

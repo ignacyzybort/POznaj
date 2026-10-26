@@ -15,6 +15,14 @@ export function relDay(d: Date): string {
   return `${d.getDate()} ${PL_MONTH[d.getMonth()]}`;
 }
 
+export function relWhen(start: Date | string, end?: Date | string): string {
+  const now = Date.now();
+  const s = new Date(start);
+  const e = end ? new Date(end) : null;
+  if (s.getTime() <= now && e && e.getTime() >= now) return "Trwa";
+  return relDay(s);
+}
+
 export function fmtFullDate(d: Date): string {
   return `${d.getDate()} ${PL_MONTH_FULL[d.getMonth()]}`;
 }

@@ -39,7 +39,7 @@ export default function PassportCover({ userName, onOpen }: { userName: string; 
         background: "radial-gradient(circle, rgba(197,168,109,0.08) 0%, transparent 70%)",
         position: "relative", zIndex: 1,
       }}>
-        <span style={{ fontSize: 42 }}>🏛️</span>
+        <span className="pz-display" style={{ fontSize: 44, lineHeight: 0.8 }}>P.</span>
       </div>
 
       {/* Gold text */}

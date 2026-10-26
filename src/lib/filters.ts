@@ -1,4 +1,4 @@
-export { districts, categories, vibes, vibeEmoji, categoryColors, categoryEmoji } from "./data";
+export { districts, categories, vibes, categoryColors } from "./data";
 
 export const preferenceLabels: Record<string, string> = {
   Centrum: "Centrum",

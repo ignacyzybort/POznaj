@@ -7,9 +7,8 @@ import { BackIcon, PinIcon } from "@/components/icons";
 import type { EventData } from "@/lib/data";
 
 export default function VenueClient({
-  slug, label, events, districts, categories,
+  label, events, districts, categories,
 }: {
-  slug: string;
   label: string;
   events: EventData[];
   districts: string[];
@@ -28,7 +27,7 @@ export default function VenueClient({
 
       <div style={{ padding: "0 18px" }}>
         <div style={{ marginTop: 20, marginBottom: 8 }}>
-          <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 6vw, 32px)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+          <h1 className="pz-display" style={{ margin: 0, fontSize: "clamp(28px, 7vw, 36px)", fontWeight: 400, letterSpacing: "-0.03em", lineHeight: 1.02 }}>
             {label}
           </h1>
         </div>
@@ -53,7 +52,7 @@ export default function VenueClient({
         </div>
       ) : (
         <div style={{ padding: "0 18px", textAlign: "center", color: "var(--ink-3)", marginTop: 80 }}>
-          <p className="pz-h" style={{ fontSize: "clamp(18px, 4vw, 22px)", margin: "0 0 8px" }}>Jeszcze nic</p>
+          <p className="pz-display" style={{ fontSize: "clamp(20px, 4.5vw, 24px)", margin: "0 0 8px" }}>Jeszcze nic</p>
           <p>Sprawdź później — na razie brak wydarzeń w tym miejscu.</p>
         </div>
       )}

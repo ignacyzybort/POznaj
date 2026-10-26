@@ -55,7 +55,7 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
   return (
     <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
       <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Twoja lista</div>
-      <h1 className="pz-h" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 700, letterSpacing: "-0.035em" }}>
+      <h1 className="pz-display" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 400, letterSpacing: "-0.035em" }}>
         {tab === "saved" ? "Zapisane." : "Idziesz."}
       </h1>
 

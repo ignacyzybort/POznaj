@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EventData } from "@/lib/data";
-import { PL_DAY_FULL, fmtFullDate, relDay } from "@/lib/date";
+import { PL_DAY_FULL, fmtFullDate, relWhen } from "@/lib/date";
 import EventCard from "@/components/event-card";
 import EventArt from "@/components/event-art";
 import SurpriseModal from "@/components/surprise-modal";
@@ -141,18 +141,12 @@ export default function HomeClient({
   }, [quick, search, budget, outdoorOn, activeFilters]);
 
   // Infinite scroll
-  const loadingRef = useRef(loading);
-  loadingRef.current = loading;
-  const loadingMoreRef = useRef(loadingMore);
-  loadingMoreRef.current = loadingMore;
-  const hasMoreRef = useRef(hasMore);
-  hasMoreRef.current = hasMore;
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreRef.current && !loadingRef.current && !loadingMoreRef.current) {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
           const ctrl = new AbortController();
           fetchEvents(ctrl.signal, true);
         }
@@ -161,7 +155,8 @@ export default function HomeClient({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMore, loading, loadingMore]);
 
   // Hydrate saved state once the session is known (and for events loaded client-side)
   useEffect(() => {
@@ -244,7 +239,7 @@ export default function HomeClient({
       } else {
         setSavedIds((prev) => [...prev, id]);
       }
-      if (!isSaved) setToast("Zapisano ✅");
+      if (!isSaved) setToast("Zapisano");
     }
   };
 
@@ -261,25 +256,12 @@ export default function HomeClient({
   return (
     <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       <div className="pz-scroll-progress" ref={progressRef} />
-      {/* Header */}
-      <div style={{ padding: "calc(16px + var(--safe-t)) 18px 6px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-              <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
-                poznaj<span style={{ color: "var(--sage)" }}>.</span>
-              </span>
-              <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>
-                {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
-              </span>
-            </div>
-            <h1 className="pz-h" style={{
-              margin: 0, fontSize: 36, fontWeight: 700, letterSpacing: "-0.035em",
-              lineHeight: 0.95,
-            }}>
-              Poznań nie<br />zasypia.
-            </h1>
-          </div>
+      {/* Masthead */}
+      <div className="pz-masthead" style={{ margin: "calc(14px + var(--safe-t)) 18px 14px" }}>
+        <div className="pz-masthead-meta">
+          <span className="pz-sans-display" style={{ fontSize: 17, color: "var(--ink)" }}>
+            poznaj<span style={{ color: "var(--sage)" }}>.</span>
+          </span>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => setSearchOpen(true)} aria-label="Szukaj" style={{
               width: 44, height: 44, borderRadius: 99, border: 0,
@@ -304,6 +286,16 @@ export default function HomeClient({
               )}
             </button>
           </div>
+        </div>
+        <span className="pz-eyebrow" style={{ fontSize: 9.5, display: "block", marginBottom: 8 }}>
+          {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+        </span>
+        <h1>
+          Poznań nie<br /><em>zasypia.</em>
+        </h1>
+        <div className="pz-masthead-foot">
+          <span className="pz-issue-tag">№ {Math.ceil((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000)}</span>
+          <span className="pz-eyebrow">{total} wydarzeń w mieście</span>
         </div>
       </div>
 
@@ -366,7 +358,7 @@ export default function HomeClient({
             Polecane dla Ciebie
           </h2>
           <div style={{ display: "flex", gap: 14, padding: "0 18px 14px", overflowX: "auto", scrollSnapType: "x mandatory" }}>
-            {forYou.map((ev, i) => (
+            {forYou.map((ev) => (
               <TiltCard key={ev.id}>
                 <div
                 onClick={() => openEvent(ev)}
@@ -387,8 +379,8 @@ export default function HomeClient({
                   background: categoryGradient(ev.category),
                 }}>
                   <div style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                    <h3 className="pz-h" style={{ margin: 0, fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.15, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
-                    <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relDay(new Date(ev.startDate))} · {ev.time ?? "—"}</div>
+                    <h3 className="pz-display" style={{ margin: 0, fontSize: 21, fontWeight: 400, letterSpacing: "-0.025em", lineHeight: 1.02, color: "white", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</h3>
+                    <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4, fontWeight: 500, color: "white" }}>{relWhen(ev.startDate, ev.endDate)} · {ev.time ?? "—"}</div>
                   </div>
                 </div>
                 </div>
@@ -438,7 +430,7 @@ export default function HomeClient({
             </div>
           )}
           {!loading && !error && events.length === 0 && (
-            <EmptyState emoji="🔍" title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
+            <EmptyState title="Brak wydarzeń" subtitle="Spróbuj poluzować filtry — w mieście dzieje się więcej." />
           )}
         </div>
         {hasMore && <div ref={sentinelRef} style={{ height: 1, marginTop: 8 }} />}

@@ -9,11 +9,15 @@ export default async function ListaPage() {
   if (!session?.user?.id) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 20 }}>
           <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
             poznaj<span style={{ color: "var(--sage)" }}>.</span>
           </span>
         </div>
+        <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Twoja lista</div>
+        <h1 className="pz-display" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 400, letterSpacing: "-0.035em" }}>
+          Zapisane.
+        </h1>
         <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
           <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 16, color: "var(--ink-3)" }}>
             Zaloguj się, aby zapisywać wydarzenia

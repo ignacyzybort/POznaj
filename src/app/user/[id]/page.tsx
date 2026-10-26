@@ -2,18 +2,43 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { districts, categoryEmoji } from "@/lib/data";
+import { districts } from "@/lib/data";
 import { fmtFullDate } from "@/lib/date";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { BackIcon } from "@/components/icons";
 import { getCsrfToken } from "@/lib/csrf";
 
+type PublicUser = {
+  id: string;
+  name: string | null;
+  handle: string | null;
+  image: string | null;
+  coverImage: string | null;
+  bio: string | null;
+  district: string | null;
+  createdAt: string;
+  friendCount: number;
+  friendshipStatus: string | null;
+  mutualFriendCount: number;
+  mutualFriends?: { id: string; name: string | null; image: string | null }[];
+  _count: { attendance: number };
+};
+
+type UserActivity = {
+  id: string;
+  type: string;
+  createdAt: string;
+  event: { id: string; title: string; startDate: string; category: string };
+};
+
+type UserResponse = { user: PublicUser; activities: UserActivity[] };
+
 export default function UserPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [friendStatus, setFriendStatus] = useState<string | null>(null);
 
@@ -22,8 +47,8 @@ export default function UserPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.user) {
-          setData(d);
-          setFriendStatus(d.user.friendshipStatus);
+          setData(d as UserResponse);
+          setFriendStatus((d as UserResponse).user.friendshipStatus);
         }
         setLoading(false);
       })
@@ -37,7 +62,7 @@ export default function UserPage() {
       headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
       body: JSON.stringify({ friendId: params.id, action }),
     });
-    const d = await res.json();
+    if (!res.ok) return;
     if (action === "unfriend") {
       setFriendStatus(null);
     } else if (action === "send") {
@@ -63,7 +88,7 @@ export default function UserPage() {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, background: "var(--bg)" }}>
         <div style={{ padding: "54px 18px", textAlign: "center" }}>
-          <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>😕</div>
+          <div className="pz-display" style={{ fontSize: 38, marginBottom: 12 }}>404</div>
           <p style={{ fontWeight: 700, color: "var(--ink)" }}>Nie znaleziono użytkownika</p>
           <button onClick={() => router.back()} style={{ marginTop: 12, border: 0, background: "none", color: "var(--ink-3)", cursor: "pointer", fontSize: 13, textDecoration: "underline" }}>Wróć</button>
         </div>
@@ -94,7 +119,7 @@ export default function UserPage() {
 
       {/* Cover */}
       <div style={{ height: 120, margin: "0 16px", borderRadius: 18, overflow: "hidden", background: coverGradient }}>
-        {user.coverImage && <img src={user.coverImage} alt="" className="w-full h-full object-cover" />}
+        {user.coverImage && <img src={user.coverImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />}
       </div>
 
       {/* Avatar + name */}
@@ -102,7 +127,7 @@ export default function UserPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
           <div style={{ width: 64, height: 64, borderRadius: 99, overflow: "hidden", border: "3px solid var(--bg)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)", flexShrink: 0, background: coverGradient }}>
             {user.image ? (
-              <img src={user.image} alt="" className="w-full h-full object-cover" />
+              <img src={user.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             ) : (
               <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 24, fontWeight: 800 }}>
                 {user.name?.[0]?.toUpperCase() ?? "?"}
@@ -134,7 +159,7 @@ export default function UserPage() {
               )}
               {friendStatus === "ACCEPTED" && (
                 <button onClick={() => handleFriendAction("unfriend")} className="pz-btn ghost" style={{ height: 38, fontSize: 13, borderRadius: 22, padding: "0 16px" }}>
-                  Znajomi ✓
+                  Znajomi
                 </button>
               )}
             </div>
@@ -173,7 +198,7 @@ export default function UserPage() {
         <div style={{ padding: "14px 18px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ display: "flex", alignItems: "center" }}>
-              {user.mutualFriends.slice(0, 5).map((f: any, i: number) => (
+              {user.mutualFriends.slice(0, 5).map((f, i) => (
                 <div key={f.id} style={{
                   width: 26, height: 26, borderRadius: 99, overflow: "hidden",
                   border: "2px solid var(--bg)", marginLeft: i > 0 ? -8 : 0,
@@ -201,21 +226,20 @@ export default function UserPage() {
       {/* Recent activity */}
       {activities.length > 0 && (
         <div style={{ padding: "18px 18px 0" }}>
-          <h2 className="pz-h" style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 12 }}>🎯 Ostatnia aktywność</h2>
+          <h2 className="pz-h" style={{ margin: 0, fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 12 }}>Ostatnia aktywność</h2>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            {activities.map((a: any) => {
-              const daysAgo = Math.floor((Date.now() - new Date(a.createdAt).getTime()) / 86400000);
-              const timeStr = daysAgo === 0 ? "dziś" : daysAgo === 1 ? "wczoraj" : `${daysAgo} dni temu`;
+            {activities.map((a) => {
+              const timeStr = fmtFullDate(new Date(a.createdAt));
               return (
                 <Link key={a.id} href={`/event/${a.event.id}`} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "0.5px solid var(--line)", textDecoration: "none" }}>
-                  <span style={{ fontSize: 20 }}>{a.type === "GOING" ? "✅" : "🔖"}</span>
+                  <span className="pz-eyebrow" style={{ minWidth: 42 }}>{a.type === "GOING" ? "Idę" : "Zapis"}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, color: "var(--ink-2)" }}>
                       {a.type === "GOING" ? "Idzie na: " : "Zapisał: "}
                       <b style={{ color: "var(--ink)" }}>{a.event.title}</b>
                     </div>
                     <div style={{ fontSize: 11.5, color: "var(--ink-4)", marginTop: 2 }}>
-                      {categoryEmoji[a.event.category] ?? "📌"} {a.event.category} · {timeStr}
+                      {a.event.category} · {timeStr}
                     </div>
                   </div>
                 </Link>

@@ -56,5 +56,5 @@ export default async function VenuePage({ params }: { params: Promise<{ slug: st
   const categories = [...new Set(events.map((e) => e.category))];
   const label = events[0]?.placeName ?? getVenueLabel(slug) ?? slugToLabel(slug);
 
-  return <VenueClient slug={slug} label={label} events={serialized} districts={districts} categories={categories} />;
+  return <VenueClient label={label} events={serialized} districts={districts} categories={categories} />;
 }

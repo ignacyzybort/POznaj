@@ -59,7 +59,7 @@ export default function PassportCard({
           marginBottom: 8, fontSize: 18,
           background: "radial-gradient(circle, rgba(197,168,109,0.1), transparent 70%)",
         }}>
-          🏛️
+          <span className="pz-display" style={{ fontSize: 22, lineHeight: 0.8 }}>P.</span>
         </div>
 
         {/* Gold text */}

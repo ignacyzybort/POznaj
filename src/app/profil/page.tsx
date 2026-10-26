@@ -17,7 +17,7 @@ export default async function ProfilPage() {
             </span>
           </div>
           <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
+            <div className="pz-display" style={{ fontSize: 48, marginBottom: 16 }}>Ty.</div>
             <p style={{ fontSize: "var(--text-base)", fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>
             <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "0 24px", borderRadius: 28, fontSize: "var(--text-base)", fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
           </div>

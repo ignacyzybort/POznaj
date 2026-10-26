@@ -1,21 +1,26 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-
-let previousPathname = "";
 
 export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduced = useReducedMotion();
+  // Ref instead of module-level state: module state is shared across SSR requests
+  // and produced different server HTML per request (React hydration mismatch).
+  const previousPathname = useRef<string | null>(null);
 
   // Determine direction: deeper = navigating to a longer path (slide from right),
   // back = navigating to a shorter path (slide from left).
-  const isDeeper = pathname.length > previousPathname.length;
-  previousPathname = pathname;
+  const isDeeper = previousPathname.current === null || pathname.length >= previousPathname.current.length;
+
+  useEffect(() => {
+    previousPathname.current = pathname;
+  }, [pathname]);
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={pathname}
         initial={

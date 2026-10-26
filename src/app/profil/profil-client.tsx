@@ -13,7 +13,7 @@ import InviteModal from "@/components/invite-modal";
 import EditProfile from "@/components/edit-profile";
 import Toast from "@/components/toast";
 import { districts } from "@/lib/data";
-import { SettingsIcon, EditIcon, SparkIcon, BellIcon, SunIcon, MoonIcon, MapIcon, CalIcon, UsersIcon, FireIcon } from "@/components/icons";
+import { SettingsIcon, EditIcon, SparkIcon, BellIcon, SunIcon, MoonIcon, MapIcon, CalIcon, UsersIcon, FireIcon, CheckIcon } from "@/components/icons";
 import { CHALLENGES, computeStreaks } from "@/lib/challenges";
 
 const COVER_GRADIENTS = [
@@ -57,12 +57,12 @@ const CHALLENGE_ICONS: Record<string, React.ReactNode> = {
   tree: <SunIcon size={16} />,
 };
 
-function getBadge(count: number): { emoji: string; title: string } {
-  if (count === 0) return { emoji: "🌱", title: "Nowicjusz" };
-  if (count < 5) return { emoji: "🧭", title: "Odkrywca" };
-  if (count < 15) return { emoji: "🏅", title: "Bywalec" };
-  if (count < 30) return { emoji: "⭐", title: "Stały bywalec" };
-  return { emoji: "👑", title: "Legenda Poznania" };
+function getBadge(count: number): { title: string } {
+  if (count === 0) return { title: "Nowicjusz" };
+  if (count < 5) return { title: "Odkrywca" };
+  if (count < 15) return { title: "Bywalec" };
+  if (count < 30) return { title: "Stały bywalec" };
+  return { title: "Legenda Poznania" };
 }
 
 export type InitialProfile = {
@@ -99,7 +99,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
   const [notifs, setNotifs] = useState(initial.notifications);
   const [pendingReqs, setPendingReqs] = useState(initial.requests);
   const [stats, setStats] = useState(initial.user._count);
-  const [challengeState, setChallengeState] = useState(initial.challenges);
+  const [challengeState] = useState(initial.challenges);
   const [challengeTab, setChallengeTab] = useState<"daily" | "weekly" | "monthly">("weekly");
 
   const [showQuiz, setShowQuiz] = useState(false);
@@ -253,7 +253,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
       <div style={{ padding: "0 18px 14px" }}>
         <div className="pz-card" style={{ padding: 14 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div><span style={{ fontSize: "var(--text-lg)", marginRight: 8 }}>{badge.emoji}</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
+            <div><span className="pz-eyebrow" style={{ marginRight: 8 }}>Ranga</span><span className="pz-h" style={{ fontSize: "var(--text-lg)", fontWeight: 700, letterSpacing: "-0.02em" }}>{badge.title}</span></div>
             <span className="pz-num" style={{ fontSize: "var(--text-sm)", color: "var(--ink-3)" }}>{goingItems.length} wydarzeń</span>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 48 }}>
@@ -278,10 +278,10 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
             const filtered = challengeState.filter((c) => c.tier === challengeTab);
             const allInTier = CHALLENGES.filter((c) => c.tier === challengeTab);
             const doneCount = filtered.filter((c) => c.done).length;
-            const tierBadge = doneCount >= allInTier.length ? { emoji: "💎", label: "Diamond" }
-              : doneCount >= allInTier.length * 0.8 ? { emoji: "🥇", label: "Złoto" }
-              : doneCount >= allInTier.length * 0.5 ? { emoji: "🥈", label: "Srebro" }
-              : doneCount >= 1 ? { emoji: "🥉", label: "Brąz" }
+            const tierBadge = doneCount >= allInTier.length ? { label: "Diament" }
+              : doneCount >= allInTier.length * 0.8 ? { label: "Złoto" }
+              : doneCount >= allInTier.length * 0.5 ? { label: "Srebro" }
+              : doneCount >= 1 ? { label: "Brąz" }
               : null;
 
             const tabDefs = CHALLENGES.filter((c) => c.tier === challengeTab);
@@ -292,7 +292,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <div className="pz-eyebrow" style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     Wyzwania
-                    {tierBadge && <span style={{ fontSize: 14 }}>{tierBadge.emoji}</span>}
+                    {tierBadge && <span className="pz-eyebrow" style={{ fontSize: 9 }}>{tierBadge.label}</span>}
                   </div>
                   <div style={{ display: "flex", gap: 2 }}>
                     {(["daily", "weekly", "monthly"] as const).map((t) => {
@@ -327,7 +327,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
                             <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{def.title}</span>
                           </div>
                           <span style={{ fontSize: 11, fontWeight: 600, color: done ? "var(--sage)" : "var(--ink-3)" }}>
-                            {done ? "✅" : `${progress}/${def.maxProgress}`}
+                            {done ? <CheckIcon size={12} /> : `${progress}/${def.maxProgress}`}
                           </span>
                         </div>
                         <div style={{ height: 4, borderRadius: 99, background: "var(--line-2)", overflow: "hidden" }}>
@@ -384,7 +384,7 @@ export default function ProfilClient({ initial }: { initial: InitialProfile }) {
               {notifs.filter((n) => n.type !== "FRIEND_REQUEST").map((n) => {
                 const content = (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0" }}>
-                    <span style={{ fontSize: 20 }}>🔔</span>
+                    <BellIcon size={18} />
                     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--ink)" }}>{n.title}</div>{n.body && <div style={{ fontSize: "var(--text-xs)", color: "var(--ink-3)" }}>{n.body}</div>}</div>
                   </div>
                 );
