@@ -5,36 +5,58 @@ import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
 import { guessVibesForCategory } from "@/lib/vibes";
 import { fetchMoviePoster } from "@/lib/tmdb";
+import { dateKeyInWarsaw, warsawDate } from "./text";
 
 const BASE = "https://www.poznan.pl/mim/events/seances";
 const SOURCE = "poznan-cinema";
 const DAYS_AHEAD = 7;
-const GEOCODE_CACHE = new Map<string, { lat: number; lon: number; district: string } | null>();
+const GEOCODE_CACHE = new Map<string, { lat: number; lon: number; district: string }>();
 
 function pad(n: number) { return String(n).padStart(2, "0"); }
 function fmtDate(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 
+/** Try name variants for venues stored with the city suffix ("Cinema City Poznań - Plaza"). */
+function venueCandidates(name: string): string[] {
+  const stripped = name
+    .replace(/Poznań/gi, " ").replace(/\bPoznan\b/gi, " ")
+    .replace(/\s*[-–—/]\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return [...new Set([name, stripped, name.replace(/^Kino\s+/i, ""), stripped.replace(/^Kino\s+/i, "")])].filter(Boolean);
+}
+
 async function resolveVenue(name: string) {
-  let venue = matchVenue(name);
-  if (venue) return venue;
+  for (const candidate of venueCandidates(name)) {
+    const venue = matchVenue(candidate);
+    if (venue) return venue;
+  }
 
   const cached = GEOCODE_CACHE.get(name);
-  if (cached !== undefined) return cached;
+  if (cached) return cached;
 
+  // Always return coordinates: a cinema without coords used to end up with 156
+  // DB rows missing geo data (and a district that disagreed with the polygon).
+  let resolved: { lat: number; lon: number; district: string };
   try {
-    const geo = await geocodeVenue(`${name}, Poznań`);
-    GEOCODE_CACHE.set(name, geo);
-    return geo;
+    const geo =
+      (await geocodeVenue(`${name}, Poznań`)) ??
+      (await geocodeVenue(`${venueCandidates(name)[1] ?? name}, Poznań`));
+    resolved = geo ?? districtFallback("Centrum");
   } catch {
-    const fallback = districtFallback("Centrum");
-    GEOCODE_CACHE.set(name, fallback);
-    return fallback;
+    resolved = districtFallback("Centrum");
   }
+  GEOCODE_CACHE.set(name, resolved);
+  return resolved;
 }
 
 interface Screening {
   title: string;
   time: string;
+}
+
+function timeSortKey(t: string): number {
+  const m = t.match(/(\d{1,2}):(\d{2})/);
+  return m ? Number(m[1]) * 60 + Number(m[2]) : Number.MAX_SAFE_INTEGER;
 }
 
 export class PoznanCinemaScraper implements Scraper {
@@ -49,6 +71,7 @@ export class PoznanCinemaScraper implements Scraper {
       d.setDate(d.getDate() + i);
       const dateStr = fmtDate(d);
       const url = `${BASE}/${dateStr}/`;
+      const dayStart = warsawDate(d.getFullYear(), d.getMonth(), d.getDate(), 12);
 
       console.log(`[Cinema] Fetching ${dateStr}...`);
       let $: cheerio.CheerioAPI;
@@ -93,36 +116,31 @@ export class PoznanCinemaScraper implements Scraper {
         }
 
         for (const [filmTitle, times] of filmGroups) {
-          times.sort();
+          times.sort((a, b) => timeSortKey(a) - timeSortKey(b));
           const groupKey = `poznan-cinema/${cinemaName}/${dateStr}/${filmTitle}`.toLowerCase();
           const existing = allGrouped.get(groupKey);
           if (existing) {
             // Merge times (same film at same cinema on same date)
             const merged = [...new Set([...existing.time!.split(", "), ...times])];
-            merged.sort();
+            merged.sort((a, b) => timeSortKey(a) - timeSortKey(b));
             existing.time = merged.join(", ");
           } else {
-            const startDate = new Date(d);
-            const endDate = new Date(d);
-            endDate.setHours(23, 59);
-
             const geo = await resolveVenue(cinemaName);
-
             allGrouped.set(groupKey, {
               title: filmTitle,
               description: `Seans kinowy — ${cinemaName}`,
               sourceUrl: url,
-              startDate,
-              endDate,
+              startDate: dayStart,
+              endDate: warsawDate(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59),
               time: times.join(", "),
               placeName: cinemaName,
-              district: geo?.district || "Centrum",
+              district: geo.district,
               category: "Kino",
               vibes: guessVibesForCategory("Kino"),
               source: SOURCE,
               sourceId: groupKey,
-              coordsX: geo?.lat,
-              coordsY: geo?.lon,
+              coordsX: geo.lat,
+              coordsY: geo.lon,
               outdoor: false,
             });
           }
@@ -157,6 +175,20 @@ export class PoznanCinemaScraper implements Scraper {
     }
 
     console.log(`[Cinema] Posters resolved: ${Array.from(posters.values()).filter(Boolean).length}/${uniqueTitles.length}`);
-    return events;
+
+    // Debug guard: every cinema event must be locatable for the map.
+    const missing = events.filter((e) => e.coordsX == null || e.coordsY == null);
+    if (missing.length > 0) {
+      console.warn(`[Cinema] ${missing.length} events still missing coordinates; using district fallback`);
+      for (const e of missing) {
+        const center = districtFallback(e.district);
+        e.coordsX = center.lat;
+        e.coordsY = center.lon;
+      }
+    }
+
+    // Keep only today/future seances (timezone-safe via Warsaw date keys).
+    const todayKey = dateKeyInWarsaw(new Date());
+    return events.filter((e) => dateKeyInWarsaw(e.startDate) >= todayKey);
   }
 }

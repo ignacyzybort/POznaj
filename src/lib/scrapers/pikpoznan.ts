@@ -3,48 +3,133 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
-import { guessVibes } from "@/lib/vibes";
+import { guessVibesForCategory } from "@/lib/vibes";
+import {
+  classifyCategory,
+  cleanDescription,
+  cleanPlaceName,
+  dateKeyInWarsaw,
+  decodeEntities,
+  htmlToText,
+  normalizeSpace,
+  normalizeTime,
+  parseSourceDate,
+  polishMonthIndex,
+  timeInWarsaw,
+  warsawDate,
+} from "./text";
 
-function guessDistrict(text: string): string {
-  const lower = text.toLowerCase();
-  if (lower.includes("stary rynek") || lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
-  if (lower.includes("jeżyce") || lower.includes("jezyce") || lower.includes("rynek jeżycki")) return "Jezyce";
-  if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz") || lower.includes("rynek łazarski")) return "Grunwald";
-  if (lower.includes("wilda")) return "Wilda";
-  if (lower.includes("rataje") || lower.includes("malta")) return "NoweMiasto";
-  if (lower.includes("piątkowo") || lower.includes("piatkowo") || lower.includes("winogrady") || lower.includes("cytadela")) return "StareMiasto";
-  if (lower.includes("malta") || lower.includes("nowe miasto") || lower.includes("śródka") || lower.includes("ostrów tumski")) return "NoweMiasto";
-  return "Inny";
+const UA = { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" };
+const ENRICH_WORKERS = 5;
+
+interface LdEvent {
+  "@type"?: string | string[];
+  name?: string;
+  description?: string;
+  image?: string | string[];
+  startDate?: string;
+  endDate?: string;
+  location?: {
+    name?: string;
+    address?: { streetAddress?: string; addressLocality?: string; postalCode?: string };
+  };
+  offers?: { price?: string | number } | { price?: string | number }[];
 }
+
+function isEventNode(node: unknown): node is LdEvent {
+  if (!node || typeof node !== "object") return false;
+  const t = (node as { "@type"?: string | string[] })["@type"];
+  return t === "Event" || (Array.isArray(t) && t.includes("Event"));
+}
+
+function collectEventNodes(parsed: unknown, out: LdEvent[]): void {
+  if (Array.isArray(parsed)) {
+    for (const item of parsed) collectEventNodes(item, out);
+    return;
+  }
+  if (!parsed || typeof parsed !== "object") return;
+  if (isEventNode(parsed)) out.push(parsed);
+  const graph = (parsed as { "@graph"?: unknown })["@graph"];
+  if (Array.isArray(graph)) for (const item of graph) collectEventNodes(item, out);
+}
+
+function pickImage(image: string | string[] | undefined): string | undefined {
+  if (!image) return undefined;
+  const arr = Array.isArray(image) ? image : [image];
+  return arr.find((u) => typeof u === "string" && u.startsWith("http"));
+}
+
+function pickPrice(offers: LdEvent["offers"]): string | undefined {
+  if (!offers) return undefined;
+  const first = Array.isArray(offers) ? offers[0] : offers;
+  if (!first || first.price == null) return undefined;
+  const value = typeof first.price === "number" ? first.price : parseFloat(String(first.price).replace(",", "."));
+  if (!Number.isFinite(value)) return undefined;
+  if (value === 0) return "0 zł";
+  return `${Math.round(value)} zł`;
+}
+
+/**
+ * Parse the listing "data" span, e.g.
+ *   "poniedziałek, 26 października 2026, 19:00"
+ *   "11 grudnia 2026 - 13 grudnia 2026"
+ */
+export function parsePikDataSpan(raw: string): { start: Date; end: Date; time?: string } | null {
+  const text = normalizeSpace(raw);
+  if (!text) return null;
+  const matches = [...text.matchAll(/(\d{1,2})\s+([a-ząćęłńóśźż]+)\s+(\d{4})/gi)];
+  if (matches.length === 0) return null;
+  const first = matches[0];
+  const last = matches[matches.length - 1];
+  const m1 = polishMonthIndex(first[2]);
+  const m2 = polishMonthIndex(last[2]);
+  if (m1 == null || m2 == null) return null;
+
+  const timeMatch = text.match(/(?:,\s*|o\s+|godz\.?\s*)(\d{1,2})[:.](\d{2})\s*$/i);
+  const time = timeMatch ? `${String(Number(timeMatch[1])).padStart(2, "0")}:${timeMatch[2]}` : undefined;
+  const [h, min] = time ? time.split(":").map(Number) : [12, 0];
+
+  const start = warsawDate(Number(first[3]), m1, Number(first[1]), h, min);
+  let end = matches.length > 1
+    ? warsawDate(Number(last[3]), m2, Number(last[1]), h, min)
+    : new Date(start);
+  if (end.getTime() < start.getTime()) end = new Date(start);
+  return { start, end, time };
+}
+
 
 // Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
 function parseScreenings(description: string): { date: Date; time: string; title: string }[] {
   const screenings: { date: Date; time: string; title: string }[] = [];
-  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  const pattern = /(\d{1,2})\.(\d{1,2})\.(\d{4}),\s*godz\.\s*(\d{1,2}):(\d{2})\s*[–-]\s*(.+)/g;
   let match;
   while ((match = pattern.exec(description)) !== null) {
-    const [_, dateStr, time, title] = match;
-    const parts = dateStr.split(".");
-    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
-    if (!isNaN(d.getTime())) {
-      screenings.push({ date: d, time, title: title.trim() });
-    }
+    const [, dd, mm, yyyy, hh, min, title] = match;
+    const d = new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), 12));
+    if (!Number.isFinite(d.getTime())) continue;
+    screenings.push({ date: d, time: `${String(Number(hh)).padStart(2, "0")}:${min}`, title: title.trim() });
   }
   return screenings;
 }
 
-function parseCategory(url: string, title: string, text: string): string {
-  const c = (url + " " + title + " " + text).toLowerCase();
-  if (c.includes("kino") || c.includes("film") || c.includes("filmow") || c.includes("projekcj") || c.includes("seans")) return "Kino";
-  if (c.includes("sztuk") || c.includes("wystaw") || c.includes("galeri") || c.includes("wernis") || c.includes("malarstw") || c.includes("rzeźb")) return "Sztuka";
-  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("opera") || c.includes("rock") || c.includes("jazz") || c.includes("chór") || c.includes("chorał")) return "Muzyka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("stand") || c.includes("komedi") || c.includes("balet")) return "Teatr";
-  if (c.includes("sport") || c.includes("bieg") || c.includes("aktywn") || c.includes("zawody") || c.includes("turniej") || c.includes("marsz") || c.includes("mecz")) return "Sport";
-  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole") || c.includes("nauka") || c.includes("lekcj")) return "Warsztaty";
-  if (c.includes("konferenc") || c.includes("wykład") || c.includes("spotkan") || c.includes("seminari") || c.includes("prelekcj")) return "Konferencje";
-  if (c.includes("jedzeni") || c.includes("kuchni") || c.includes("kulinar") || c.includes("degustac") || c.includes("kawa") || c.includes("piwo") || c.includes("kawiarn") || c.includes("restaurac") || c.includes("jarmark") || c.includes("targ")) return "Jedzenie";
-  return "Inne";
+interface ListingItem {
+  title: string;
+  href: string;
+  image?: string;
+  dataSpan: string;
+  excerpt?: string;
+  sourceId: string;
+  sourceUrl: string;
+  section: string;
 }
+
+const SECTION_CATEGORY: Record<string, string> = {
+  muzyka: "Muzyka",
+  teatr: "Teatr",
+  kino: "Kino",
+  festiwal: "",
+  dzieci: "",
+};
 
 export class PikPoznanScraper implements Scraper {
   name = "pikpoznan";
@@ -58,203 +143,73 @@ export class PikPoznanScraper implements Scraper {
   ];
 
   async scrape(): Promise<ScrapedEvent[]> {
-    const all: ScrapedEvent[] = [];
+    const listings: ListingItem[] = [];
+    const seen = new Set<string>();
 
     for (const source of this.sources) {
       try {
-        const events = await this.scrapeSection(source.url);
-        all.push(...events);
-        console.log(`[PikPoznan] ${source.label}: ${events.length} events`);
+        const items = await this.scrapeSection(source.url, source.label.toLowerCase());
+        console.log(`[PikPoznan] ${source.label}: ${items.length} listings`);
+        for (const item of items) {
+          if (seen.has(item.sourceId)) continue;
+          seen.add(item.sourceId);
+          listings.push(item);
+        }
       } catch (e) {
         console.error(`[PikPoznan] Error scraping ${source.url}:`, e);
       }
     }
 
-    return all;
-  }
-
-  private async scrapeSection(url: string): Promise<ScrapedEvent[]> {
-    const res = await axios.get(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
-      timeout: 15000,
-    });
-
-    const $ = cheerio.load(res.data);
+    // Fetch each event article and enrich from its schema.org Event JSON-LD.
+    // Plain articles (no Event node) are dropped — they used to become fake
+    // events dated "today" with a grab-bag description.
     const events: ScrapedEvent[] = [];
-
-    $("article, .post, .entry, .event-item, .card, [class*='post'], .lista-wpisow > div, .grid > div, main > div > div").each((_, el) => {
-      const titleEl = $(el).find("h2 a, h3 a, h2, h3, .title a, .entry-title a");
-      const title = titleEl.first().text().trim()
-        .replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "")
-        .replace(/\s*\|\s*[Bb]ilety\s*$/g, "")
-        .replace(/&#8211;\s*Bilety/gi, "")
-        .trim();
-      if (!title) return;
-
-      const link = titleEl.attr("href") || $(el).find("a").first().attr("href") || "";
-
-      const descEl = $(el).find("p, .description, .excerpt, .entry-content");
-      let description = "";
-      descEl.each((_, p) => { const t = $(p).text().trim(); if (t.length > description.length) description = t; });
-
-      const img = $(el).find("img").first().attr("src") || $(el).find("img").first().attr("data-src") || "";
-      const text = $(el).text();
-
-      const dateMatch = text.match(/(\d{1,2})\s+(stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)\s+(\d{4})/i);
-      const monthMap: Record<string, number> = {
-        stycznia: 0, lutego: 1, marca: 2, kwietnia: 3, maja: 4, czerwca: 5,
-        lipca: 6, sierpnia: 7, września: 8, października: 9, listopada: 10, grudnia: 11,
-      };
-
-      let startDate: Date;
-      let endDate: Date;
-
-      if (dateMatch) {
-        const day = parseInt(dateMatch[1]);
-        const month = monthMap[dateMatch[2].toLowerCase()] ?? 0;
-        const year = parseInt(dateMatch[3]);
-        startDate = new Date(year, month, day);
-
-        const rangeMatch = text.match(/–\s*(\d{1,2})\s+(stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|września|października|listopada|grudnia)(?:\s+(\d{4}))?/i);
-        if (rangeMatch) {
-          const endDay = parseInt(rangeMatch[1]);
-          const endMonth = monthMap[rangeMatch[2].toLowerCase()] ?? month;
-          const endYear = rangeMatch[3] ? parseInt(rangeMatch[3]) : year;
-          endDate = new Date(endYear, endMonth, endDay);
-        } else {
-          endDate = startDate;
-        }
-      } else {
-        startDate = new Date();
-        endDate = new Date();
+    let cursor = 0;
+    // Arrow function keeps the method's `this` — no alias needed.
+    const workers = Array.from({ length: ENRICH_WORKERS }, async () => {
+      while (cursor < listings.length) {
+        const item = listings[cursor++];
+        const ev = await this.enrichFromArticle(item);
+        if (ev) events.push(ev);
       }
-
-      if (startDate.getFullYear() < 2025) return;
-
-      const timeMatch = text.match(/(\d{1,2})[.:](\d{2})/);
-      const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : undefined;
-
-      let placeName = "Poznań";
-      const venueMatch = text.match(/(?:wystąpi\s+w|w\s+(?:klubie|sali|teatrze|auli|kinie|scenie|kościele))\s+([^,.]+)/i);
-      if (venueMatch) placeName = venueMatch[1].trim();
-
-      const addressStr = text.split("\n").filter(l => l.includes("ul.") || l.includes("Pl.") || l.includes("al.")).map(l => l.trim()).join(", ");
-
-      const searchText = title + " " + description + " " + placeName + " " + text.slice(0, 500);
-      const venueData = matchVenue(searchText);
-
-      let district = guessDistrict(title + " " + description + " " + placeName + " " + addressStr);
-      let finalAddress = addressStr || undefined;
-      let coordsX: number | undefined;
-      let coordsY: number | undefined;
-
-      if (venueData) {
-        district = venueData.district;
-        finalAddress = finalAddress || venueData.address;
-        coordsX = venueData.lat;
-        coordsY = venueData.lon;
-      }
-
-      const category = parseCategory(url, title, text);
-
-      const vibeList = guessVibes(title, description, category);
-
-      const fullLink = link.startsWith("http") ? link : `https://pik.poznan.pl${link.startsWith("/") ? "" : "/"}${link}`;
-      const imgUrl = img.startsWith("http") ? img : (img ? `https://pik.poznan.pl${img.startsWith("/") ? "" : "/"}${img}` : "");
-
-      const now = new Date();
-      const daysUntil = (startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-      if (daysUntil < -1) return;
-
-      // Skip Twitter/X entries — usually broken duplicates with no real data
-      if (fullLink.startsWith("https://x.com/") || fullLink.startsWith("https://twitter.com/")) return;
-
-      events.push({
-        title,
-        description: description || undefined,
-        imageUrl: imgUrl || undefined,
-        sourceUrl: fullLink,
-        startDate,
-        endDate,
-        time,
-        placeName,
-        address: finalAddress,
-        district,
-        category,
-        vibes: vibeList,
-        source: "pikpoznan",
-        sourceId: `pikpoznan-${Buffer.from(title).toString("base64").slice(0, 24)}`,
-        coordsX,
-        coordsY,
-      });
     });
+    await Promise.all(workers);
+    events.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+    console.log(`[PikPoznan] ${listings.length} listings → ${events.length} events with Event JSON-LD`);
 
-    // Second pass: enrich each event with venue data (5 at a time to avoid rate limiting)
-    for (let i = 0; i < events.length; i += 5) {
-      const batch = events.slice(i, i + 5);
-      await Promise.all(
-        batch.map(async (ev) => {
-          if (!ev.sourceUrl?.includes("pik.poznan.pl")) return;
-          try {
-            const article = await axios.get(ev.sourceUrl, {
-              headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
-              timeout: 10000,
-            });
-            const $$ = cheerio.load(article.data);
-
-            // Extract venue from JSON-LD (do this BEFORE removing scripts!)
-            let venueFromLd: string | null = null;
-            let addrFromLd: string | null = null;
-            let priceFromLd: string | null = null;
-            $$('script[type="application/ld+json"]').each((_, el) => {
-              try {
-                const data = JSON.parse($$(el).html() || "{}");
-                if (data.location?.name) {
-                  venueFromLd = data.location.name;
-                  addrFromLd = data.location.address?.streetAddress || null;
-                }
-                if (data.offers?.price) {
-                  const p = parseFloat(data.offers.price);
-                  priceFromLd = isNaN(p) ? null : `${Math.round(p)} zł`;
-                }
-              } catch {}
-            });
-
-            // Clean description (strip script/style tags from the content area)
-            const contentEl = $$(".entry-content, .post-content, article").first();
-            contentEl.find("script, style, noscript, iframe").remove();
-            const desc = contentEl.text().trim();
-            if (desc.length > 50) ev.description = desc.slice(0, 2000);
-            // Re-check category using enriched description
-            if (ev.category === "Inne" && ev.description) {
-              const improved = parseCategory(ev.sourceUrl, ev.title, ev.description);
-              if (improved !== "Inne") ev.category = improved;
-            }
-            if (venueFromLd) {
-              ev.placeName = venueFromLd;
-              if (addrFromLd) ev.address = addrFromLd;
-              const matched = matchVenue(venueFromLd);
-              if (matched) {
-                ev.district = matched.district;
-                ev.coordsX = matched.lat;
-                ev.coordsY = matched.lon;
-              }
-            }
-            if (priceFromLd) ev.price = priceFromLd;
-            // Fallback: extract price from description text
-            if (!ev.price && ev.description) {
-              const pMatch = ev.description.match(/(?:bilety?\s*(?:od\s*[\-\u2013]?\s*)?|cena\s*(?:od\s*[\-\u2013]?\s*)?)\s*(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
-              if (pMatch) ev.price = `${pMatch[1].replace(/\s/g, "")} zł`;
-              else if (ev.description.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) ev.price = "0 zł";
-            }
-          } catch {}
-        })
-      );
-    }
-
-    // Post-loop: geocode any event without coordinates from venue match
+    // Split recurring screening lists ("Kino letnie" pages listing many seances).
+    const splitEvents: ScrapedEvent[] = [];
     for (const ev of events) {
-      if (ev.coordsX) continue;
+      if (!ev.description) continue;
+      const screenings = parseScreenings(ev.description);
+      if (screenings.length < 3) continue;
+      for (const s of screenings) {
+        splitEvents.push({
+          title: s.title,
+          description: `${ev.title} — ${s.title}`,
+          imageUrl: ev.imageUrl,
+          sourceUrl: ev.sourceUrl,
+          startDate: s.date,
+          endDate: s.date,
+          time: s.time,
+          placeName: ev.placeName,
+          address: ev.address,
+          district: ev.district,
+          category: "Kino",
+          vibes: ["Kulturalne"],
+          source: ev.source,
+          sourceId: `pikpoznan-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
+          coordsX: ev.coordsX,
+          coordsY: ev.coordsY,
+          price: ev.price,
+        });
+      }
+    }
+    events.push(...splitEvents);
+
+    // Coordinates: venue match → Nominatim → district centre.
+    for (const ev of events) {
+      if (ev.coordsX != null && ev.coordsY != null) continue;
       const geo = await geocodeVenue(ev.placeName, ev.title, ev.address);
       if (geo) {
         ev.coordsX = geo.lat;
@@ -262,49 +217,156 @@ export class PikPoznanScraper implements Scraper {
         ev.district = geo.district;
       }
     }
-
-    // Final fallback: events still without coords get district center
     for (const ev of events) {
-      if (ev.coordsX) continue;
-      const d = ev.district !== "Inny" ? ev.district : guessDistrict(ev.placeName);
-      const center = districtFallback(d);
+      if (ev.coordsX != null && ev.coordsY != null) continue;
+      const center = districtFallback(ev.district);
       ev.coordsX = center.lat;
       ev.coordsY = center.lon;
+      ev.district = center.district;
     }
 
-    // Split recurring screenings (e.g. "Kino plenerowe" with multiple dates)
-    const splitEvents: ScrapedEvent[] = [];
-    for (let i = events.length - 1; i >= 0; i--) {
-      const ev = events[i];
-      if (!ev.description) continue;
-      const screenings = parseScreenings(ev.description);
-      if (screenings.length >= 3) {
-        events.splice(i, 1);
-        for (const s of screenings) {
-          splitEvents.push({
-            title: s.title,
-            description: `${ev.title} — ${s.title}`,
-            imageUrl: ev.imageUrl,
-            sourceUrl: ev.sourceUrl,
-            startDate: s.date,
-            endDate: s.date,
-            time: s.time,
-            placeName: ev.placeName,
-            address: ev.address,
-            district: ev.district,
-            category: "Kino",
-            vibes: ["Kulturalne"],
-            source: ev.source,
-            sourceId: `pikpoznan-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
-            coordsX: ev.coordsX,
-            coordsY: ev.coordsY,
-            price: ev.price,
-          });
+    // Drop past events before they reach saveEvents.
+    const now = Date.now();
+    return events.filter((ev) => ev.endDate.getTime() >= now - 86400000);
+  }
+
+  private async scrapeSection(url: string, section: string): Promise<ListingItem[]> {
+    const res = await axios.get(url, { headers: UA, timeout: 15000 });
+    const $ = cheerio.load(res.data);
+    const items: ListingItem[] = [];
+
+    $(".posts-grid .blog-post, .blog-post").each((_, el) => {
+      const $el = $(el);
+      const titleAnchor = $el.find(".bp-head h2 a, h2 a").first();
+      const title = titleAnchor.text().replace(/\s+/g, " ").trim();
+      const href = titleAnchor.attr("href") ?? "";
+      const dataSpan = $el.find("span.data").first().text().replace(/\s+/g, " ").trim();
+      if (!title || !href || !dataSpan) return; // not an event tile
+
+      // Stable source id from the listing title, matching the previous format so
+      // the daily refresh updates existing rows instead of duplicating them.
+      const legacyTitle = decodeEntities(title)
+        .replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "")
+        .replace(/\s*\|\s*[Bb]ilety\s*$/g, "")
+        .replace(/&#8211;\s*Bilety/gi, "")
+        .trim();
+      const image = $el.find(".post-img img, img").first().attr("src") ?? undefined;
+      let excerpt = "";
+      $el.find(".bp-details p").each((_, p) => {
+        const text = $(p).text().replace(/\s+/g, " ").replace(/Czytaj więcej.*$/i, "").trim();
+        if (text.length > excerpt.length) excerpt = text;
+      });
+      items.push({
+        title,
+        href,
+        image,
+        dataSpan,
+        excerpt: excerpt || undefined,
+        sourceId: `pikpoznan-${Buffer.from(legacyTitle).toString("base64").slice(0, 24)}`,
+        sourceUrl: url,
+        section,
+      });
+    });
+
+    return items;
+  }
+
+  private async enrichFromArticle(item: ListingItem): Promise<ScrapedEvent | null> {
+    const dateFallback = parsePikDataSpan(item.dataSpan);
+
+    try {
+      const article = await axios.get(item.href, { headers: UA, timeout: 15000 });
+      const $$ = cheerio.load(article.data);
+
+      const ldEvents: LdEvent[] = [];
+      $$('script[type="application/ld+json"]').each((_, el) => {
+        try {
+          collectEventNodes(JSON.parse($$(el).html() || "null"), ldEvents);
+        } catch { /* ignore malformed JSON-LD */ }
+      });
+      const ld = ldEvents.find((e) => e.startDate) ?? ldEvents[0];
+      if (!ld || !ld.startDate) return null; // plain article/review, not an event
+
+      const startParsed = parseSourceDate(ld.startDate);
+      if (!startParsed) return null;
+      const start = startParsed.date;
+      const endParsed = parseSourceDate(ld.endDate);
+      let end = endParsed ? endParsed.date : new Date(start);
+      if (end.getTime() <= start.getTime()) {
+        end = new Date(start.getTime() + 2 * 3600 * 1000); // source sends midnight when no end
+      }
+      // The listing date span is more trustworthy for multi-day ranges; JSON-LD
+      // sometimes collapses a range to a single day.
+      if (dateFallback && dateKeyInWarsaw(dateFallback.end) > dateKeyInWarsaw(dateFallback.start)) {
+        if (dateFallback.end.getTime() > end.getTime() || dateKeyInWarsaw(start) === dateKeyInWarsaw(end)) {
+          end = new Date(dateFallback.end);
         }
       }
-    }
-    events.push(...splitEvents);
 
-    return events;
+      // Long description from the article body; metadata blocks are stripped by
+      // base.cleanDescription. JSON-LD excerpt only covers the first sentence.
+      const contentEl = $$(".entry-content, .post-content, article").first();
+      contentEl.find("script, style, noscript, iframe, .buttony, .sharedaddy").remove();
+      const contentText = contentEl.text().trim();
+      const description =
+        (contentText.length > 100 ? contentText.slice(0, 2000) : "") ||
+        ld.description ||
+        item.excerpt ||
+        undefined;
+
+      const locationName = htmlToText(ld.location?.name) || "Poznań";
+      const placeName = cleanPlaceName(locationName) || "Poznań";
+      const venueData = matchVenue(placeName);
+
+      const title = htmlToText(ld.name) || item.title;
+      const shortDesc = cleanDescription(ld.description) ?? "";
+      const category = classifyCategory(title, shortDesc) ?? SECTION_CATEGORY[item.section] ?? "Inne";
+
+      const time = startParsed.allDay
+        ? normalizeTime(dateFallback?.time)
+        : timeInWarsaw(start);
+
+      return {
+        title,
+        description,
+        imageUrl: pickImage(ld.image) ?? item.image,
+        sourceUrl: item.href,
+        startDate: start,
+        endDate: end,
+        time,
+        placeName,
+        address: ld.location?.address?.streetAddress ? htmlToText(ld.location.address.streetAddress) : undefined,
+        district: venueData?.district ?? "Centrum",
+        category,
+        vibes: guessVibesForCategory(category),
+        source: "pikpoznan",
+        sourceId: item.sourceId,
+        coordsX: venueData?.lat,
+        coordsY: venueData?.lon,
+        price: pickPrice(ld.offers),
+      };
+    } catch {
+      // Transient article failure: keep listing-level data rather than a hole.
+      if (!dateFallback) return null;
+      const category = classifyCategory(item.title, item.excerpt) ?? SECTION_CATEGORY[item.section] ?? "Inne";
+      const venueData = matchVenue(`${item.title} ${item.excerpt ?? ""}`);
+      return {
+        title: item.title,
+        description: item.excerpt,
+        imageUrl: item.image,
+        sourceUrl: item.href,
+        startDate: dateFallback.start,
+        endDate: dateFallback.end,
+        time: dateFallback.time,
+        placeName: "Poznań",
+        district: venueData?.district ?? "Centrum",
+        category,
+        vibes: guessVibesForCategory(category),
+        source: "pikpoznan",
+        sourceId: item.sourceId,
+        coordsX: venueData?.lat,
+        coordsY: venueData?.lon,
+      };
+    }
   }
 }

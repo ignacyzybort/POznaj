@@ -4,103 +4,301 @@ import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
 import { guessVibes, guessVibesForCategory } from "@/lib/vibes";
-
-function guessCategory(title: string, desc: string): string {
-  const c = (title + " " + desc).toLowerCase();
-  // "koncert w Teatrze" = Music, not Theater
-  if (c.includes("koncer") && c.includes("teatr")) return "Muzyka";
-  if (c.includes("kino") || c.includes("film") || c.includes("seans")) return "Kino";
-  if (c.includes("sztuk") || c.includes("wystaw") || c.includes("wernis") || c.includes("galeri")) return "Sztuka";
-  if (c.includes("muzy") || c.includes("koncer") || c.includes("festiwal") || c.includes("wokal") || c.includes("recital") || c.includes("orkiestr") || c.includes("opery") || c.includes("rock") || c.includes("jazz") || c.includes("chór")) return "Muzyka";
-  if (c.includes("teatr") || c.includes("spektakl") || c.includes("musical") || c.includes("komedi") || c.includes("balet")) return "Teatr";
-  if (c.includes("sport") || c.includes("bieg") || c.includes("zawod") || c.includes("turniej") || c.includes("mecz")) return "Sport";
-  if (c.includes("warsztat") || c.includes("kurs") || c.includes("szkole")) return "Warsztaty";
-  if (c.includes("konferenc") || c.includes("wykład") || c.includes("prelekcj")) return "Konferencje";
-  if (c.includes("jedzeni") || c.includes("kulinar") || c.includes("degustac") || c.includes("jarmark") || c.includes("targ")) return "Jedzenie";
-  return "Inne";
-}
+import {
+  classifyCategory,
+  cleanPlaceName,
+  cleanTitle,
+  dateKeyInWarsaw,
+  decodeEntities,
+  extractAddressFromVenue,
+  htmlToText,
+  normalizeSpace,
+  polishMonthIndex,
+  warsawDate,
+} from "./text";
 
 const MONTHS = [
-  ["styczen", 77],  ["luty", 78], ["marzec", 79], ["kwiecien", 80],
+  ["styczen", 77], ["luty", 78], ["marzec", 79], ["kwiecien", 80],
   ["maj", 81], ["czerwiec", 82], ["lipiec", 83], ["sierpien", 84],
   ["wrzesien", 85], ["pazdziernik", 86], ["listopad", 87], ["grudzien", 88],
 ];
 
-function parsePolishDate(dateStr: string, year: number): Date {
-  // "DD.MM" or "DD.MM.YYYY" — single date
-  const single = dateStr.match(/^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$/);
+const FIELD_RE = /^(Data|Miejsce|Lokalizacja|Organizator|Organizatorzy|Bilety|Więcej|Wiecej|Cena|Ceny|Kontakt)\s*:/i;
+
+function lastDayOfMonth(year: number, monthIndex: number): number {
+  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+}
+
+function normalizeYear(raw: string | undefined): number | undefined {
+  if (!raw) return undefined;
+  const y = Number(raw);
+  if (!Number.isFinite(y)) return undefined;
+  if (y < 100) return y + 2000;
+  return y;
+}
+
+/** Pick the year for a day/month on a page dedicated to (pageYear, pageMonth). */
+/**
+ * Pick the year for a day/month on a page dedicated to (pageYear, pageMonth).
+ * Month pages list "their" month plus long-running items: early-year months on a
+ * late-year page are events from the same (past) season, not next year, so only
+ * explicit year-crossing ranges are shifted forward (see parseKulturaDateRange).
+ */
+function inferYear(monthIndex: number, pageMonth: number, pageYear: number): number {
+  const delta = monthIndex - pageMonth;
+  if (delta > 6) return pageYear - 1;
+  return pageYear;
+}
+
+interface DateRange {
+  start: Date;
+  end: Date;
+  time?: string;
+}
+
+function parseTimeFromData(raw: string): string | undefined {
+  const m = raw.match(/(?:godz(?:ina)?|g)\.?\s*(\d{1,2})\s*[.:]\s*(\d{2})/i);
+  if (!m) return undefined;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h > 23 || min > 59) return undefined;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+function dateRangeFromMonths(startMonth: number, endMonth: number, pageMonth: number, pageYear: number): DateRange {
+  const startYear = inferYear(startMonth, pageMonth, pageYear);
+  let endYear = inferYear(endMonth, pageMonth, pageYear);
+  if (endYear < startYear) endYear = startYear;
+  const start = warsawDate(startYear, startMonth, 1, 12);
+  const end = warsawDate(endYear, endMonth, lastDayOfMonth(endYear, endMonth), 12);
+  return { start, end };
+}
+
+/**
+ * Parse the many date formats used by kultura.poznan.pl, e.g.
+ *   "25.01", "11.11", "24-26.02", "1-3.05.", "25.11-1.12", "22.11.2025 - 21.06.2026",
+ *   "2, 3, 4, 6, 9, 10 i 11.01.2026", "do 6.01", "czerwiec-lipiec", "14.05 (termin wstępny) do października 2026".
+ */
+export function parseKulturaDateRange(raw: string, pageMonth: number, pageYear: number): DateRange | null {
+  const original = normalizeSpace(raw);
+  if (!original) return null;
+
+  const time = parseTimeFromData(original);
+
+  const s = original
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\b(?:godz(?:ina)?|g)\.?\s*\d{1,2}\s*[.:]\s*\d{2}/gi, " ")
+    .replace(/\b(?:termin\s+wstępny|termin\s+wstepny|gala\s+finałowa|gala\s+finalowa|premiera|otwarcie|pokaz)\b/gi, " ")
+    .replace(/\s*,\s*/g, ", ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!s) return null;
+
+  const withTime = (r: DateRange): DateRange => {
+    if (!time) return r;
+    const [h, m] = time.split(":").map(Number);
+    const d = dateKeyInWarsaw(r.start).split("-").map(Number);
+    const start = warsawDate(d[0], d[1] - 1, d[2], h, m);
+    const sameDay = dateKeyInWarsaw(r.end) === dateKeyInWarsaw(r.start);
+    const end = sameDay ? new Date(start) : r.end;
+    return { start, end };
+  };
+
+  // 1. Full numeric range, e.g. "22.11.2025 - 21.06.2026", "25.11-1.12", "10.07.2026-28.02.2027"
+  const full = s.match(
+    /(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?\s*[-–—]\s*(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/
+  );
+  if (full) {
+    const d1 = Number(full[1]);
+    const m1 = Number(full[2]) - 1;
+    const y1 = normalizeYear(full[3]) ?? inferYear(m1, pageMonth, pageYear);
+    const d2 = Number(full[4]);
+    const m2 = Number(full[5]) - 1;
+    let y2 = normalizeYear(full[6]);
+    if (y2 == null) {
+      // Month wrap without an explicit end year ("30.12-2.01") rolls to next year.
+      y2 = m2 < m1 ? y1 + 1 : inferYear(m2, pageMonth, pageYear);
+      if (y2 < y1) y2 = y1;
+    }
+    if (m1 >= 0 && m1 <= 11 && m2 >= 0 && m2 <= 11 && d1 >= 1 && d1 <= 31 && d2 >= 1 && d2 <= 31) {
+      const start = warsawDate(y1, m1, d1, 12);
+      let end = warsawDate(y2, m2, d2, 12);
+      if (end.getTime() < start.getTime()) end = start;
+      return withTime({ start, end });
+    }
+  }
+
+  // 1b. Two numeric dates joined by "do", e.g. "gala finałowa - 27.08, wystawa do 20.09"
+  const doRange = s.match(/(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?[^0-9]{0,14}?do\s+(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/i);
+  if (doRange) {
+    const d1 = Number(doRange[1]);
+    const m1 = Number(doRange[2]) - 1;
+    const y1 = normalizeYear(doRange[3]) ?? inferYear(m1, pageMonth, pageYear);
+    const d2 = Number(doRange[4]);
+    const m2 = Number(doRange[5]) - 1;
+    let y2 = normalizeYear(doRange[6]) ?? inferYear(m2, pageMonth, pageYear);
+    if (y2 < y1) y2 = m2 < m1 ? y1 + 1 : y1;
+    if (m1 >= 0 && m1 <= 11 && m2 >= 0 && m2 <= 11 && d1 >= 1 && d1 <= 31 && d2 >= 1 && d2 <= 31) {
+      const start = warsawDate(y1, m1, d1, 12);
+      let end = warsawDate(y2, m2, d2, 12);
+      if (end.getTime() < start.getTime()) end = start;
+      return withTime({ start, end });
+    }
+  }
+
+  // 2. A comma/"i" list of days, e.g. "2, 3, 4, 6, 9, 10 i 11.01.2026"
+  const list = s.match(/^(\d{1,2})(?:\s*,\s*\d{1,2})+[^]*?(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/)
+    ?? s.match(/^(\d{1,2})\s+i\s+(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/);
+  if (list) {
+    const firstDay = Number(list[1]);
+    const lastDay = Number(list[2]);
+    const month = Number(list[3]) - 1;
+    const year = normalizeYear(list[4]) ?? inferYear(month, pageMonth, pageYear);
+    if (month >= 0 && month <= 11 && firstDay >= 1 && firstDay <= 31) {
+      return withTime({
+        start: warsawDate(year, month, firstDay, 12),
+        end: warsawDate(year, month, Math.max(firstDay, lastDay), 12),
+      });
+    }
+  }
+
+  // 3. Day range within one month: "24-26.02", "1-3.05.", "6-11.11"
+  const dayRange = s.match(/^[^0-9]*(\d{1,2})\s*[-–—]\s*(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/);
+  if (dayRange) {
+    const d1 = Number(dayRange[1]);
+    const d2 = Number(dayRange[2]);
+    const month = Number(dayRange[3]) - 1;
+    const year = normalizeYear(dayRange[4]) ?? inferYear(month, pageMonth, pageYear);
+    if (month >= 0 && month <= 11 && d1 >= 1 && d1 <= 31 && d2 >= 1 && d2 <= 31) {
+      return withTime({
+        start: warsawDate(year, month, d1, 12),
+        end: warsawDate(year, month, Math.max(d1, d2), 12),
+      });
+    }
+  }
+
+  // 4. "<date> do <month name> [year]", e.g. "14.05 (termin wstępny) do października 2026"
+  const toMonthWord = s.match(/(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?\s*[-–—]?\s*do\s+([a-ząćęłńóśźż]{3,})(?:\s+(\d{4}))?/i);
+  if (toMonthWord) {
+    const endMonth = polishMonthIndex(toMonthWord[4]);
+    if (endMonth != null) {
+      const d1 = Number(toMonthWord[1]);
+      const m1 = Number(toMonthWord[2]) - 1;
+      const y1 = normalizeYear(toMonthWord[3]) ?? inferYear(m1, pageMonth, pageYear);
+      let endYear = normalizeYear(toMonthWord[5]) ?? inferYear(endMonth, pageMonth, pageYear);
+      if (endYear < y1) endYear = y1;
+      if (m1 >= 0 && m1 <= 11) {
+        return withTime({
+          start: warsawDate(y1, m1, d1, 12),
+          end: warsawDate(endYear, endMonth, lastDayOfMonth(endYear, endMonth), 12),
+        });
+      }
+    }
+  }
+
+  // 5. "do 6.01" (ongoing until date) — start approximated as the page month's first day.
+  const untilDate = s.match(/do\s+(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/i);
+  if (untilDate) {
+    const d2 = Number(untilDate[1]);
+    const m2 = Number(untilDate[2]) - 1;
+    const y2 = normalizeYear(untilDate[3]) ?? inferYear(m2, pageMonth, pageYear);
+    if (m2 >= 0 && m2 <= 11) {
+      const end = warsawDate(y2, m2, d2, 12);
+      let start = warsawDate(pageYear, pageMonth, 1, 12);
+      if (end.getTime() < start.getTime()) start = warsawDate(y2, m2, 1, 12);
+      return withTime({ start, end });
+    }
+  }
+
+  // 6. Month-name range, e.g. "czerwiec-lipiec", "lipiec-sierpień"
+  const monthWords = [...s.matchAll(/([a-ząćęłńóśźż]{3,})/gi)].map((m) => polishMonthIndex(m[1]));
+  const monthNameRange = s.match(/([a-ząćęłńóśźż]{3,})\s*[-–—]\s*([a-ząćęłńóśźż]{3,})/i);
+  if (monthNameRange) {
+    const m1 = polishMonthIndex(monthNameRange[1]);
+    const m2 = polishMonthIndex(monthNameRange[2]);
+    if (m1 != null && m2 != null) return withTime(dateRangeFromMonths(m1, m2, pageMonth, pageYear));
+  }
+
+  // 7. Single month name, e.g. "kwiecień"
+  const singleMonth = monthWords.find((m) => m != null);
+  if (singleMonth != null) return withTime(dateRangeFromMonths(singleMonth, singleMonth, pageMonth, pageYear));
+
+  // 8. Single numeric date, e.g. "8.08", "11.11", "25.01.2027"
+  const single = s.match(/(\d{1,2})[.](\d{1,2})(?:[.](\d{2,4}))?/);
   if (single) {
-    const day = parseInt(single[1]);
-    const month = parseInt(single[2]) - 1;
-    const y = single[3] ? parseInt(single[3]) : year;
+    const day = Number(single[1]);
+    const month = Number(single[2]) - 1;
+    const year = normalizeYear(single[3]) ?? inferYear(month, pageMonth, pageYear);
     if (month >= 0 && month <= 11 && day >= 1 && day <= 31) {
-      return new Date(y, month, day);
+      const d = warsawDate(year, month, day, 12);
+      return withTime({ start: d, end: new Date(d) });
     }
   }
-  // "1-3.05." or "8-15.05" — date range
-  const range = dateStr.match(/(\d{1,2})[.-](\d{1,2})\s*\.?\s*(\d{1,2})/);
-  if (range) {
-    const month = parseInt(range[3]) - 1;
-    const end = parseInt(range[2]);
-    if (month >= 0 && month <= 11) return new Date(year, month, end);
-  }
-  return new Date(year, 0, 1);
+
+  return null;
 }
 
-function parseDateRange(dateStr: string, year: number): { start: Date; end: Date } {
-  const cleaned = dateStr.replace(/godzina?\s*\d{1,2}[.:]\d{2}/gi, "").trim();
-  const parts = cleaned.split(/\s*-\s*/);
-  if (parts.length >= 2) {
-    return { start: parsePolishDate(parts[0], year), end: parsePolishDate(parts[1], year) };
-  }
-  const d = parsePolishDate(cleaned, year);
-  return { start: d, end: d };
+interface SubEvent {
+  start: Date;
+  end: Date;
+  title: string;
+  venue?: string;
 }
 
-function guessDistrict(title: string, text: string): string {
-  const lower = (title + " " + text).toLowerCase();
-  if (lower.includes("stary rynek") || lower.includes("centrum") || lower.includes("śródmieście")) return "Centrum";
-  if (lower.includes("jeżyce") || lower.includes("jezyce")) return "Jezyce";
-  if (lower.includes("grunwald") || lower.includes("łazarz") || lower.includes("lazarz")) return "Grunwald";
-  if (lower.includes("wilda")) return "Wilda";
-  if (lower.includes("rataje") || lower.includes("malta") || lower.includes("nowe miasto") || lower.includes("śródka") || lower.includes("ostrów tumski")) return "NoweMiasto";
-  if (lower.includes("piątkowo") || lower.includes("piatkowo") || lower.includes("winogrady") || lower.includes("cytadela") || lower.includes("rusałka")) return "StareMiasto";
-  return "Inny";
-}
-
-function isSubEventLine(line: string): boolean {
-  // "- 7.05 - Aula Artis - Title" or "- 12.05 - Pod Minogą - Title"
-  return /^[\s-]*\d{1,2}\.\d{2}\s*[-–]\s*.+[-–]\s*.+/.test(line);
-}
-
-function parseSubEvents(html: string, year: number): { date: Date; venue: string; title: string }[] {
-  const lines = html.split(/<br\s*\/?>/i);
-  const sub: { date: Date; venue: string; title: string }[] = [];
-  for (const line of lines) {
-    const match = line.match(/^[\s-]*(\d{1,2}\.\d{2})\s*[-–]\s*(.+?)\s*[-–]\s*(.+)/);
-    if (match) {
-      const date = parsePolishDate(match[1], year);
-      if (isNaN(date.getTime())) continue;
-      const venue = match[2].trim();
-      const title = match[3].trim();
-      if (venue && title) sub.push({ date, venue, title });
+/**
+ * Parse section listings:
+ *   "- 2.11 - Aula UAM - Aga Zaryan"  (venue between the two separators)
+ *   "6.11 - Sąsiedzi. V Paderewski Festiwal 2026"  (title only, venue from Miejsce:)
+ * The caller decides whether the mid-separator is a venue based on the section.
+ */
+function parseSubEvents(
+  segments: string[],
+  pageMonth: number,
+  pageYear: number,
+  splitVenue: boolean,
+): SubEvent[] {
+  const out: SubEvent[] = [];
+  for (const segment of segments) {
+    const line = segment.replace(/^[\s\-•*]+/, "").trim();
+    if (!line) continue;
+    const m = line.match(/^(\d{1,2})(?:\s*[i]\s*(\d{1,2}))?[.](\d{1,2})\.?\s*[-–—]\s*(.+)$/);
+    if (!m) continue;
+    const d1 = Number(m[1]);
+    const d2 = m[2] ? Number(m[2]) : d1;
+    const month = Number(m[3]) - 1;
+    if (month < 0 || month > 11 || d1 < 1 || d1 > 31) continue;
+    const rest = m[4].trim();
+    if (!rest) continue;
+    // Venue is the first segment only when the remainder uses spaced separators
+    // (so "Centrum Kongresowo-Dydaktyczne UM - Czerwone Gitary" keeps its hyphen).
+    const parts = rest.split(/\s+[-–—]\s+/).map((p) => p.trim()).filter(Boolean);
+    let venue: string | undefined;
+    let title: string;
+    if (splitVenue && parts.length >= 2) {
+      venue = parts[0];
+      title = parts.slice(1).join(" - ");
+    } else {
+      title = parts.join(" - ");
     }
+    title = cleanTitle(title);
+    if (!title || title.length < 3) continue;
+    const start = warsawDate(inferYear(month, pageMonth, pageYear), month, d1, 12);
+    const end = warsawDate(inferYear(month, pageMonth, pageYear), month, Math.max(d1, d2), 12);
+    out.push({ start, end, title, venue: venue ? cleanPlaceName(venue) : undefined });
   }
-  return sub;
+  return out;
 }
 
 // Parse recurring movie/screening sub-events: "DD.MM.YYYY, godz. HH:MM – Title"
-function parseScreenings(description: string, year: number): { date: Date; time: string; title: string }[] {
+function parseScreenings(description: string): { date: Date; time: string; title: string }[] {
   const screenings: { date: Date; time: string; title: string }[] = [];
-  const pattern = /(\d{1,2}\.\d{2}\.\d{4}),\s*godz\.\s*(\d{1,2}:\d{2})\s*[–\-]\s*(.+)/g;
+  const pattern = /(\d{1,2})\.(\d{1,2})\.(\d{4}),\s*godz\.\s*(\d{1,2}):(\d{2})\s*[–-]\s*(.+)/g;
   let match;
   while ((match = pattern.exec(description)) !== null) {
-    const [_, dateStr, time, title] = match;
-    const parts = dateStr.split(".");
-    const d = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]), 12);
-    if (!isNaN(d.getTime())) {
-      screenings.push({ date: d, time, title: title.trim() });
-    }
+    const [, dd, mm, yyyy, hh, min, title] = match;
+    const d = new Date(Date.UTC(Number(yyyy), Number(mm) - 1, Number(dd), 12));
+    if (!Number.isFinite(d.getTime())) continue;
+    screenings.push({ date: d, time: `${String(Number(hh)).padStart(2, "0")}:${min}`, title: title.trim() });
   }
   return screenings;
 }
@@ -110,11 +308,14 @@ export class KulturaPoznanScraper implements Scraper {
 
   async scrape(): Promise<ScrapedEvent[]> {
     const events: ScrapedEvent[] = [];
-    const year = 2026;
+    const seen = new Set<string>();
+    const now = new Date();
+    const pageYear = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Warsaw", year: "numeric" }).format(now));
 
-    for (const [month, id] of MONTHS) {
-      const url = `https://kultura.poznan.pl/mim/kultura/${month},p,89975,899${id}.html`;
-      console.log(`[KulturaPoznan] Fetching ${month}...`);
+    for (let pageMonth = 0; pageMonth < MONTHS.length; pageMonth++) {
+      const [monthName, id] = MONTHS[pageMonth];
+      const url = `https://kultura.poznan.pl/mim/kultura/${monthName},p,89975,899${id}.html`;
+      console.log(`[KulturaPoznan] Fetching ${monthName}...`);
 
       try {
         const res = await axios.get(url, {
@@ -126,153 +327,183 @@ export class KulturaPoznanScraper implements Scraper {
         });
 
         const $ = cheerio.load(res.data);
-        const dcBlocks = $(".dc-content");
-        console.log(`[KulturaPoznan] ${month}: ${dcBlocks.length} event blocks`);
+        const blocks = $(".dc-content");
+        console.log(`[KulturaPoznan] ${monthName}: ${blocks.length} event blocks`);
 
-        dcBlocks.each((_, el) => {
+        blocks.each((_, el) => {
           const $el = $(el);
-          const title = $el.find("li strong").first().text().trim().replace(/&nbsp;/g, "").trim();
-          if (!title || title.length < 3) return;
+          const rawTitle = $el.find("li strong").first().text().replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+          if (!rawTitle || rawTitle.length < 3) return;
 
           const pEl = $el.find("p").first();
-          const pHtml = pEl.html() || "";
-          const pText = pEl.text().trim();
+          const pHtml = pEl.html() ?? "";
+          const segments = pHtml
+            .split(/<br\s*\/?>/i)
+            .map((segment) => htmlToText(segment))
+            .map((segment) => normalizeSpace(segment))
+            .filter(Boolean);
+          const fullText = segments.join(" ");
 
-          // Extract fields from <p> content (handle concatenated fields without newlines)
-          const dataMatch = pText.match(/Data:\s*(.+?)(?:\n|Miejsce|Lokalizacja|Więcej|Organizator|Bilety|\$)/im);
-          const dateStr = dataMatch ? dataMatch[1].trim() : "";
-          const { start, end } = dateStr ? parseDateRange(dateStr, year) : { start: new Date(year, 0, 1), end: new Date(year, 0, 1) };
+          const firstFieldIdx = segments.findIndex((segment) => FIELD_RE.test(segment));
+          const preField = firstFieldIdx >= 0 ? segments.slice(0, firstFieldIdx) : segments;
+          const description = preField.join(" ").replace(/\s+/g, " ").trim();
 
-          const venueMatch = pText.match(/(?:Miejsce|Lokalizacja):\s*(.+?)(?:\n|Więcej|Organizator|Bilety|\$)/im);
-          let placeName = venueMatch ? venueMatch[1].trim() : "Poznań";
+          const fieldText = (label: RegExp): string => {
+            for (const segment of segments) {
+              if (label.test(segment)) {
+                return segment.replace(label, "").replace(FIELD_RE, "").trim();
+              }
+            }
+            const m = fullText.match(new RegExp(label.source + "\\s*(.*?)(?=\\s*(?:Data|Miejsce|Lokalizacja|Organizator|Organizatorzy|Bilety|Więcej|Wiecej|Cena|Ceny|Kontakt)\\s*:|$)", "i"));
+            return m ? m[1].trim() : "";
+          };
 
-          const ticketMatch = pText.match(/Bilety:\s*(.+?)(?:\n|Więcej|Organizator|\$)/im);
-          let price: string | undefined;
-          if (ticketMatch) {
-            const raw = ticketMatch[1].trim();
-            const p = raw.match(/(?:(?:od|od)\s*[\-\u2013]?\s*)?(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
-            if (p) price = `${p[1].replace(/\s/g, "")} zł`;
-            else if (raw.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) price = "0 zł";
+          const dataStr = fieldText(/^\s*Data\s*:/i);
+          const venueStr = fieldText(/^\s*(?:Miejsce|Lokalizacja)\s*:/i);
+          const detailsStr = (() => {
+            for (const segment of segments) {
+              if (/^\s*Bilety\s*:/i.test(segment)) return segment.replace(/^\s*Bilety\s*:/i, "").trim();
+            }
+            return "";
+          })();
+
+          const sourceUrlMatch = pHtml.match(/href="([^"]+)"/);
+          let sourceUrl = sourceUrlMatch ? decodeEntities(sourceUrlMatch[1]) : url;
+          if (sourceUrl.startsWith("/")) sourceUrl = `https://kultura.poznan.pl${sourceUrl}`;
+
+          const price = (() => {
+            const raw = detailsStr || fullText;
+            const m = raw.match(/(?:bilety?\s*(?:od\s*[-–]?\s*)?|cena\s*(?:od\s*[-–]?\s*)?)(\d+(?:\s*[.,]\s*\d{2})?)\s*(?:zł|PLN)/i);
+            if (m) return `${m[1].replace(/\s/g, "").replace(",", ".")} zł`;
+            if (/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i.test(raw)) return "0 zł";
+            return undefined;
+          })();
+
+          const range = dataStr ? parseKulturaDateRange(dataStr, pageMonth, pageYear) : null;
+
+          // No parsable Data field → the block may be a section listing sub-events
+          // ("Wybrane koncerty", "Koncerty Filharmonii Poznańskiej", ...).
+          if (!range) {
+            // "Wybrane koncerty" style sections list "date - venue - title";
+            // "Koncerty Filharmonii Poznańskiej" lists "date - title" (venue in
+            // the Miejsce field), and its titles may themselves contain " - ".
+            const splitVenue = segments.some((segment) => /^\s*[-–—•]/.test(segment)) && !/filharmoni/i.test(rawTitle);
+            const subs = parseSubEvents(segments, pageMonth, pageYear, splitVenue);
+            const usable = subs.filter((s) => s.end.getTime() >= now.getTime() - 86400000);
+            if (usable.length === 0) return;
+
+            const sectionVenue = venueStr ? cleanPlaceName(venueStr) : "";
+            const sectionCategory = /koncert|filharmoni|muzyczn/i.test(rawTitle)
+              ? "Muzyka"
+              : /spektakl|teatr|kabaret|balet/i.test(rawTitle)
+                ? "Teatr"
+                : null;
+            for (const sub of usable) {
+              const place = sub.venue || sectionVenue || "Poznań";
+              const category = sectionCategory ?? classifyCategory(sub.title, undefined, place) ?? "Inne";
+              const venueData = matchVenue(place) ?? matchVenue(fullText);
+              const sourceId = `kp-${Buffer.from(sub.title + new Date(Date.UTC(sub.start.getUTCFullYear(), sub.start.getUTCMonth(), sub.start.getUTCDate())).toISOString()).toString("base64").slice(0, 24)}`;
+              const key = sourceId;
+              if (seen.has(key)) continue;
+              seen.add(key);
+              events.push({
+                title: sub.title,
+                placeName: place,
+                address: extractAddressFromVenue(sub.venue ? venueStr : place),
+                district: venueData?.district ?? "Centrum",
+                category,
+                sourceUrl,
+                startDate: sub.start,
+                endDate: sub.end,
+                time: undefined,
+                vibes: guessVibes(sub.title, "", category),
+                source: "kultura-poznan",
+                sourceId,
+                coordsX: venueData?.lat,
+                coordsY: venueData?.lon,
+                price,
+              });
+            }
+            return;
           }
 
-          // Description: text before first <br>
-          let description = "";
-          const brIdx = pText.indexOf("\n");
-          if (brIdx > 0) {
-            description = pText.substring(0, brIdx).trim();
-          } else {
-            description = pText.split(/(?:Data:|Miejsce:|Więcej:|Wiecej:|Organizator:)/)[0].trim();
-          }
+          // Ongoing/future only — keep exhibitions that started in the past.
+          if (range.end.getTime() < now.getTime() - 86400000) return;
 
-          const urlMatch = pHtml.match(/href="([^"]+)"/);
-          const sourceUrl = urlMatch ? urlMatch[1] : url;
-
-          // Fallback: extract price from description if Bilety field wasn't found
-          if (!price) {
-            const combined = description + " " + pText;
-            const pMatch = combined.match(/(?:bilety?\s*(?:od\s*[\-\u2013]?\s*)?|cena\s*(?:od\s*[\-\u2013]?\s*)?)\s*(\d+(?:\s*[\.\,]\s*\d{2})?)\s*(?:zł|PLN)/i);
-            if (pMatch) price = `${pMatch[1].replace(/\s/g, "")} zł`;
-            else if (combined.match(/(?:wstęp|udział)\s+(?:wolny|bezpłatn)/i)) price = "0 zł";
-          }
-
-          const category = guessCategory(title, description);
-
-          // Venue match for coordinates
-          const venue = matchVenue(placeName);
-          const address = venue?.address;
-          const district = venue?.district ?? guessDistrict(title, placeName);
-          const coordsX = venue?.lat;
-          const coordsY = venue?.lon;
-
-          // Handle recurring screenings (e.g. "Kino plenerowe" with multiple dates)
-          const screenings = parseScreenings(pText, year);
+          // Recurring screenings with an explicit per-seance list.
+          const screenings = parseScreenings(fullText);
           if (screenings.length >= 3) {
             for (const s of screenings) {
-              const sDaysUntil = (s.date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-              if (sDaysUntil < -1) continue;
+              if (s.date.getTime() < now.getTime() - 86400000) continue;
+              const category = "Kino";
+              const sourceId = `kp-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`;
+              if (seen.has(sourceId)) continue;
+              seen.add(sourceId);
               events.push({
                 title: s.title,
-                description: `${title} — ${s.title}`,
-                placeName,
-                address,
-                district: district !== "Inny" ? district : "Centrum",
-                category: "Kino",
+                description: `${rawTitle} — ${s.title}`,
+                placeName: cleanPlaceName(venueStr) || "Poznań",
+                address: extractAddressFromVenue(venueStr),
+                district: matchVenue(venueStr || fullText)?.district ?? "Centrum",
+                category,
                 sourceUrl,
                 startDate: s.date,
                 endDate: s.date,
                 time: s.time,
-                vibes: guessVibesForCategory("Kino"),
+                vibes: guessVibesForCategory(category),
                 source: "kultura-poznan",
-                sourceId: `kp-${Buffer.from(s.title + s.date.toISOString()).toString("base64").slice(0, 24)}`,
-                coordsX,
-                coordsY,
+                sourceId,
+                coordsX: matchVenue(venueStr || fullText)?.lat,
+                coordsY: matchVenue(venueStr || fullText)?.lon,
                 price,
               });
             }
-            return; // skip parent if screenings extracted
+            return;
           }
 
-          // Handle sub-events (e.g. "Inne koncerty")
-          const subEvents = parseSubEvents(pHtml, year);
-
-          if (subEvents.length > 0 && !venueMatch) {
-            for (const sub of subEvents) {
-              const subDaysUntil = (sub.date.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-              if (subDaysUntil < -1) continue;
-              const subVenue = matchVenue(sub.venue);
-              events.push({
-                title: sub.title,
-                placeName: sub.venue,
-                address: subVenue?.address,
-                district: subVenue?.district ?? guessDistrict(sub.venue, ""),
-                category: guessCategory(sub.title, description),
-                description: `${title} — ${sub.venue}`,
-                sourceUrl,
-                startDate: sub.date,
-                endDate: sub.date,
-                time: undefined,
-                vibes: guessVibes(sub.title, description ?? "", guessCategory(sub.title, description)),
-                source: "kultura-poznan",
-                sourceId: `kp-${Buffer.from(sub.title + sub.date.toISOString()).toString("base64").slice(0, 24)}`,
-                coordsX: subVenue?.lat,
-                coordsY: subVenue?.lon,
-                price,
-              });
-            }
-            return; // skip parent event if sub-events exist
+          const placeName = cleanPlaceName(venueStr) || "";
+          const address = extractAddressFromVenue(venueStr) || undefined;
+          const venueData = matchVenue(placeName) ?? matchVenue(`${placeName} ${fullText}`);
+          const category = classifyCategory(rawTitle, description, placeName) ?? "Inne";
+          const time = parseTimeFromData(dataStr);
+          let startDate = range.start;
+          if (time) {
+            const ymd = dateKeyInWarsaw(startDate).split("-").map(Number);
+            const [h, min] = time.split(":").map(Number);
+            startDate = warsawDate(ymd[0], ymd[1] - 1, ymd[2], h, min);
           }
-
-          const now = new Date();
-          const daysUntil = (start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-          if (daysUntil < -1) return;
+          const parentSourceId = `kp-${Buffer.from(rawTitle).toString("base64").slice(0, 24)}`;
+          const key = `${parentSourceId}|${dateKeyInWarsaw(startDate)}`;
+          if (seen.has(key)) return;
+          seen.add(key);
 
           events.push({
-            title,
+            title: rawTitle,
             description: description || undefined,
-            placeName,
+            placeName: placeName || "Poznań",
             address,
-            district: district !== "Inny" ? district : "Centrum",
+            district: venueData?.district ?? "Centrum",
             category,
             sourceUrl,
-            startDate: start,
-            endDate: end,
-            time: undefined,
-            vibes: guessVibes(title, description ?? "", category),
+            startDate,
+            endDate: range.end,
+            time,
+            vibes: guessVibes(rawTitle, description, category),
             source: "kultura-poznan",
-            sourceId: `kp-${Buffer.from(title).toString("base64").slice(0, 24)}`,
-            coordsX,
-            coordsY,
+            sourceId: parentSourceId,
+            coordsX: venueData?.lat,
+            coordsY: venueData?.lon,
             price,
           });
         });
       } catch (e) {
-        console.error(`[KulturaPoznan] ${month} failed:`, (e as Error).message);
+        console.error(`[KulturaPoznan] ${monthName} failed:`, (e as Error).message);
       }
     }
 
-    // Post-loop: geocode any event without coordinates from venue match
+    // Geocode remaining venues (Nominatim is rate-limited to 1 req/s internally).
     for (const ev of events) {
-      if (ev.coordsX) continue;
+      if (ev.coordsX != null && ev.coordsY != null) continue;
       const geo = await geocodeVenue(ev.placeName, ev.title, ev.address);
       if (geo) {
         ev.coordsX = geo.lat;
@@ -281,15 +512,16 @@ export class KulturaPoznanScraper implements Scraper {
       }
     }
 
-    // Final fallback: events still without coords get district center
+    // Final fallback: district centre for anything still unlocated.
     for (const ev of events) {
-      if (ev.coordsX) continue;
-      const d = ev.district !== "Inny" ? ev.district : guessDistrict(ev.placeName, "");
-      const center = districtFallback(d);
+      if (ev.coordsX != null && ev.coordsY != null) continue;
+      const center = districtFallback(ev.district);
       ev.coordsX = center.lat;
       ev.coordsY = center.lon;
+      ev.district = center.district;
     }
 
+    console.log(`[KulturaPoznan] ${events.length} events`);
     return events;
   }
 }

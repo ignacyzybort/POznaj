@@ -1,6 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 import { pointInDistrict } from "@/lib/geo";
 import { calculateBaseScore } from "@/lib/scoring";
+import {
+  cleanTitle,
+  cleanDescription,
+  cleanPlaceName,
+  cleanAddress,
+  classifyCategory,
+  isKnownCategory,
+  normalizeTime,
+  isValidDate,
+  dateKeyInWarsaw,
+} from "./text";
 
 export interface ScrapedEvent {
   title: string;
@@ -28,37 +39,9 @@ export interface Scraper {
   scrape(): Promise<ScrapedEvent[]>;
 }
 
+const DISTRICTS = new Set(["Centrum", "StareMiasto", "NoweMiasto", "Jezyce", "Grunwald", "Wilda", "Inny"]);
+
 const STOPWORDS = new Set(["w", "i", "na", "z", "do", "się", "po", "od", "za", "przed", "pod", "nad", "przy", "dla", "bez", "oraz", "ale", "lub", "the", "a", "an", "of", "to", "is", "it", "dla", "nie", "że", "jak", "co"]);
-
-function decodeEntities(s: string): string {
-  return s.replace(/&#8211;/g, '\u2013').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-}
-
-function cleanTitle(t: string): string {
-  return t.replace(/\s*[–\u2013\u2014\-—]\s*[Bb]ilety\s*$/g, "")
-    .replace(/\s*\|\s*[Bb]ilety\s*$/g, "")
-    .replace(/\s*[–\u2013]\s*[Bb]ilety\s*[–\u2013]\s*.+$/g, "")
-    .replace(/&#8211;\s*Bilety/gi, "")
-    .trim();
-}
-
-function cleanPlaceName(s: string): string {
-  return decodeEntities(s)
-    .replace(/\s*[–\u2013]\s*Nadchodzące wydarzenia.*$/i, '')
-    .replace(/\s*Więcej\s*(informacji)?:.*$/i, '')
-    .replace(/\s*Organizator:.*$/i, '')
-    .replace(/\s*Wstęp\s*wolny.*$/i, '')
-    .replace(/,\s*ul\..*$/i, '')
-    .replace(/\d{2}[-\s]\d{3}\s*Poznań?$/i, '')
-    .trim();
-}
-
-function cleanDescription(desc: string): string {
-  return desc.split(/\s*(?:Data:|Miejsce:|Lokalizacja:|Bilety:|Wykonawca:|Organizator:|Tagi:)/)[0]
-    .replace(/\t/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
 
 function normalize(s: string): string {
   return s.toLowerCase()
@@ -92,8 +75,91 @@ function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
+const OUTDOOR_KEYWORDS = [
+  "park", "ogród", "jezioro", "rusałka", "cytadela", "plaża",
+  "rynek", "plac", "skwer", "bulwar", "wyspa", "promenada",
+  "amfiteatr", "scena plenerowa", "boisko", "stadion",
+  "palmiarnia", "ogród botaniczny",
+];
+
+function containsWord(text: string, keyword: string): boolean {
+  const re = new RegExp("\\b" + keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+  return re.test(text);
+}
+
+function detectOutdoor(placeName: string, description: string | undefined): boolean {
+  const lowerDesc = description?.toLowerCase() ?? "";
+
+  for (const kw of OUTDOOR_KEYWORDS) {
+    if (containsWord(placeName, kw) || containsWord(lowerDesc, kw)) return true;
+  }
+
+  const exactOutdoor = [
+    "park cytadela", "scena nad rusałką", "malta", "termy maltańskie",
+    "stary rynek", "rynek łazarski", "plac wolności", "jezioro strzeszyńskie",
+    "park sołacki", "park wilsona", "park kasprowicza", "tor regatowy malta",
+    "enea stadion", "nowe zoo", "stare zoo", "ogród botaniczny uam",
+    "palmiarnia poznańska", "tor poznań", "kontenerart",
+    "letnia strefa", "scena plenerowa",
+  ];
+  const lowerName = placeName.toLowerCase();
+  for (const ex of exactOutdoor) {
+    if (lowerName.includes(ex)) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Shared normalization pass applied to every scraped event before it is
+ * written. Scrapers should still emit structured dates/venues; this guard is
+ * the last line of defence against contaminated text, bad dates and unknown
+ * district/category values.
+ */
+export function sanitizeEvent(ev: ScrapedEvent): ScrapedEvent | null {
+  ev.title = cleanTitle(ev.title);
+  if (!ev.title) return null;
+
+  ev.description = cleanDescription(ev.description);
+  ev.placeName = cleanPlaceName(ev.placeName) || "Poznań";
+  if (ev.address) ev.address = cleanAddress(ev.address);
+  if (ev.imageUrl) ev.imageUrl = ev.imageUrl.trim();
+  ev.sourceUrl = (ev.sourceUrl ?? "").trim();
+  if (!ev.sourceUrl) return null;
+
+  // Category: keep scraper-specific classification, only fall back to keywords
+  // for "Inne"/invalid values.
+  if (!isKnownCategory(ev.category) || ev.category === "Inne") {
+    const guessed = classifyCategory(ev.title, ev.description, ev.placeName);
+    if (guessed) ev.category = guessed;
+    else if (!isKnownCategory(ev.category)) ev.category = "Inne";
+  }
+
+  ev.time = normalizeTime(ev.time);
+
+  if (!isValidDate(ev.startDate)) return null;
+  if (!isValidDate(ev.endDate) || ev.endDate.getTime() < ev.startDate.getTime()) {
+    ev.endDate = new Date(ev.startDate);
+  }
+
+  // Sanity: drop coordinates that are not finite numbers.
+  if (ev.coordsX != null && !Number.isFinite(ev.coordsX)) delete ev.coordsX;
+  if (ev.coordsY != null && !Number.isFinite(ev.coordsY)) delete ev.coordsY;
+
+  // District: always derive from coordinates when we have them (single source
+  // of truth for the map), otherwise keep the scraper's guess.
+  if (ev.coordsX != null && ev.coordsY != null) {
+    const geoDistrict = pointInDistrict(ev.coordsX, ev.coordsY);
+    if (geoDistrict) ev.district = geoDistrict;
+  }
+  if (!DISTRICTS.has(ev.district)) ev.district = "Inny";
+
+  if (ev.outdoor === undefined) ev.outdoor = detectOutdoor(ev.placeName, ev.description);
+  return ev;
+}
+
 const createData = (event: ScrapedEvent, vibes: string[]) => ({
-  title: cleanTitle(event.title),
+  title: event.title,
   description: event.description,
   imageUrl: event.imageUrl,
   sourceUrl: event.sourceUrl,
@@ -136,73 +202,200 @@ const updateData = (event: ScrapedEvent, vibes: string[]) => {
   };
 
   if (event.district && event.district !== "Inny") d.district = event.district;
-  if (event.coordsX) d.coordsX = event.coordsX;
-  if (event.coordsY) d.coordsY = event.coordsY;
+  if (event.coordsX != null) d.coordsX = event.coordsX;
+  if (event.coordsY != null) d.coordsY = event.coordsY;
   if (event.outdoor !== undefined) d.outdoor = event.outdoor;
 
   return d;
 };
 
-const OUTDOOR_KEYWORDS = [
-  "park", "ogród", "jezioro", "rusałka", "cytadela", "plaża",
-  "rynek", "plac", "skwer", "bulwar", "wyspa", "promenada",
-  "amfiteatr", "scena plenerowa", "boisko", "stadion",
-  "palmiarnia", "ogród botaniczny",
-];
+/**
+ * Delete stale rows produced by an older, structurally broken parser (or by
+ * earlier duplicate-prone runs) before/after saving fresh scrape output.
+ *
+ * `cutoff` must be the start of the current scrape run: rows touched by this
+ * run (updatedAt >= cutoff) are never deleted. `phase = "pre"` removes rows
+ * that would be re-created right away; `phase = "post"` removes near-duplicates
+ * left behind when a corrected date no longer matches the stored one.
+ */
+export async function pruneLegacyEvents(
+  prisma: PrismaClient,
+  source: string,
+  cutoff: Date,
+  scraped: ScrapedKey[] = [],
+  phase: "pre" | "post" = "pre"
+): Promise<number> {
+  const now = new Date();
+  const rows = await prisma.event.findMany({
+    where: {
+      source,
+      endDate: { gte: now },
+      attendance: { none: {} },
+      reminders: { none: {} },
+      notifications: { none: {} },
+      updatedAt: { lt: cutoff },
+    },
+    select: { id: true, sourceId: true, description: true, title: true, startDate: true },
+  });
 
-function containsWord(text: string, keyword: string): boolean {
-  const re = new RegExp("\\b" + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$\&') + "\\b", "i");
-  return re.test(text);
+  const norm = (s: string) => s.toLowerCase().replace(/[^\wąćęłńóśźż]+/g, " ").replace(/\s+/g, " ").trim();
+  let ids: string[] = [];
+
+  if (source === "mnp" && phase === "pre") {
+    // Old MNP sourceIds were `mnp/${title}|${place}|${isoDate}` and were built
+    // from paragraph-like garbage titles.
+    ids = rows.filter((r) => (r.sourceId ?? "").includes("|")).map((r) => r.id);
+  } else if (source === "kultura-poznan" && phase === "pre") {
+    // Old sub-event rows got `<section title> — <venue>` as their description.
+    const legacyDesc = /^(?:Wybrane|Inne|Pozostałe|Wybrane i inne)\s+(?:koncerty|spektakle|wydarzenia)\b/i;
+    ids = rows.filter((r) => legacyDesc.test(r.description ?? "")).map((r) => r.id);
+  } else if (source === "kultura-poznan" && phase === "post") {
+    // Date-parser bugs left duplicates of current events under a neighbouring
+    // date. Keep occurrences that are present in the fresh scrape, drop the rest.
+    const freshDates = new Map<string, Set<string>>();
+    for (const item of scraped) {
+      const key = norm(item.title);
+      if (!key) continue;
+      if (!freshDates.has(key)) freshDates.set(key, new Set());
+      freshDates.get(key)!.add(dateKeyInWarsaw(item.startDate));
+    }
+    ids = rows
+      .filter((r) => {
+        const dates = freshDates.get(norm(r.title));
+        return !!dates && !dates.has(dateKeyInWarsaw(r.startDate));
+      })
+      .map((r) => r.id);
+  }
+
+  if (ids.length === 0) return 0;
+  const res = await prisma.event.deleteMany({ where: { id: { in: ids } } });
+  return res.count;
 }
 
-function detectOutdoor(placeName: string, description: string | undefined): boolean {
-  const lowerDesc = description?.toLowerCase() ?? "";
+/** Existing row metadata needed to keep cross-source attribution stable. */
+interface ExistingSource {
+  source: string;
+  sourceId: string | null;
+}
 
-  for (const kw of OUTDOOR_KEYWORDS) {
-    if (containsWord(placeName, kw) || containsWord(lowerDesc, kw)) return true;
+function existingSource(source: string, sourceId: string | null): ExistingSource {
+  return { source, sourceId };
+}
+
+/**
+ * Keep a row owned by the first source that created it. Only refresh sourceId
+ * when the row already belongs to the scraping source (fixes legacy ids from
+ * older parsers without "stealing" rows from another source).
+ */
+function withStableSourceId(
+  data: Record<string, any>,
+  existing: ExistingSource,
+  ev: ScrapedEvent
+): Record<string, any> {
+  if (existing.source === ev.source && existing.sourceId !== ev.sourceId) {
+    return { ...data, sourceId: ev.sourceId };
   }
+  return data;
+}
 
-  const exactOutdoor = [
-    "park cytadela", "scena nad rusałką", "malta", "termy maltańskie",
-    "stary rynek", "rynek łazarski", "plac wolności", "jezioro strzeszyńskie",
-    "park sołacki", "park wilsona", "park kasprowicza", "tor regatowy malta",
-    "enea stadion", "nowe zoo", "stare zoo", "ogród botaniczny uam",
-    "palmiarnia poznańska", "tor poznań", "kontenerart",
-    "letnia strefa", "scena plenerowa",
-  ];
-  const lowerName = placeName.toLowerCase();
-  for (const ex of exactOutdoor) {
-    if (lowerName.includes(ex)) return true;
+/** Minimal shape the pruning logic needs from a freshly scraped event. */
+export interface ScrapedKey {
+  title: string;
+  startDate: Date;
+  placeName: string;
+  sourceId: string;
+}
+
+interface CollisionRow {
+  id: string;
+  _count: { attendance: number; reminders: number; notifications: number };
+}
+
+async function findUniqueKeyCollision(
+  prisma: PrismaClient,
+  data: { title: string; startDate: Date; placeName: string }
+): Promise<CollisionRow | null> {
+  return prisma.event.findFirst({
+    where: { title: data.title, startDate: data.startDate, placeName: data.placeName },
+    select: { id: true, _count: { select: { attendance: true, reminders: true, notifications: true } } },
+  });
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (error as { code?: string } | null)?.code === "P2002";
+}
+
+/**
+ * Update a row, resolving `@@unique([title, startDate, placeName])` collisions
+ * left behind by earlier duplicate-prone runs: the stale duplicate is deleted
+ * (unless a user attached attendance/reminders/notifications to it) and the
+ * update is retried once.
+ */
+async function safeUpdate(
+  prisma: PrismaClient,
+  id: string,
+  data: any
+): Promise<"updated" | "collision-protected"> {
+  try {
+    await prisma.event.update({ where: { id }, data });
+    return "updated";
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+    const colliding = await findUniqueKeyCollision(prisma, data as { title: string; startDate: Date; placeName: string });
+    if (!colliding || colliding.id === id) throw error;
+    const { attendance, reminders, notifications } = colliding._count;
+    if (attendance > 0 || reminders > 0 || notifications > 0) return "collision-protected";
+    await prisma.event.delete({ where: { id: colliding.id } });
+    await prisma.event.update({ where: { id }, data });
+    return "updated";
   }
+}
 
-  return false;
+/**
+ * Create a row, merging into an existing row with the same unique key when one
+ * is present (keeps the existing id and any user links instead of failing).
+ */
+async function safeCreate(
+  prisma: PrismaClient,
+  data: any
+): Promise<{ id: string } | null> {
+  try {
+    return await prisma.event.create({ data });
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+    const colliding = await findUniqueKeyCollision(prisma, data as { title: string; startDate: Date; placeName: string });
+    if (!colliding) throw error;
+    const { data: _, ...rest } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+    await prisma.event.update({ where: { id: colliding.id }, data: rest });
+    return { id: colliding.id };
+  }
 }
 
 export async function saveEvents(
   prisma: PrismaClient,
   events: ScrapedEvent[]
-): Promise<{ created: number; updated: number; errors: number }> {
+): Promise<{ created: number; updated: number; errors: number; skipped: number }> {
   let created = 0;
   let updated = 0;
   let errors = 0;
+  let skipped = 0;
 
-  // Clean titles, placeNames, descriptions before any processing
-  for (const ev of events) {
-    ev.title = decodeEntities(cleanTitle(ev.title));
-    ev.placeName = cleanPlaceName(ev.placeName);
-    if (ev.description) ev.description = cleanDescription(ev.description);
-    if (ev.address) ev.address = decodeEntities(ev.address);
-    if (ev.outdoor === undefined) ev.outdoor = detectOutdoor(ev.placeName, ev.description);
+  // Normalize + drop unusable events before any DB work
+  const clean: ScrapedEvent[] = [];
+  for (const raw of events) {
+    const ev = sanitizeEvent(raw);
+    if (ev) clean.push(ev);
+    else skipped++;
   }
 
   const byDay = new Map<string, ScrapedEvent[]>();
-  for (const ev of events) {
+  for (const ev of clean) {
     const dk = dayKey(ev.startDate);
     if (!byDay.has(dk)) byDay.set(dk, []);
     byDay.get(dk)!.push(ev);
   }
 
-  for (const [dk, dayEvents] of byDay) {
+  for (const [, dayEvents] of byDay) {
     const start = new Date(dayEvents[0].startDate);
     start.setHours(0, 0, 0, 0);
     const end = new Date(start);
@@ -210,35 +403,32 @@ export async function saveEvents(
 
     const existing = await prisma.event.findMany({
       where: { startDate: { gte: start, lt: end } },
-      select: { id: true, title: true, placeName: true, sourceId: true },
+      select: { id: true, title: true, placeName: true, sourceId: true, source: true },
     });
 
     for (const ev of dayEvents) {
       try {
         const { vibes } = ev;
 
-        if (ev.coordsX && ev.coordsY) {
-          const geoDistrict = pointInDistrict(ev.coordsX, ev.coordsY);
-          if (geoDistrict) ev.district = geoDistrict;
-        }
-
         // 1. Exact match
         const exact = existing.find(
           (e) => e.title === ev.title && e.placeName === ev.placeName
         );
         if (exact) {
-          await prisma.event.update({ where: { id: exact.id }, data: updateData(ev, vibes) });
+          const res = await safeUpdate(prisma, exact.id, withStableSourceId(updateData(ev, vibes), existingSource(exact.source, exact.sourceId), ev));
+          if (res === "collision-protected") { errors++; continue; }
           updated++;
-          existing.push({ id: exact.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
+          existing.push({ id: exact.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId, source: ev.source });
           continue;
         }
 
         // 2. SourceId match (same source, same event)
         const bySource = existing.find((e) => e.sourceId === ev.sourceId);
         if (bySource) {
-          await prisma.event.update({ where: { id: bySource.id }, data: updateData(ev, vibes) });
+          const res = await safeUpdate(prisma, bySource.id, withStableSourceId(updateData(ev, vibes), existingSource(bySource.source, bySource.sourceId), ev));
+          if (res === "collision-protected") { errors++; continue; }
           updated++;
-          existing.push({ id: bySource.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
+          existing.push({ id: bySource.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId, source: ev.source });
           continue;
         }
 
@@ -256,20 +446,23 @@ export async function saveEvents(
         }
 
         if (best) {
-          await prisma.event.update({ where: { id: best.id }, data: updateData(ev, vibes) });
+          const matchRow = existing.find((e) => e.id === best.id)!;
+          const res = await safeUpdate(prisma, best.id, withStableSourceId(updateData(ev, vibes), existingSource(matchRow.source, matchRow.sourceId), ev));
+          if (res === "collision-protected") { errors++; continue; }
           updated++;
-          existing.push({ id: best.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
+          existing.push({ id: best.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId, source: ev.source });
         } else {
-          const createdEvent = await prisma.event.create({ data: createData(ev, vibes) });
+          const createdEvent = await safeCreate(prisma, createData(ev, vibes));
+          if (!createdEvent) { errors++; continue; }
           created++;
-          existing.push({ id: createdEvent.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId });
+          existing.push({ id: createdEvent.id, title: ev.title, placeName: ev.placeName, sourceId: ev.sourceId, source: ev.source });
         }
       } catch (e) {
-        console.warn(`[saveEvents] Failed for "${ev.title}" (${ev.sourceId}):`, (e as Error).message?.slice(0, 100));
+        console.warn(`[saveEvents] Failed for "${ev.title}" (${ev.sourceId}):`, (e as Error).message?.slice(0, 120));
         errors++;
       }
     }
   }
 
-  return { created, updated, errors };
+  return { created, updated, errors, skipped };
 }

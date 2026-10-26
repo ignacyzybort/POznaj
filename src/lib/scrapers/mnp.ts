@@ -4,46 +4,101 @@ import * as cheerio from "cheerio";
 import { matchVenue } from "@/lib/venues";
 import { geocodeVenue, districtFallback } from "./geocode";
 import { guessVibesForCategory } from "@/lib/vibes";
+import {
+  classifyCategory,
+  cleanPlaceName,
+  htmlToText,
+  parseSourceDate,
+  timeInWarsaw,
+} from "./text";
 
-const URL = "https://mnp.art.pl/wystawy-i-wydarzenia";
+const PAGE_URL = "https://mnp.art.pl/wystawy-i-wydarzenia";
 const SOURCE = "mnp";
 
-const OOT = new Set(["gołuchów", "gołuch", "rogalin", "śmiełów", "żerków"]);
+// Museum branches outside Poznań are not part of the app's city feed.
+const OUT_OF_TOWN = ["gołuchów", "gołuchowie", "gołuch", "rogalin", "rogalinie", "śmiełów", "smielow", "smiełow", "żerków", "zerkow"];
 
-const CAT_MAP: Record<string, string> = {
+// The Events Calendar category slugs → app category.
+const CAT_SLUGS: Record<string, string> = {
   wystawa: "Sztuka",
+  wystawy: "Sztuka",
+  jubileusz: "Sztuka",
   koncert: "Muzyka",
+  koncerty: "Muzyka",
   warsztat: "Warsztaty",
-  wykład: "Konferencje",
-  spotkanie: "Inne",
+  warsztaty: "Warsztaty",
+  wyklad: "Konferencje",
+  "oprowadzanie-spacer": "Sztuka",
+  oprowadzanie: "Sztuka",
+  spacer: "Sztuka",
+  "lekcja-muzealna": "Warsztaty",
+  spotkanie: "Konferencje",
+  spotkania: "Konferencje",
+  "spotkanie-cykliczne": "Konferencje",
   projekcja: "Kino",
+  pokaz: "Kino",
+  pokazy: "Kino",
   spektakl: "Teatr",
-  oprowadzanie: "Inne",
-  spacer: "Inne",
+  teatr: "Teatr",
   kurs: "Warsztaty",
 };
 
-const MONTHS_PL: Record<string, number> = {
-  stycznia: 0, lutego: 1, marca: 2, kwietnia: 3, maja: 4, czerwca: 5,
-  lipca: 6, sierpnia: 7, wrzesnia: 8, pazdziernika: 9, listopada: 10, grudnia: 11,
-};
+const CATEGORY_PRIORITY = ["Kino", "Teatr", "Muzyka", "Jedzenie", "Sport", "Warsztaty", "Konferencje", "Sztuka"];
 
-function parseDatePl(dateStr: string): Date | null {
-  const m = dateStr.match(/(\d{1,2})\s+(\w+)\s*(?:,\s*(\d{4}))?/);
-  if (!m) return null;
-  const day = parseInt(m[1]);
-  const month = MONTHS_PL[m[2].toLowerCase()];
-  const year = m[3] ? parseInt(m[3]) : new Date().getFullYear();
-  if (month === undefined || isNaN(day) || isNaN(year)) return null;
-  return new Date(year, month, day, 12);
+function pickCategory(
+  slugs: string[],
+  title: string,
+  description: string | undefined,
+  venue: string,
+): string {
+  const mapped = [...new Set(slugs.map((s) => CAT_SLUGS[s]).filter(Boolean))];
+  const guessed = classifyCategory(title, description, venue);
+  if (guessed && mapped.includes(guessed)) return guessed;
+  for (const category of CATEGORY_PRIORITY) if (mapped.includes(category)) return category;
+  return guessed ?? "Inne";
 }
 
-function guessCategory(text: string): string {
-  const lower = text.toLowerCase();
-  for (const [kw, cat] of Object.entries(CAT_MAP)) {
-    if (lower.includes(kw)) return cat;
+interface LdEvent {
+  "@type"?: string | string[];
+  name?: string;
+  description?: string;
+  image?: string | string[];
+  url?: string;
+  startDate?: string;
+  endDate?: string;
+  location?: {
+    name?: string;
+    address?: { streetAddress?: string; addressLocality?: string };
+  };
+}
+
+function isEventNode(node: unknown): node is LdEvent {
+  if (!node || typeof node !== "object") return false;
+  const t = (node as { "@type"?: string | string[] })["@type"];
+  return t === "Event" || (Array.isArray(t) && t.includes("Event"));
+}
+
+function collectEventNodes(parsed: unknown, out: LdEvent[]): void {
+  if (Array.isArray(parsed)) {
+    for (const item of parsed) collectEventNodes(item, out);
+    return;
   }
-  return "Inne";
+  if (!parsed || typeof parsed !== "object") return;
+  if (isEventNode(parsed)) out.push(parsed);
+  const graph = (parsed as { "@graph"?: unknown })["@graph"];
+  if (Array.isArray(graph)) for (const item of graph) collectEventNodes(item, out);
+}
+
+function isOutOfTown(name: string): boolean {
+  const lower = name.toLowerCase();
+  return OUT_OF_TOWN.some((o) => lower.includes(o));
+}
+
+
+function pickImage(image: string | string[] | undefined): string | undefined {
+  if (!image) return undefined;
+  const arr = Array.isArray(image) ? image : [image];
+  return arr.find((u) => typeof u === "string" && u.startsWith("http"));
 }
 
 export class MnpScraper implements Scraper {
@@ -51,118 +106,109 @@ export class MnpScraper implements Scraper {
 
   async scrape(): Promise<ScrapedEvent[]> {
     console.log("[MNP] Fetching...");
-    const { data } = await axios.get(URL, { headers: { "User-Agent": "POznaj/1.0" }, timeout: 20000 });
+    const { data } = await axios.get(PAGE_URL, { headers: { "User-Agent": "POznaj/1.0" }, timeout: 20000 });
     const $ = cheerio.load(data);
+
+    // 1. Category slugs from the calendar list markup (authoritative).
+    const categoryByUrl = new Map<string, string[]>();
+    $("li.tribe-events-calendar-list__event-row, .tribe-events-calendar-list__event-row").each((_, el) => {
+      const $row = $(el);
+      const href = $row.find(".tribe-events-calendar-list__event-title-link").attr("href")
+        ?? $row.find("a[rel='bookmark']").attr("href");
+      if (!href) return;
+      const classes = `${$row.find("article").attr("class") ?? ""} ${$row.attr("class") ?? ""}`;
+      const slugs = [...classes.matchAll(/tribe_events_cat-([a-z0-9-]+)/gi)].map((m) => m[1].toLowerCase());
+      if (slugs.length > 0) categoryByUrl.set(href.replace(/\/$/, ""), slugs);
+    });
+    console.log(`[MNP] category map: ${categoryByUrl.size} rows`);
+
+    // 2. Structured event data from schema.org JSON-LD (cleanest source).
+    const ldEvents: LdEvent[] = [];
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        collectEventNodes(JSON.parse($(el).html() || "null"), ldEvents);
+      } catch { /* ignore malformed blocks */ }
+    });
+    console.log(`[MNP] JSON-LD events: ${ldEvents.length}`);
 
     const events: ScrapedEvent[] = [];
     const seen = new Set<string>();
 
-    // Look for event entries — the page shows events in structured blocks
-    // Each event block typically has a title link, date, venue, address, category tag
-    const selectors = [
-      "[class*='event']", "[class*='wydarzenie']", ".tribe-events-calendar-list__event",
-      "article", "[class*='list-item']", "[class*='entry']",
-    ];
+    for (const ld of ldEvents) {
+      const title = htmlToText(ld.name);
+      if (!title || title.length < 4) continue;
 
-    $("body *").each((_, el) => {
-      // Look for venue text patterns to identify event containers
-      const text = $(el).text().trim();
-      if (text.length < 30 || text.length > 3000) return;
+      const startParsed = parseSourceDate(ld.startDate);
+      const endParsed = parseSourceDate(ld.endDate) ?? startParsed;
+      if (!startParsed || !endParsed) continue;
+      const start = startParsed.date;
+      const end = endParsed.date;
+      if (end.getTime() < start.getTime()) continue;
 
-      // Check if this element contains a date + venue pattern
-      if (!/\d{1,2}\s+(stycznia|lutego|marca|kwietnia|maja|czerwca|lipca|sierpnia|wrzesnia|pazdziernika|listopada|grudnia)/.test(text)) return;
+      const venueRaw = htmlToText(ld.location?.name) || "Muzeum Narodowe w Poznaniu";
+      const venue = cleanPlaceName(venueRaw) || "Muzeum Narodowe w Poznaniu";
+      if (isOutOfTown(venueRaw) || isOutOfTown(venue)) continue;
 
-      // Extract title from the first heading or link
-      const titleEl = $(el).find("h2, h3, h4, .title, [class*='title'], a[href*='wydarzenie']").first();
-      const title = titleEl.text().trim() || text.split("\n")[0]?.trim() || "";
-      if (title.length < 5) return;
-      // Skip date-only titles (false positive matches)
-      if (/^\d{1,2}\s+\w+(?:\s+\d{4})?(?:\s+\d{1,2}:\d{2})?/.test(title) && title.length < 60) return;
+      const address = ld.location?.address?.streetAddress
+        ? htmlToText(ld.location.address.streetAddress)
+        : undefined;
 
-      // Extract dates
-      const dateMatch = text.match(/(\d{1,2}\s+\w+)(?:\s*,\s*\d{4})?.*?(\d{1,2}\s+\w+)(?:\s*,\s*\d{4})?/);
-      const singleDateMatch = text.match(/(\d{1,2}\s+\w+(?:\s*,\s*\d{4})?)/);
+      const description = htmlToText(ld.description).replace(/\.{3,}$/, "").trim() || undefined;
 
-      let startDate: Date | null = null;
-      let endDate: Date | null = null;
-
-      if (dateMatch) {
-        startDate = parseDatePl(dateMatch[1]);
-        endDate = parseDatePl(dateMatch[2]);
-      } else if (singleDateMatch) {
-        startDate = parseDatePl(singleDateMatch[1]);
-        endDate = startDate;
-      }
-
-      if (!startDate) return;
-
-      // Past events
-      if (endDate && endDate < new Date()) return;
-
-      // Extract time
-      const timeMatch = text.match(/(\d{1,2}:\d{2})/);
-      const time = timeMatch?.[1];
-
-      // Extract venue/address
-      const venueMatch = text.match(/(Muzeum\s+[^.]+?(?:w\s+Poznaniu|w\s+Zamku|w\s+Gołuchowie|w\s+Rogalinie|w\s+Śmiełowie|Ratusz[^.]+))/i);
-      const addressMatch = text.match(/((?:ul\.|Aleje|pl\.|Plac)\s+[^,]+(?:\s+\d+\w?)?)/i);
-
-      const placeName = venueMatch?.[1]?.trim() || "";
-      const address = addressMatch?.[1]?.trim() || "";
-
-      // Skip out-of-town venues
-      const lowerPlace = placeName.toLowerCase();
-      if (OOT.has(lowerPlace) || [...OOT].some((o) => lowerPlace.includes(o))) return;
-
-      // Extract description
-      const descMatch = text.match(/(?:Zapraszamy|Wystawa|Pokaz|Warsztaty|Koncert|Spotkanie|Wykład|Oprowadzanie)[^.]+[^.]*\.(?:\s+[^.]+\.){0,2}/i);
-      const description = title + (descMatch ? ". " + descMatch[0] : "");
-
-      // Category
-      const categoryMatch = text.match(/(wystawa|koncert|warsztat|wykład|spotkanie|projekcja|spektakl|oprowadzanie|spacer|kurs)/i);
-      const category = categoryMatch ? guessCategory(categoryMatch[1]) : "Inne";
-
-      const key = `${title}|${placeName}|${startDate.toISOString().slice(0, 10)}`;
-      if (seen.has(key)) return;
+      const sourceUrl = ld.url ?? PAGE_URL;
+      const key = `${venue}|${start.toISOString().slice(0, 10)}|${title}`;
+      if (seen.has(key)) continue;
       seen.add(key);
 
-      const venue = matchVenue(placeName || text);
-      const geo = venue || districtFallback("Centrum");
+      const slugs = categoryByUrl.get(sourceUrl.replace(/\/$/, "")) ?? [];
+      const category = pickCategory(slugs, title, description, venue);
+
+      const venueData = matchVenue(`${venue} ${title}`) ?? matchVenue(venue);
+      let coordsX = venueData?.lat;
+      let coordsY = venueData?.lon;
+      let district = venueData?.district;
+
+      if (!venueData) {
+        const geo = await geocodeVenue(venue, title, address);
+        if (geo) {
+          coordsX = geo.lat;
+          coordsY = geo.lon;
+          district = geo.district;
+        }
+      }
 
       events.push({
         title,
         description,
-        sourceUrl: URL,
-        startDate,
-        endDate: endDate || startDate,
-        time,
-        placeName: placeName || "Muzeum Narodowe w Poznaniu",
+        imageUrl: pickImage(ld.image),
+        sourceUrl,
+        startDate: start,
+        endDate: end,
+        time: startParsed.allDay ? undefined : timeInWarsaw(start),
+        placeName: venue,
         address,
-        district: geo.district,
+        district: district ?? "Centrum",
         category,
         vibes: guessVibesForCategory(category),
         source: SOURCE,
-        sourceId: `mnp/${key}`,
-        coordsX: geo.lat,
-        coordsY: geo.lon,
+        // Stable per-event permalink → safe to prune legacy `title|place|date` ids.
+        sourceId: `mnp/${new URL(sourceUrl).pathname.replace(/^\/|\/$/g, "")}`,
+        coordsX,
+        coordsY,
         outdoor: false,
       });
-    });
-
-    // Post-geocode unmatched
-    for (const ev of events) {
-      if (!ev.coordsX && ev.placeName) {
-        try {
-          const geo = await geocodeVenue(`${ev.placeName}, Poznań`);
-          if (geo) {
-            ev.coordsX = geo.lat;
-            ev.coordsY = geo.lon;
-            ev.district = geo.district;
-          }
-        } catch { /* keep fallback */ }
-      }
     }
 
+    // 3. Coordinates fallback: district centre for anything still unlocated.
+    for (const ev of events) {
+      if (ev.coordsX != null && ev.coordsY != null) continue;
+      const center = districtFallback(ev.district);
+      ev.coordsX = center.lat;
+      ev.coordsY = center.lon;
+      ev.district = center.district;
+    }
+
+    console.log(`[MNP] ${events.length} events`);
     return events;
   }
 }

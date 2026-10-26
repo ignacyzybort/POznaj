@@ -4,7 +4,7 @@ import { PoznanCinemaScraper } from "./cinema-poznan";
 import { MnpScraper } from "./mnp";
 import { PutScraper } from "./put";
 import { FacebookScraper } from "./facebook";
-import { saveEvents, Scraper } from "./base";
+import { pruneLegacyEvents, saveEvents, Scraper } from "./base";
 import { recomputeAllScores } from "@/lib/scoring";
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
@@ -29,10 +29,26 @@ async function runAll() {
     const start = Date.now();
 
     try {
+      // Rows touched by this run are protected by the cutoff, so anything pruned
+      // here is stale output from an older, structurally broken parser.
+      const runStart = new Date();
       const events = await scraper.scrape();
+      const scrapedKeys = events.map((e) => ({
+        title: e.title,
+        startDate: e.startDate,
+        placeName: e.placeName,
+        sourceId: e.sourceId,
+      }));
+      let pruned = 0;
+      if (events.length > 0) {
+        pruned += await pruneLegacyEvents(prisma, scraper.name, runStart, scrapedKeys, "pre");
+      }
       const result = await saveEvents(prisma, events);
+      if (events.length > 0) {
+        pruned += await pruneLegacyEvents(prisma, scraper.name, runStart, scrapedKeys, "post");
+      }
       console.log(
-        `[Scraper] ${scraper.name}: ${events.length} found, ${result.created} created, ${result.updated} updated, ${result.errors} errors (${Date.now() - start}ms)`
+        `[Scraper] ${scraper.name}: ${events.length} found, ${result.created} created, ${result.updated} updated, ${result.skipped} skipped, ${result.errors} errors, ${pruned} stale pruned (${Date.now() - start}ms)`
       );
     } catch (e) {
       console.error(`[Scraper] ${scraper.name} failed:`, e);
