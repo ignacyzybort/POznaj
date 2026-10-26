@@ -158,13 +158,14 @@ export default function EventDetailClient({
   return (
     <div data-category={event.category} style={{ position: "absolute", inset: 0, background: "var(--bg)", zIndex: 30 }}>
       <div className="pz-scroll" style={{ position: "absolute", inset: 0, bottom: "calc(92px + var(--safe-b))" }}>
+        <div className="pz-page pz-detail-column" style={{ position: "relative" }}>
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, padding: "calc(16px + var(--safe-t)) 16px 10px", display: "flex", justifyContent: "space-between", gap: 8 }}>
           <button onClick={() => router.back()} aria-label="Wróć" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><BackIcon size={20} /></button>
           <button onClick={() => setShowShare(true)} aria-label="Wyślij znajomemu" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><SendIcon size={20} /></button>
           <button onClick={onShare} aria-label="Udostępnij" style={{ width: 44, height: 44, borderRadius: 99, border: 0, background: "var(--bg-elev)", color: "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-sm)" }}><ShareIcon size={20} /></button>
         </div>
 
-        <div style={{ height: "min(340px, 45dvh)", overflow: "hidden" }}>
+        <div className="pz-detail-hero">
           <EventArt event={event} height={340} style="collage" />
         </div>
 
@@ -222,15 +223,18 @@ export default function EventDetailClient({
             </div>
           </div>
         )}
+        </div>
       </div>
 
-      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 16px calc(28px + var(--safe-b))", display: "flex", gap: 10, background: "linear-gradient(180deg, transparent, var(--bg) 30%)", transform: actionBarVisible ? "translateY(0)" : "translateY(80px)", opacity: actionBarVisible ? 1 : 0, transition: "transform 0.4s var(--ease-spring), opacity 0.3s var(--ease-out-quart)", transitionDelay: "0.3s" }}>
+      <div className="pz-actionbar-wrap" style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 0 calc(28px + var(--safe-b))", background: "linear-gradient(180deg, transparent, var(--bg) 30%)", transform: actionBarVisible ? "translateY(0)" : "translateY(80px)", opacity: actionBarVisible ? 1 : 0, transition: "transform 0.4s var(--ease-spring), opacity 0.3s var(--ease-out-quart)", transitionDelay: "0.3s" }}>
+        <div className="pz-page pz-detail-column pz-actionbar" style={{ display: "flex", gap: 10, padding: "0 16px" }}>
         <button onClick={() => { setAnimatingSave(true); toggleSave(); setTimeout(() => setAnimatingSave(false), 400); }} style={{ width: 50, height: 50, borderRadius: 99, border: 0, background: saved ? "var(--ink)" : "var(--bg-soft)", color: saved ? "var(--bg)" : "var(--ink)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           <span className={saved && animatingSave ? "pz-bookmark-draw" : ""}>{saved ? <BookmarkIcon size={20} fill /> : <BookmarkIcon size={20} />}</span>
         </button>
         <button onClick={toggleGoing} className="pz-btn primary pz-btn-ripple" style={{ flex: 1, background: going ? "var(--sage)" : "var(--ink)" }}>
           {going ? <><CheckIcon size={18} /> Idziesz</> : "Idę"}
         </button>
+        </div>
       </div>
 
       <Confetti active={confetti} />

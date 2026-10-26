@@ -57,11 +57,12 @@ export default function MapaClient({ events }: { events: EventData[] }) {
   });
 
   return (
-    <div style={{ position: "absolute", inset: 0 }}>
+    <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
       <div style={{
-        position: "absolute", top: "calc(74px + var(--safe-t))", left: 0, right: 0,
-        zIndex: 1001, padding: "0 18px", pointerEvents: "none",
+        position: "absolute", top: 10, left: 0, right: 0,
+        zIndex: 1001, pointerEvents: "none",
       }}>
+        <div className="pz-page" style={{ padding: "0 18px" }}>
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, pointerEvents: "auto", touchAction: "pan-x" }}>
           <button style={chip(!category)} onClick={() => setCategory(null)} aria-pressed={!category}>Wszystkie</button>
           {categories.map((c) => (
@@ -75,9 +76,10 @@ export default function MapaClient({ events }: { events: EventData[] }) {
           <button style={chip(when === "today")} onClick={() => setWhen(when === "today" ? "all" : "today")} aria-pressed={when === "today"}>Dziś</button>
           <button style={chip(when === "tomorrow")} onClick={() => setWhen(when === "tomorrow" ? "all" : "tomorrow")} aria-pressed={when === "tomorrow"}>Jutro</button>
           <button style={chip(outdoorOnly)} onClick={() => setOutdoorOnly(!outdoorOnly)} aria-pressed={outdoorOnly}>Na zewnątrz</button>
-          <span style={{ marginLeft: "auto", alignSelf: "center", fontSize: 11, fontWeight: 600, color: "var(--ink-3)", background: "var(--bg-elev)", padding: "5px 9px", borderRadius: 99, whiteSpace: "nowrap" }}>
+          <span style={{ alignSelf: "center", marginLeft: 2, fontSize: 11, fontWeight: 600, color: "var(--ink-3)", background: "var(--bg-elev)", padding: "5px 9px", borderRadius: 99, whiteSpace: "nowrap", boxShadow: "var(--shadow-sm)" }}>
             {filtered.length}
           </span>
+        </div>
         </div>
       </div>
 

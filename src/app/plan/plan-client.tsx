@@ -24,7 +24,8 @@ export default function PlanClient({ events, personal = false }: { events: Event
   );
 
   return (
-    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 100px" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 0 100px" }}>
+      <div className="pz-page" style={{ padding: "0 18px" }}>
       <div className="pz-eyebrow" style={{ marginBottom: 6 }}>{personal ? "Twój kalendarz" : "Kalendarz"}</div>
       <h1 className="pz-display" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 400, letterSpacing: "-0.035em" }}>
         {personal ? "Twój plan." : "Następne dwa tygodnie."}
@@ -61,7 +62,7 @@ export default function PlanClient({ events, personal = false }: { events: Event
           <p style={{ fontSize: 13, marginTop: 4 }}>{personal ? "Zapisz wydarzenie, a pojawi się tutaj" : "Idź na spacer na Cytadelę"}</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="pz-plan-list" style={{ display: "grid", gap: 12 }}>
           {dayEvents
             .sort((a, b) => (a.time ?? "00:00").localeCompare(b.time ?? "00:00"))
             .map((ev) => {
@@ -101,6 +102,7 @@ export default function PlanClient({ events, personal = false }: { events: Event
             })}
         </div>
       )}
+      </div>
     </div>
   );
 }

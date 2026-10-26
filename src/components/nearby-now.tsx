@@ -43,11 +43,19 @@ export default function NearbyNow() {
 
   if (status !== "authenticated") {
     return (
-      <div style={{ padding: "0 16px 22px" }}>
+      <div style={{ padding: "0 16px 18px" }}>
         <div className="pz-card" style={{
-          padding: 16, textAlign: "center", fontSize: 14, color: "var(--ink-3)",
+          padding: "12px 14px 12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 12, flexWrap: "wrap",
         }}>
-          Zaloguj się, aby zobaczyć gdzie idą znajomi.
+          <span style={{ fontSize: 13, color: "var(--ink-3)", lineHeight: 1.35 }}>
+            <b style={{ color: "var(--ink)", fontWeight: 600 }}>Znajomi idą.</b> Zaloguj się, by zobaczyć gdzie.
+          </span>
+          <a href="/login" style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            height: 34, padding: "0 14px", borderRadius: 99, fontSize: 12, fontWeight: 600,
+            background: "var(--ink)", color: "var(--bg)", textDecoration: "none",
+          }}>Zaloguj</a>
         </div>
       </div>
     );
@@ -71,8 +79,8 @@ export default function NearbyNow() {
         display: "flex", alignItems: "baseline",
         justifyContent: "space-between", marginBottom: 10,
       }}>
-        <h2 className="pz-h" style={{
-          margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em",
+        <h2 className="pz-display" style={{
+          margin: 0, fontSize: 22, letterSpacing: "-0.025em",
         }}>Znajomi · idą</h2>
         <span className="pz-eyebrow" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
           <span style={{

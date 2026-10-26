@@ -9,25 +9,22 @@ export default async function MapaPage() {
   const today = new Date();
 
   return (
-    <div style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
-      {/* Header */}
-      <div style={{
-        position: "absolute", top: 0, left: 0, right: 0,
-        padding: "calc(16px + var(--safe-t)) 18px 34px",
-        zIndex: 1000, pointerEvents: "none",
-        background: "linear-gradient(180deg, var(--bg) 0%, var(--bg) 62%, transparent 100%)",
-      }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 2 }}>
-          <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
-            poznaj<span style={{ color: "var(--sage)" }}>.</span>
-          </span>
-          <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>
-            {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
-          </span>
+    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", paddingBottom: "calc(76px + var(--safe-b))" }}>
+      {/* Masthead lives in flow; the map pane fills the rest */}
+      <div style={{ flexShrink: 0, padding: "calc(14px + var(--safe-t)) 0 8px" }}>
+        <div className="pz-page" style={{ padding: "0 18px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+            <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
+              poznaj<span style={{ color: "var(--sage)" }}>.</span>
+            </span>
+            <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>
+              Mapa · {PL_DAY_FULL[today.getDay()]}, {fmtFullDate(today)}
+            </span>
+          </div>
+          <h1 className="pz-display" style={{ margin: 0, fontSize: "clamp(30px, 6vw, 46px)", fontWeight: 400, letterSpacing: "-0.035em", lineHeight: 0.95 }}>
+            Dzielnice <em>Poznania.</em>
+          </h1>
         </div>
-        <h1 className="pz-h" style={{ margin: 0, fontSize: "clamp(24px, 7vw, 36px)", fontWeight: 700, letterSpacing: "-0.035em", lineHeight: 0.95, color: "var(--ink)" }}>
-          Dzielnice Poznania.
-        </h1>
       </div>
       <MapaClient events={events} />
     </div>

@@ -16,7 +16,9 @@ function hashStr(s: string): number {
   return Math.abs(h);
 }
 function rnd(seed: number, i: number): number {
-  return (Math.sin(seed * 9301 + i * 49297) + 1) / 2;
+  // Quantized: Math.sin can differ in the last ULPs between Node and browser
+  // engines, which broke React hydration on generated SVG attributes.
+  return Math.round(((Math.sin(seed * 9301 + i * 49297) + 1) / 2) * 1000) / 1000;
 }
 
 const CATEGORY_LABEL: Record<string, string> = {

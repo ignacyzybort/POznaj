@@ -53,7 +53,8 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
   }
 
   return (
-    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
+    <div className="pz-scroll" style={{ position: "absolute", inset: 0, padding: "calc(16px + var(--safe-t)) 0 96px" }}>
+      <div className="pz-page" style={{ padding: "0 18px" }}>
       <div className="pz-eyebrow" style={{ marginBottom: 6 }}>Twoja lista</div>
       <h1 className="pz-display" style={{ margin: "0 0 20px", fontSize: "var(--text-3xl)", fontWeight: 400, letterSpacing: "-0.035em" }}>
         {tab === "saved" ? "Zapisane." : "Idziesz."}
@@ -79,7 +80,7 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="pz-plan-list" style={{ display: "grid", gap: 12 }}>
           {filtered.map((a, i) => {
             const key = `${a.eventId}:${a.status}`;
             const timeLabel = a.timeSlots.length > 0 ? a.timeSlots.join(", ") : a.event.time;
@@ -128,6 +129,7 @@ export default function ListaClient({ items }: { items: AttendanceItem[] }) {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -68,6 +68,7 @@ export default function SearchOverlay({
       role="dialog"
       aria-modal="true"
       aria-label="Szukaj wydarzeń"
+      className="pz-search-root"
       style={{
       position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : "pz-fade-in var(--dur-fast) var(--ease-out-quart) both",

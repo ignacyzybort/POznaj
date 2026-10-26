@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduced = useReducedMotion();
-  // Ref instead of module-level state: module state is shared across SSR requests
-  // and produced different server HTML per request (React hydration mismatch).
-  const previousPathname = useRef<string | null>(null);
+  // State (not module-level, not a ref read during render): module state is shared
+  // across SSR requests and produced mismatched server HTML (hydration errors).
+  const [previousPathname, setPreviousPathname] = useState<string | null>(null);
 
   // Determine direction: deeper = navigating to a longer path (slide from right),
   // back = navigating to a shorter path (slide from left).
-  const isDeeper = previousPathname.current === null || pathname.length >= previousPathname.current.length;
+  const isDeeper = previousPathname === null || pathname.length >= previousPathname.length;
 
   useEffect(() => {
-    previousPathname.current = pathname;
+    setPreviousPathname(pathname);
   }, [pathname]);
 
   return (

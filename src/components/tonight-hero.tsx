@@ -38,7 +38,7 @@ export default function TonightHero({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       className="pz-poster-hero"
-      style={{ height: "min(460px, 58dvh)", margin: "0 16px 18px" }}
+      style={{ margin: "0 16px 18px" }}
     >
       <EventArt event={ev} height={460} style="gradient" forceArt />
       <div className="pz-poster-number" aria-hidden="true" style={{

@@ -10,16 +10,24 @@ export default async function ProfilPage() {
   if (!session?.user?.id) {
     return (
       <div className="pz-scroll" style={{ position: "absolute", inset: 0 }}>
-        <div style={{ padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
+        <div className="pz-page" style={{ padding: "calc(16px + var(--safe-t)) 18px 96px" }}>
           <div style={{ marginBottom: 20 }}>
             <span className="pz-sans-display" style={{ fontSize: 16, color: "var(--ink)" }}>
               poznaj<span style={{ color: "var(--sage)" }}>.</span>
             </span>
           </div>
-          <div style={{ padding: 32, borderRadius: 22, background: "var(--bg-soft)", textAlign: "center" }}>
-            <div className="pz-display" style={{ fontSize: 48, marginBottom: 16 }}>Ty.</div>
-            <p style={{ fontSize: "var(--text-base)", fontWeight: 600, marginBottom: 16, color: "var(--ink-2)" }}>Zaloguj się</p>
-            <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 48, padding: "0 24px", borderRadius: 28, fontSize: "var(--text-base)", fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
+          <div style={{ maxWidth: 480, margin: "clamp(24px, 8vh, 72px) auto 0", textAlign: "center" }}>
+            <div className="pz-eyebrow" style={{ marginBottom: 14 }}>Twoje konto</div>
+            <div className="pz-display" style={{ fontSize: "clamp(64px, 12vw, 104px)", lineHeight: 0.9, letterSpacing: "-0.05em", marginBottom: 20 }}>
+              Ty<em>.</em>
+            </div>
+            <p style={{ fontSize: "var(--text-base)", lineHeight: 1.5, color: "var(--ink-3)", margin: "0 auto 24px", maxWidth: 340 }}>
+              Zaloguj się, aby zapisywać wydarzenia, zbierać pieczątki dzielnic i widzieć, gdzie idą znajomi.
+            </p>
+            <Link href="/login" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 50, padding: "0 30px", borderRadius: 99, fontSize: "var(--text-base)", fontWeight: 600, background: "var(--ink)", color: "var(--bg)", textDecoration: "none" }}>Zaloguj się</Link>
+            <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid var(--line-2)" }}>
+              <Link href="/" style={{ fontSize: 13, fontWeight: 600, color: "var(--ink-3)", textDecoration: "none" }}>Albo najpierw zobacz, co się dzieje →</Link>
+            </div>
           </div>
         </div>
       </div>

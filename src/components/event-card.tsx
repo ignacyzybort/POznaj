@@ -73,13 +73,13 @@ export default function EventCard({
 
         <div style={{ flex: 1 }} />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13 }}>
-          <span style={{ width: 14, height: 14 }}><PinIcon size={14} /></span>
-          <Link href={`/miejsca/${getVenueSlug(event.placeName)}`} onClick={(e) => e.stopPropagation()} style={{ fontWeight: 500, color: "inherit", textDecoration: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, color: "var(--ink-3)", fontSize: 13, minWidth: 0 }}>
+          <span style={{ width: 14, height: 14, flexShrink: 0 }}><PinIcon size={14} /></span>
+          <Link href={`/miejsca/${getVenueSlug(event.placeName)}`} onClick={(e) => e.stopPropagation()} style={{ fontWeight: 500, color: "inherit", textDecoration: "none", minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {event.placeName}
           </Link>
-          <span style={{ opacity: 0.5 }}>·</span>
-          <span>{event.district === "Inny" ? "Poznań" : event.district}</span>
+          <span style={{ opacity: 0.5, flexShrink: 0 }}>·</span>
+          <span style={{ flexShrink: 0 }}>{event.district === "Inny" ? "Poznań" : event.district}</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 8 }}>

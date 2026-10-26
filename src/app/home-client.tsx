@@ -256,6 +256,7 @@ export default function HomeClient({
   return (
     <div className="pz-scroll" ref={containerRef} style={{ position: "absolute", inset: 0, paddingBottom: "calc(76px + var(--safe-b))" }}>
       <div className="pz-scroll-progress" ref={progressRef} />
+      <div className="pz-page">
       {/* Masthead */}
       <div className="pz-masthead" style={{ margin: "calc(14px + var(--safe-t)) 18px 14px" }}>
         <div className="pz-masthead-meta">
@@ -354,9 +355,10 @@ export default function HomeClient({
 
       {cleanHome && forYou.length > 0 && (
         <div style={{ padding: "12px 0 6px" }}>
-          <h2 className="pz-h" style={{ padding: "0 18px", margin: "0 0 10px", fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em" }}>
-            Polecane dla Ciebie
-          </h2>
+          <div style={{ padding: "0 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
+            <h2 className="pz-display pz-section-head" style={{ margin: 0, fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1 }}>Polecane dla Ciebie</h2>
+            <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>dla Ciebie</span>
+          </div>
           <div style={{ display: "flex", gap: 14, padding: "0 18px 14px", overflowX: "auto", scrollSnapType: "x mandatory" }}>
             {forYou.map((ev) => (
               <TiltCard key={ev.id}>
@@ -396,8 +398,8 @@ export default function HomeClient({
           display: "flex", alignItems: "baseline",
           justifyContent: "space-between", marginBottom: 12,
         }}>
-          <h2 className="pz-h" style={{
-            margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.025em",
+          <h2 className="pz-display pz-section-head" style={{
+            margin: 0, fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1,
           }}>{quick || search || activeCount || budget || outdoorOn ? "Wyniki" : "Wszystko, co się dzieje"}</h2>
           <span className="pz-num" style={{
             fontSize: 12, color: "var(--ink-4)", fontWeight: 600,
@@ -439,6 +441,8 @@ export default function HomeClient({
             <span className="pz-spinner" style={{ width: 24, height: 24 }} />
           </div>
         )}
+      </div>
+
       </div>
 
       {searchOpen && (
