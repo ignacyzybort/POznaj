@@ -358,7 +358,6 @@ export default function HomeClient({
         <div style={{ padding: "12px 0 6px" }}>
           <div style={{ padding: "0 18px", display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10 }}>
             <h2 className="pz-display pz-section-head" style={{ margin: 0, fontSize: 26, letterSpacing: "-0.03em", lineHeight: 1 }}>Polecane dla Ciebie</h2>
-            <span className="pz-eyebrow" style={{ fontSize: 9.5 }}>dla Ciebie</span>
           </div>
           <div style={{ display: "flex", gap: 14, padding: "0 18px 14px", overflowX: "auto", scrollSnapType: "x mandatory" }}>
             {forYou.map((ev) => (

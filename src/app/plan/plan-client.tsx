@@ -75,8 +75,8 @@ export default function PlanClient({ events, personal = false }: { events: Event
               >
                 <div style={{ position: "absolute", left: 0, top: 0, width: 4, height: "100%", background: (categoryColors[ev.category]?.bg ?? "#888") }} />
                 <div style={{ textAlign: "center", minWidth: 52, paddingLeft: 4, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                  <div className="pz-num" style={{ fontSize: 13, fontWeight: 700, color: "var(--ink-3)" }}>
-                    {showtimes[0] ?? "--:--"}
+                  <div className="pz-num" style={{ fontSize: showtimes[0] ? 13 : 10, fontWeight: 700, color: "var(--ink-3)" }}>
+                    {showtimes[0] ?? "cały dzień"}
                   </div>
                   {showtimes.length > 1 && (
                     <div className="pz-mono" style={{ fontSize: 9.5, color: "var(--ink-4)", marginTop: 3 }}>
