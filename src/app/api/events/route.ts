@@ -160,7 +160,6 @@ export async function GET(request: NextRequest) {
     const offset = offsetParsed;
     const sort = searchParams.get("sort") || "date";
 
-    const now = plMidnight(new Date());
     const where: Prisma.EventWhereInput = {
       endDate: { gte: new Date() },
     };

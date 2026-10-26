@@ -188,7 +188,8 @@ export async function syncReminders(
 
   for (const reminder of reminders) {
     const start = eventStartInstant(reminder.event);
-    const desiredRemindAt = new Date(start.getTime() - reminder.user.reminderMinutes * 60000);
+    const leadMinutes = Math.min(Math.max(reminder.user.reminderMinutes, 5), 1440);
+    const desiredRemindAt = new Date(start.getTime() - leadMinutes * 60000);
 
     if (!reminder.user.emailReminders) {
       if (reminder.status === "SCHEDULED") await cancelReminder(prisma, reminder.id);

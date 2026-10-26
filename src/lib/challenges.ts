@@ -122,7 +122,7 @@ function hasNightTime(time?: string | null): boolean {
   return false;
 }
 
-export const CHALLENGES: ChallengeDef[] = [
+const CHALLENGE_DEFS: ChallengeDef[] = [
   {
     key: "daily-outdoor", tier: "daily", title: "Na świeżym", desc: "Wyjdź na zewnątrz — outdoor event dziś",
     icon: "leaf", universal: true, maxProgress: 1,
@@ -237,6 +237,29 @@ export const CHALLENGES: ChallengeDef[] = [
     },
   },
 ];
+
+// Challenge progress must reflect events the user is actually going to. The
+// server page passes every attendance row in, which includes independent
+// SAVED rows (save ≠ attend), INTERESTED rows legacy data, and one row per
+// cinema showtime — counting raw rows inflated progress and credited events
+// that were only saved. Normalise in one place so all 14 criteria agree.
+export function toGoingItems(items: GoingItem[]): GoingItem[] {
+  const seen = new Set<string>();
+  const going: GoingItem[] = [];
+  for (const item of items) {
+    if (item.status !== "GOING") continue;
+    const key = item.event.id || `${item.event.startDate}:${item.event.placeName}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    going.push(item);
+  }
+  return going;
+}
+
+export const CHALLENGES: ChallengeDef[] = CHALLENGE_DEFS.map((challenge) => ({
+  ...challenge,
+  check: (items, userPrefs, context) => challenge.check(toGoingItems(items), userPrefs, context),
+}));
 
 export function getResetDate(tier: string): Date {
   const now = new Date();

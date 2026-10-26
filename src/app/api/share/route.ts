@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    sendPushNotification(friendId, {
+    await sendPushNotification(friendId, {
       title: `${senderName} poleca wydarzenie`,
       body: event.title,
       url: `/event/${eventId}`,

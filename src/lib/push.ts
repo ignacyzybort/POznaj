@@ -3,12 +3,18 @@ import { prisma } from "@/lib/prisma";
 let webpush: any = null;
 try {
   webpush = require("web-push");
-  if (process.env.VAPID_SUBJECT && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-    webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT,
-      process.env.VAPID_PUBLIC_KEY ?? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY
-    );
+  // The public key is exposed to the client as NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  // (that is the name in .env and the name the browser uses to subscribe), so
+  // requiring only VAPID_PUBLIC_KEY here left setVapidDetails() uncalled and
+  // every push request went out without a VAPID Authorization header.
+  const vapidSubject = process.env.VAPID_SUBJECT;
+  const vapidPublicKey = process.env.VAPID_PUBLIC_KEY ?? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+  if (vapidSubject && vapidPublicKey && vapidPrivateKey) {
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+  } else {
+    console.warn("[push] VAPID keys incomplete — push notifications disabled");
+    webpush = null;
   }
 } catch {
   console.warn("[push] web-push unavailable — push notifications disabled");
