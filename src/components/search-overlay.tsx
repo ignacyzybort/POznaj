@@ -70,10 +70,11 @@ export default function SearchOverlay({
       aria-label="Szukaj wydarzeń"
       className="pz-search-root"
       style={{
-      position: "absolute", inset: 0, background: "var(--bg)", zIndex: 40,
+      position: "fixed", inset: 0, background: "var(--scrim)", zIndex: 70,
       animation: exiting ? "pz-fade-out var(--dur-fast) var(--ease-out-quart) both" : "pz-fade-in var(--dur-fast) var(--ease-out-quart) both",
-      display: "flex", flexDirection: "column",
+      display: "flex", justifyContent: "center",
     }}>
+      <div className="pz-search-panel">
       <div style={{ padding: "54px 16px 10px", display: "flex", gap: 10, alignItems: "center" }}>
         <div style={{
           flex: 1, height: 44, borderRadius: 14,
@@ -134,6 +135,7 @@ export default function SearchOverlay({
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ import BudgetChips, { type Budget } from "@/components/budget-chips";
 import FiltersSheet, { type ActiveFilters } from "@/components/filters-sheet";
 import SearchOverlay from "@/components/search-overlay";
 import Toast from "@/components/toast";
+import Portal from "@/components/portal";
 import EmptyState from "@/components/empty-state";
 import TiltCard from "@/components/tilt-card";
 import { SearchIcon, FilterIcon, ShuffleIcon } from "@/components/icons";
@@ -445,6 +446,7 @@ export default function HomeClient({
 
       </div>
 
+      <Portal>
       {searchOpen && (
         <SearchOverlay
           onClose={() => setSearchOpen(false)}
@@ -472,6 +474,8 @@ export default function HomeClient({
           onClose={() => setSurpriseOpen(false)}
         />
       )}
+
+      </Portal>
 
       <Toast msg={toast} onClear={() => setToast(null)} />
     </div>

@@ -12,6 +12,7 @@ import DetailExtras from "@/components/detail-extras";
 import Toast from "@/components/toast";
 import TiltCard from "@/components/tilt-card";
 import Confetti from "@/components/confetti";
+import Portal from "@/components/portal";
 import ShareModal from "@/components/share-modal";
 import { CalIcon, PinIcon, UsersIcon, SparkIcon, BookmarkIcon, CheckIcon, BackIcon, ShareIcon, SendIcon } from "@/components/icons";
 import { getCsrfToken } from "@/lib/csrf";
@@ -239,6 +240,7 @@ export default function EventDetailClient({
 
       <Confetti active={confetti} />
       <Toast msg={toast} onClear={() => setToast(null)} />
+      <Portal>
       {showShare && (
         <ShareModal
           eventId={event.id}
@@ -246,6 +248,7 @@ export default function EventDetailClient({
           onClose={() => setShowShare(false)}
         />
       )}
+      </Portal>
     </div>
   );
 }
